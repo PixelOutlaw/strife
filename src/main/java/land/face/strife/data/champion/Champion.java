@@ -107,6 +107,10 @@ public class Champion {
     lastChanged = System.currentTimeMillis();
   }
 
+  public boolean checkSkill(LifeSkillType type, SkillRank rank) {
+    return SkillRank.check(this, type, rank);
+  }
+
   public Ability getAbility(AbilitySlot slot) {
     return abilities.get(slot);
   }

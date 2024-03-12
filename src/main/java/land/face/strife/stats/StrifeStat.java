@@ -76,6 +76,7 @@ public enum StrifeStat {
   DAMAGE_REFLECT("Reflected Damage"),
 
   MULTISHOT("Multishot"),
+  EXTRA_PROJECTILES("Extra Projectiles"),
   PIERCE_CHANCE("Pierce Chance"),
   PROJECTILE_SPEED("Projectile Speed"),
   PROJECTILE_DAMAGE("Projectile Damage"),

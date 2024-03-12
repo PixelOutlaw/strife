@@ -39,14 +39,11 @@ import com.tealcube.minecraft.bukkit.shade.acf.annotation.Syntax;
 import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.EloResponse;
 import land.face.strife.data.LoreAbility;
@@ -59,7 +56,6 @@ import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.managers.BossBarManager;
-import land.face.strife.managers.DisplayManager;
 import land.face.strife.menus.abilities.ReturnButton;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
@@ -67,7 +63,6 @@ import land.face.strife.util.EloUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -76,7 +71,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.MainHand;
 
 @CommandAlias("strife")
 public class StrifeCommand extends BaseCommand {

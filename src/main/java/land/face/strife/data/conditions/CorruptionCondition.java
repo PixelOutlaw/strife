@@ -1,6 +1,5 @@
 package land.face.strife.data.conditions;
 
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.PlayerDataUtil;
 

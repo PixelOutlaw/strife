@@ -13,6 +13,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.champion.SkillRank;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
@@ -177,10 +178,10 @@ public class StatUtil {
           return 0;
         }
         float amount = stats.getOrDefault(StrifeStat.AIR_JUMPS, 0f);
-        if (mob.getChampion().getLifeSkillLevel(LifeSkillType.AGILITY) >= 40) {
+        if (mob.checkSkill(LifeSkillType.AGILITY, SkillRank.JOURNEYMAN)) {
           amount++;
         }
-        if (mob.getChampion().getLifeSkillLevel(LifeSkillType.AGILITY) >= 60) {
+        if (mob.checkSkill(LifeSkillType.AGILITY, SkillRank.EXPERT)) {
           amount++;
         }
         return amount;

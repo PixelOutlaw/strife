@@ -114,6 +114,9 @@ public class ItemUtil {
     if (mainItem.getType() == Material.FISHING_ROD && offItem.getType() == Material.WHEAT_SEEDS) {
       return true;
     }
+    if (mainItem.getType() == Material.SHIELD) {
+      return offItem.getType() == Material.SHIELD;
+    }
     if (mainItem.getType() == Material.BOOK ||
         mainItem.getType() == Material.SHIELD ||
         mainItem.getType() == Material.ARROW) {
@@ -128,23 +131,17 @@ public class ItemUtil {
       }
       return isValidMageOffhand(offItem);
     }
+    if (isWand(mainItem) && isWand(offItem)) {
+      return true;
+    }
     if (isWandOrStaff(mainItem)) {
       return isValidMageOffhand(offItem);
-    }
-    if (mainItem.getType() == Material.BOOK) {
-      return isValidMageOffhand(offItem);
-    }
-    if (mainItem.getType() == Material.ARROW) {
-      return false;
     }
     if (mainItem.getType() == Material.BOW) {
       if (isPistol(mainItem)) {
         return isBullets(offItem);
       }
       return offItem.getType() == Material.ARROW;
-    }
-    if (mainItem.getType() == Material.SHIELD) {
-      return offItem.getType() == Material.SHIELD;
     }
     return !isArmor(offItem.getType());
   }

@@ -151,6 +151,7 @@ public abstract class Effect {
     PARTICLE,
     SPAWN_ITEM,
     SPEAK,
+    RANDOM_AROUND,
     PUSH,
     LIGHTNING,
     MODIFY_PROJECTILE,

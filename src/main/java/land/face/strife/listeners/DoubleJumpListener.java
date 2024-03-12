@@ -10,6 +10,8 @@ import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.champion.SkillRank;
 import land.face.strife.events.AirJumpEvent;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
@@ -159,7 +161,7 @@ public class DoubleJumpListener implements Listener {
   }
 
   private void doDodgeRoll(StrifeMob mob, Player player) {
-    if (mob.getChampion().getLifeSkillLevel(AGILITY) < 10) {
+    if (!mob.checkSkill(AGILITY, SkillRank.APPRENTICE)) {
       return;
     }
 

@@ -2,6 +2,7 @@ package land.face.strife.data.champion;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import java.awt.Color;
+import land.face.strife.data.StrifeMob;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 
@@ -62,3 +63,4 @@ public enum LifeSkillType {
     this.combat = false;
   }
 }
+

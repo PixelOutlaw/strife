@@ -112,14 +112,13 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (type == AttackType.PROJECTILE) {
       totalMultiplier *= 1f + mob.getStat(StrifeStat.PROJECTILE_DAMAGE) / 100;
     }
-    float elementalMult = 1 + mob.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     float physical = totalMultiplier * damageMap.getOrDefault(DamageType.PHYSICAL, 0f);
-    float fire = totalMultiplier * damageMap.getOrDefault(DamageType.FIRE, 0f) * elementalMult;
-    float ice = totalMultiplier * damageMap.getOrDefault(DamageType.ICE, 0f) * elementalMult;
-    float lightning = totalMultiplier * damageMap.getOrDefault(DamageType.LIGHTNING, 0f) * elementalMult;
-    float earth = totalMultiplier * damageMap.getOrDefault(DamageType.EARTH, 0f) * elementalMult;
-    float light = totalMultiplier * damageMap.getOrDefault(DamageType.LIGHT, 0f) * elementalMult;
-    float shadow = totalMultiplier * damageMap.getOrDefault(DamageType.DARK, 0f)  * elementalMult;
+    float fire = totalMultiplier * damageMap.getOrDefault(DamageType.FIRE, 0f);
+    float ice = totalMultiplier * damageMap.getOrDefault(DamageType.ICE, 0f);
+    float lightning = totalMultiplier * damageMap.getOrDefault(DamageType.LIGHTNING, 0f);
+    float earth = totalMultiplier * damageMap.getOrDefault(DamageType.EARTH, 0f);
+    float light = totalMultiplier * damageMap.getOrDefault(DamageType.LIGHT, 0f);
+    float shadow = totalMultiplier * damageMap.getOrDefault(DamageType.DARK, 0f) ;
     float trueDmg = damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) - 1;
     float total = physical + fire + ice + lightning + earth + light + shadow + trueDmg;
 

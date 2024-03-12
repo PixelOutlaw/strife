@@ -12,6 +12,7 @@ import land.face.strife.data.AgilityLocationContainer;
 import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
+import land.face.strife.data.champion.SkillRank;
 import land.face.strife.data.effects.Riptide;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
@@ -51,7 +52,7 @@ public class LaunchAndLandListener implements Listener {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
-    if (mob.getChampion().getLifeSkillLevel(AGILITY) < 20) {
+    if (!mob.checkSkill(AGILITY, SkillRank.APPRENTICE)) {
       return;
     }
     if (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE) {

@@ -150,25 +150,26 @@ public class ProjectileUtil {
         entity.getCollidableExemptions().remove(projectile.getUniqueId()),200L);
   }
 
-  public static int getTotalProjectiles(double initialProjectiles, double multiShot) {
+  public static int getTotalProjectiles(double initialProjectiles, float multiShot, float extraProjectiles) {
     double projectiles = initialProjectiles;
     if (multiShot > 0) {
       projectiles *= 1 + (multiShot / 100);
       if (projectiles % 1 >= StrifePlugin.RNG.nextDouble()) {
         projectiles++;
       }
-      return (int) Math.floor(projectiles);
+      projectiles += extraProjectiles;
+      return (int) projectiles;
     }
-    return (int) initialProjectiles;
+    return (int) initialProjectiles + (int) extraProjectiles;
   }
 
-  public static void shootWand(StrifeMob mob, double attackMult) {
-    if (attackMult < 0.15D) {
+  public static void shootWand(StrifeMob mob, float attackMult) {
+    if (attackMult < 0.15f) {
       return;
     }
     // x / 117.647 = 0.85
     float projectileSpeed = 1.02f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100f;
-    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * attackMult);
+    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * attackMult, mob.getStat(StrifeStat.EXTRA_PROJECTILES));
     float pierceChance = mob.getStat(StrifeStat.PIERCE_CHANCE) / 100;
 
     ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, pierceChance, 0.03);
@@ -182,7 +183,7 @@ public class ProjectileUtil {
     shotId++;
   }
 
-  public static void shootBullet(StrifeMob mob, double attackMult) {
+  public static void shootBullet(StrifeMob mob, float attackMult) {
     if (mob.getEntity() instanceof Player) {
       if (((Player) mob.getEntity()).getCooldown(Material.BOW) > 0) {
         return;
@@ -192,7 +193,8 @@ public class ProjectileUtil {
     }
     // Divided by 50 instead of 4.5f*X/100, because TOO MUCH SPEED
     float projectileSpeed = 4.5f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 50;
-    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * attackMult);
+    int projectiles = ProjectileUtil.getTotalProjectiles(
+        1, mob.getStat(StrifeStat.MULTISHOT) * attackMult, mob.getStat(StrifeStat.EXTRA_PROJECTILES));
 
     ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed, 0.03);
     projectiles--;
@@ -209,8 +211,8 @@ public class ProjectileUtil {
   public static void shootArrow(StrifeMob mob, float attackMult) {
     float projectileSpeed = 1.65f * (1 + (mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100));
     float pierceChance = mob.getStat(StrifeStat.PIERCE_CHANCE) / 100;
-    int projectiles = ProjectileUtil.getTotalProjectiles(1,
-        mob.getStat(StrifeStat.MULTISHOT) * attackMult);
+    int projectiles = ProjectileUtil.getTotalProjectiles(
+        1, mob.getStat(StrifeStat.MULTISHOT) * attackMult, mob.getStat(StrifeStat.EXTRA_PROJECTILES));
 
     ProjectileUtil.createArrow(mob.getEntity(),
         attackMult, projectileSpeed, pierceChance, 0.01, 0.2);

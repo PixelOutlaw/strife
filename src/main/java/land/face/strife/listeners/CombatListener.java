@@ -379,8 +379,9 @@ public class CombatListener implements Listener {
     }
     StrifeMob killer = plugin.getStrifeMobManager().getStatMob(event.getEntity().getKiller());
     if (killer.getStat(StrifeStat.HP_ON_KILL) > 0.1) {
-      DamageUtil.restoreHealthWithPenalties(event.getEntity().getKiller(), killer.getStat(
-          StrifeStat.HP_ON_KILL));
+      float healRatio =  1 + killer.getStat(StrifeStat.HEALING_POWER) / 300;
+      DamageUtil.restoreHealthWithPenalties(event.getEntity().getKiller(),
+          killer.getStat(StrifeStat.HP_ON_KILL) * healRatio);
     }
     if (killer.getStat(StrifeStat.ENERGY_ON_KILL) > 0.1) {
       StatUtil.changeEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));

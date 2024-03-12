@@ -7,7 +7,6 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.UUID;
 import java.util.WeakHashMap;
 import land.face.dinvy.entity.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
@@ -34,6 +33,7 @@ public class StrifeMobManager {
   private final WeakHashMap<LivingEntity, StrifeMob> trackedEntities = new WeakHashMap<>();
   private final String levelReqGeneric;
   private final float dualWieldAttackSpeed;
+  private final float dualWieldExtraProjectiles;
   private final Map<String, String> levelReqMap = new HashMap<>();
 
   @Getter
@@ -43,6 +43,8 @@ public class StrifeMobManager {
     this.plugin = plugin;
     dualWieldAttackSpeed =
         (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-attack-speed", 0) / 2;
+    dualWieldExtraProjectiles =
+        (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-extra-projectiles", 1) / 2;
     levelReqGeneric = PaletteUtil.color(plugin.getSettings()
         .getString("language.level-req.generic", ""));
     baseAirTicks = plugin.getSettings().getInt("config.mechanics.base-oxygen-ticks", 300);
@@ -147,8 +149,7 @@ public class StrifeMobManager {
     boolean isPlayer = false;
     if (mob.getEntity() instanceof Player) {
       isPlayer = true;
-      invyData = plugin.getDeluxeInvyPlugin().getPlayerManager()
-          .getPlayerData(((Player) mob.getEntity()).getPlayer());
+      invyData = plugin.getDeluxeInvyPlugin().getPlayerManager().getPlayerData(((Player) mob.getEntity()).getPlayer());
       if (invyData != null) {
         for (DeluxeSlot slot : EquipmentCache.DELUXE_SLOTS) {
           ItemStack item = ItemUtil.getItem(invyData, slot);
@@ -275,5 +276,7 @@ public class StrifeMobManager {
     }
     cache.getSlotStats(slot).put(StrifeStat.ATTACK_SPEED,
         cache.getSlotStats(slot).getOrDefault(StrifeStat.ATTACK_SPEED, 0f) + dualWieldAttackSpeed);
+    cache.getSlotStats(slot).put(StrifeStat.EXTRA_PROJECTILES,
+        cache.getSlotStats(slot).getOrDefault(StrifeStat.EXTRA_PROJECTILES, 0f) + dualWieldExtraProjectiles);
   }
 }

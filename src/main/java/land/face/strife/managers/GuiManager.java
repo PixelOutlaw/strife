@@ -59,92 +59,98 @@ public class GuiManager {
   public static final TextComponent NOTICE_REQUIREMENT = noShadow(new TextComponent("᳤"));
   public static final TextComponent NOTICE_INVALID_TARGET = noShadow(new TextComponent("᳢"));
 
+  private GUIComponent NOTIF_EMPTY_MAIL = new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER);
+  private GUIComponent NOTIF_EMPTY_FRIEND = new GUIComponent("notif-friend", EMPTY, 0, 0, Alignment.CENTER);
+  private GUIComponent NOTIF_EMPTY_MARKET = new GUIComponent("notif-market", EMPTY, 0, 0, Alignment.CENTER);
+  private GUIComponent NOTIF_EMPTY_VOTE = new GUIComponent("notif-vote", EMPTY, 0, 0, Alignment.CENTER);
+  private GUIComponent NOTIF_EMPTY_DAILY = new GUIComponent("notif-daily", EMPTY, 0, 0, Alignment.CENTER);
+
+  private GUIComponent NOTIF_MAIL = new GUIComponent("notif-mail", notifMail, 12, -209, Alignment.CENTER);
+  private GUIComponent NOTIF_FRIEND = new GUIComponent("notif-friend", notifFriend, 12, -195, Alignment.CENTER);
+  private GUIComponent NOTIF_MARKET = new GUIComponent("notif-market", notifMarket, 13, -181, Alignment.CENTER);
+  private GUIComponent NOTIF_VOTE = new GUIComponent("notif-vote", notifVote, 12, -167, Alignment.CENTER);
+  private GUIComponent NOTIF_DAILY = new GUIComponent("notif-daily", notifDaily, 12, -154, Alignment.CENTER);
+
   private final Map<Integer, GUIComponent> builtXpFont = buildXpFont();
 
   @SuppressWarnings("deprecation")
   private final List<GUIComponent> xpBar = List.of(
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷀")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷁")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷂")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷃")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷄")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷅")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷆")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷇")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷈")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷉")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷊")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷋")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷌")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷍")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷎")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷏")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷐")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷑")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷒")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷓")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷔")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷕")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷖")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷗")),25, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷘")),25, 104, Alignment.CENTER)
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷀")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷁")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷂")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷃")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷄")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷅")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷆")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷇")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷈")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷊")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷋")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷌")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷍")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷎")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷏")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷐")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷑")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷒")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷔")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷕")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷖")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(new TextComponent("䷗")),27, 104, Alignment.CENTER)
   );
 
   @SuppressWarnings("deprecation")
   private final List<GUIComponent> catchupXpBar = List.of(
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷙")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷚")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷛")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷜")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷝")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷞")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷟")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷠")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷡")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷢")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷣")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷤")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷥")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷦")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷧")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷨")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷩")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷪")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷫")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷬")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷭")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷮")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷯")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷰")), 25, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷱")), 25, 104, Alignment.CENTER)
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷙")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷚")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷛")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷜")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷝")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷞")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷟")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷠")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷡")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷣")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷤")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷥")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷦")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷧")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷨")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷩")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷪")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷫")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷭")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷮")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷯")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷰")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷱")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(new TextComponent("懙")), 27, 104, Alignment.CENTER)
   );
 
   @SuppressWarnings("deprecation")
   private final List<GUIComponent> oxygenBar = List.of(
-      new GUIComponent("air-bar", noShadow(new TextComponent("懀")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懁")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懂")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懃")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懄")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懅")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懆")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懇")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懈")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("應")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懊")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懋")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懌")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懍")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懎")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懏")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懐")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懑")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懒")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懓")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懔")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懕")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懖")), 25, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懗")), 25, 104, Alignment.CENTER)
+      new GUIComponent("air-bar", noShadow(new TextComponent("懀")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懁")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懂")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懃")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懄")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懅")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懆")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懇")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懈")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懊")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懋")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懌")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懍")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懎")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懏")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懐")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懑")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懒")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懔")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懕")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懖")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(new TextComponent("懗")), 27, 104, Alignment.CENTER)
   );
 
   public static final Map<Integer, GUIComponent> HP_BAR = new HashMap<>();
@@ -301,7 +307,8 @@ public class GuiManager {
         Alignment.CENTER));
 
     // Normal green XP bar
-    int xpProgress = (int) Math.floor(24f * player.getExp());
+    float xpNum = xpBar.size() - 1;
+    int xpProgress = (int) Math.floor(xpNum * player.getExp());
     gui.update(xpBar.get(xpProgress));
 
     // Purple catchup underlay
@@ -310,9 +317,10 @@ public class GuiManager {
     if (catchupXpRemaining > 0) {
       float nuPercent = catchupXpRemaining / plugin.getExperienceManager().getMaxFaceExp(player.getLevel());
       nuPercent *= 2;
-      int catchupProgress = xpProgress + (int) (26f * nuPercent);
-      if (catchupProgress >= 24) {
-        gui.update(catchupXpBar.get(24));
+      float num = catchupXpBar.size();
+      int catchupProgress = xpProgress + (int) (num * nuPercent);
+      if (catchupProgress >= catchupXpBar.size()) {
+        gui.update(catchupXpBar.get(catchupXpBar.size() - 1));
       } else {
         gui.update(catchupXpBar.get(catchupProgress));
       }
@@ -329,8 +337,8 @@ public class GuiManager {
     } else if (player.getRemainingAir() < 1) {
       gui.update(oxygenBar.get(0));
     } else {
-      int progress = (int) Math.ceil(23 * (
-          (float) player.getRemainingAir()) / player.getMaximumAir());
+      float barSize = oxygenBar.size() - 1;
+      int progress = (int) Math.ceil(barSize * ((float) player.getRemainingAir()) / player.getMaximumAir());
       gui.update(oxygenBar.get(progress));
     }
   }
@@ -374,42 +382,42 @@ public class GuiManager {
   }
   public void updateMailNotif(Player player, boolean enabled) {
     if (!enabled) {
-      getGui(player).update(new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER));
+      getGui(player).update(NOTIF_EMPTY_MAIL);
       return;
     }
-    getGui(player).update(new GUIComponent("notif-mail", notifMail, 12, -209, Alignment.CENTER));
+    getGui(player).update(NOTIF_MAIL);
   }
 
   public void updateFriendNotif(Player player, boolean enabled) {
     if (!enabled) {
-      getGui(player).update(new GUIComponent("notif-friend", EMPTY, 0, 0, Alignment.CENTER));
+      getGui(player).update(NOTIF_EMPTY_FRIEND);
       return;
     }
-    getGui(player).update(new GUIComponent("notif-friend", notifFriend, 12, -195, Alignment.CENTER));
+    getGui(player).update(NOTIF_FRIEND);
   }
 
   public void updateMarketNotif(Player player, boolean enabled) {
     if (!enabled) {
-      getGui(player).update(new GUIComponent("notif-market", EMPTY, 0, 0, Alignment.CENTER));
+      getGui(player).update(NOTIF_EMPTY_MARKET);
       return;
     }
-    getGui(player).update(new GUIComponent("notif-market", notifMarket, 13, -181, Alignment.CENTER));
+    getGui(player).update(NOTIF_MARKET);
   }
 
   public void updateVoteNotif(Player player, boolean enabled) {
     if (!enabled) {
-      getGui(player).update(new GUIComponent("notif-vote", EMPTY, 0, 0, Alignment.CENTER));
+      getGui(player).update(NOTIF_EMPTY_VOTE);
       return;
     }
-    getGui(player).update(new GUIComponent("notif-vote", notifVote, 12, -167, Alignment.CENTER));
+    getGui(player).update(NOTIF_VOTE);
   }
 
   public void updateDailyNotif(Player player, boolean enabled) {
     if (!enabled) {
-      getGui(player).update(new GUIComponent("notif-daily", EMPTY, 0, 0, Alignment.CENTER));
+      getGui(player).update(NOTIF_EMPTY_DAILY);
       return;
     }
-    getGui(player).update(new GUIComponent("notif-daily", notifDaily, 12, -154, Alignment.CENTER));
+    getGui(player).update(NOTIF_DAILY);
   }
 
   public static void buildTargetHealthBars() {

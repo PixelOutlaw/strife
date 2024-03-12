@@ -88,7 +88,8 @@ public class AbilityManager {
   public boolean execute(final Ability ability, final StrifeMob caster,
       final StrifeMob target, AbilitySlot slot, boolean ignoreReqs) {
     if (!ignoreReqs) {
-      if (ability.getCooldown() != 0 && !canBeCast(caster, ability)) {
+      float cooldown = caster.getEntity().isSneaking() ? ability.getSneakCooldown() : ability.getCooldown();
+      if (cooldown != 0 && !canBeCast(caster, ability)) {
         doOnCooldownPrompt(caster, ability);
         return false;
       }
@@ -132,7 +133,11 @@ public class AbilityManager {
       Bukkit.getPluginManager().callEvent(abilityCastEvent);
     }
 
-    plugin.getEffectManager().processEffectList(caster, response, ability.getEffects());
+    if (!ability.getSneakEffects().isEmpty() && caster.getEntity().isSneaking()) {
+      plugin.getEffectManager().processEffectList(caster, response, ability.getSneakEffects());
+    } else {
+      plugin.getEffectManager().processEffectList(caster, response, ability.getEffects());
+    }
 
     if (caster.getEntity() instanceof Player) {
       if (ability.isCancelStealth()) {
@@ -388,7 +393,8 @@ public class AbilityManager {
     if (ability.getGlobalCooldownTicks() > 0) {
       caster.bumpGlobalCooldown(ability.getGlobalCooldownTicks() * 50);
     }
-    if (ability.getCooldown() < 0.5) {
+    float cooldown = caster.getEntity().isSneaking() ? ability.getSneakCooldown() : ability.getCooldown();
+    if (cooldown < 0.5) {
       return;
     }
     if (!cdMap.containsKey(caster.getEntity())) {
@@ -618,6 +624,9 @@ public class AbilityManager {
     }
     List<Effect> effects = plugin.getEffectManager().getEffects(effectStrings);
 
+    List<String> sneakEffectStrings = cs.getStringList("sneak-effects");
+    List<Effect> sneakEffects = plugin.getEffectManager().getEffects(sneakEffectStrings);
+
     List<String> toggleStrings = cs.getStringList("toggle-off-effects");
     if (targetType == TargetType.TOGGLE && toggleStrings.isEmpty()) {
       LogUtil.printError("Skipping. Toggle abilities must have toggle-off-effects! Ability:" + key);
@@ -626,11 +635,13 @@ public class AbilityManager {
     List<Effect> toggleOffEffects = plugin.getEffectManager().getEffects(toggleStrings);
 
     float cooldown = (float) cs.getDouble("cooldown", 0);
+    float sneakCooldown = (float) cs.getDouble("sneak-cooldown", cooldown);
     float minCooldown = cs.getInt("min-cooldown", 0);
     int maxCharges = cs.getInt("max-charges", 1);
     int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
     float range = (float) cs.getDouble("range", 0);
     float cost = (float) cs.getDouble("cost", 0);
+    float sneakCost = (float) cs.getDouble("sneak-cost", cost);
     boolean showMessages = cs.getBoolean("show-messages", false);
     boolean requireTarget = cs.getBoolean("require-target", false);
     List<String> conditionStrings = cs.getStringList("conditions");
@@ -643,6 +654,16 @@ public class AbilityManager {
       }
       conditions.add(plugin.getEffectManager().getConditions().get(s));
     }
+    List<String> sneakConditionStrings = cs.getStringList("conditions");
+    Set<Condition> sneakConditions = new HashSet<>();
+    for (String s : sneakConditionStrings) {
+      Condition condition = plugin.getEffectManager().getConditions().get(s);
+      if (condition == null) {
+        LogUtil.printWarning(" Invalid condition '" + s + "' for ability '" + key + "'. Skipping.");
+        continue;
+      }
+      sneakConditions.add(plugin.getEffectManager().getConditions().get(s));
+    }
     AbilityIconData abilityIconData = buildIconData(key, abilityType,
         cs.getConfigurationSection("icon"));
     boolean friendly = cs.getBoolean("friendly", false);
@@ -651,9 +672,9 @@ public class AbilityManager {
     boolean sneakSelfTarget = cs.getBoolean("sneak-self-target", false);
     boolean deathUntoggle = cs.getBoolean("untoggle-on-death", false);
 
-    Ability ability = new Ability(key, name, effects, toggleOffEffects, abilityType, targetType, sneakSelfTarget,
-        range, cost, cooldown, maxCharges, globalCooldownTicks, showMessages, requireTarget,
-        raycastsHitEntities, conditions, passivesOnCooldown, friendly, abilityIconData,
+    Ability ability = new Ability(key, name, effects, sneakEffects, toggleOffEffects, abilityType, targetType,
+        sneakSelfTarget, range, cost, sneakCost, cooldown, sneakCooldown, maxCharges, globalCooldownTicks, showMessages,
+        requireTarget, raycastsHitEntities, conditions, sneakConditions, passivesOnCooldown, friendly, abilityIconData,
         cancelStealth, deathUntoggle, minCooldown);
 
     ability.getPassiveStats().putAll(StatUtil.getStatMapFromSection(

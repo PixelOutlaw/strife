@@ -29,15 +29,19 @@ public class Ability {
   private final boolean cancelStealth;
   private final float range;
   private final float cost;
+  private final float sneakCost;
   private final List<Effect> effects;
+  private final List<Effect> sneakEffects;
   private final List<Effect> toggleOffEffects;
   private final boolean deathUntoggle;
   private final float cooldown;
+  private final float sneakCooldown;
   private final float minCooldown;
   private final int maxCharges;
   private final int globalCooldownTicks;
   private final boolean showMessages;
   private final Set<Condition> conditions;
+  private final Set<Condition> sneakConditions;
   private final Set<Condition> filterConditions = new HashSet<>();
   private final AbilityIconData abilityIconData;
   private final Map<StrifeStat, Float> passiveStats = new HashMap<>();
@@ -47,28 +51,32 @@ public class Ability {
   private TargetingPriority targetingPriority;
   private int maxTargets = 1;
 
-  public Ability(String id, String name, List<Effect> effects, List<Effect> toggleOffEffects,
-      AbilityType castType, TargetType targetType, boolean sneakSelfTarget, float range, float cost, float cooldown,
-      int maxCharges, int globalCooldownTicks, boolean showMsgs, boolean requireTarget,
-      boolean raycastsTargetEntities, Set<Condition> conditions, boolean passiveStatsOnCooldown,
-      boolean friendly, AbilityIconData abilityIconData, boolean cancelStealth,
+  public Ability(String id, String name, List<Effect> effects, List<Effect> sneakEffects, List<Effect> toggleOffEffects,
+      AbilityType castType, TargetType targetType, boolean sneakSelfTarget, float range, float cost, float sneakCost,
+      float cooldown, float sneakCooldown, int maxCharges, int globalCooldownTicks, boolean showMsgs,
+      boolean requireTarget, boolean raycastsTargetEntities, Set<Condition> conditions, Set<Condition> sneakConditions,
+      boolean passiveStatsOnCooldown, boolean friendly, AbilityIconData abilityIconData, boolean cancelStealth,
       boolean deathUntoggle, float minCooldown) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
+    this.sneakCooldown = sneakCooldown;
     this.maxCharges = maxCharges;
     this.globalCooldownTicks = globalCooldownTicks;
     this.effects = effects;
     this.toggleOffEffects = toggleOffEffects;
     this.targetType = targetType;
     this.castType = castType;
+    this.sneakEffects = sneakEffects;
     this.requireTarget = requireTarget;
     this.sneakSelfTarget = sneakSelfTarget;
     this.raycastsTargetEntities = raycastsTargetEntities;
     this.range = range;
     this.cost = cost;
+    this.sneakCost = sneakCost;
     this.showMessages = showMsgs;
     this.conditions = conditions;
+    this.sneakConditions = sneakConditions;
     this.passiveStatsOnCooldown = passiveStatsOnCooldown;
     this.abilityIconData = abilityIconData;
     this.friendly = friendly;
@@ -83,6 +91,7 @@ public class Ability {
   }
 
   public float calcRealEnergyCost(StrifeMob mob) {
+    float cost = mob.getEntity().isSneaking() ? sneakCost : this.cost;
     if (cost >= 0) {
       return cost;
     } else {

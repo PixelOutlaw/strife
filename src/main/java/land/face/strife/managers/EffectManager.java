@@ -696,6 +696,16 @@ public class EffectManager {
         ((Speak) effect).setMessages(
             ListExtensionsKt.chatColorize(cs.getStringList("messages")));
       }
+      case RANDOM_AROUND -> {
+        effect = new RandomAround();
+        ((RandomAround) effect).setRandomRotate((float) cs.getDouble("random-rotate"));
+        ((RandomAround) effect).setMinRange((float) cs.getDouble("min-range"));
+        ((RandomAround) effect).setMaxRange((float) cs.getDouble("max-range"));
+        ((RandomAround) effect).setQuantity(cs.getInt("quantity"));
+        ((RandomAround) effect).setGrounded(cs.getBoolean("grounded"));
+        List<String> effects = cs.getStringList("effects");
+        delayedSetEffects(((RandomAround) effect).getEffects(), effects, key, false);
+      }
       case PUSH -> {
         effect = new Push();
         ((Push) effect).setPower(cs.getDouble("power", 10));

@@ -257,7 +257,7 @@ public class ShootProjectile extends Effect {
     if (ignoreMultishot || projectileEntity == EntityType.FIREBALL) {
       return 1;
     }
-    return ProjectileUtil.getTotalProjectiles(quantity, caster.getStat(StrifeStat.MULTISHOT));
+    return ProjectileUtil.getTotalProjectiles(quantity, caster.getStat(StrifeStat.MULTISHOT), caster.getStat(StrifeStat.EXTRA_PROJECTILES));
   }
 
   private void applyRadialAngles(Vector direction, double angle, int projectiles, int counter) {

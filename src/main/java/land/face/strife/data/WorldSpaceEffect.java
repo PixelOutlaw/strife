@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.Damage;
 import land.face.strife.data.effects.Effect;
@@ -151,18 +152,12 @@ public class WorldSpaceEffect {
 
   private void runEffects(Location newLocation) {
     List<Effect> effects = effectSchedule.get(currentTick);
+    // TODO PASS DIRECTION CONTEXT TO EFFECTS DIRECTLY SO DELAYED ONES WORK
     for (Effect effect : effects) {
-      if (effect == null) {
-        LogUtil.printError("Null WSE effect! Tick:" + currentTick);
-        continue;
-      }
-      if (!(effect instanceof LocationEffect)) {
-        LogUtil.printError("WSEs can only use effects with location! invalid: " + effect.getId());
-        continue;
-      }
       applyDirectionToPushEffects(this, effect);
-      ((LocationEffect) effect).applyAtLocation(caster, newLocation);
     }
+    TargetResponse response = new TargetResponse(newLocation);
+    StrifePlugin.getInstance().getEffectManager().processEffectList(caster, response, effects);
   }
 
   private void applyDirectionToPushEffects(WorldSpaceEffect wse, Effect effect) {

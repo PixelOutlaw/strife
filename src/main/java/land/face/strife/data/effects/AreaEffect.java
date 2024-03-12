@@ -153,7 +153,7 @@ public class AreaEffect extends LocationEffect {
       int numTargets = maxTargets;
       if (multishotScaling) {
         float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(StrifePlugin.RNG.nextFloat(), 1.15);
-        numTargets = ProjectileUtil.getTotalProjectiles(numTargets, mult);
+        numTargets = ProjectileUtil.getTotalProjectiles(numTargets, mult, caster.getStat(StrifeStat.EXTRA_PROJECTILES));
       }
       TargetingUtil.filterByTargetPriority(areaTargets, getPriority(), caster, Math.min(numTargets, areaTargets.size()));
     }

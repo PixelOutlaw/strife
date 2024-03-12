@@ -336,8 +336,7 @@ public class DamageUtil {
     DamageUtil.applyLifeSteal(attacker,
         Math.min(rawDamage, defender.getEntity().getHealth()),
         mods.getHealMultiplier(),
-        mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL,
-        0f)
+        mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL, 0f)
     );
 
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
@@ -405,11 +404,11 @@ public class DamageUtil {
     if (mods.getAttackType() == AttackType.BONUS) {
       return;
     }
-    float ratio = mods.getDamageReductionRatio();
+    float ratio = mods.getDamageReductionRatio() * mods.getHealMultiplier();
+    float healRatio = ratio * (1 + attacker.getStat(StrifeStat.HEALING_POWER) / 300);
 
-    DamageUtil.applyHealthOnHit(attacker, ratio, mods.getHealMultiplier(),
-        mods.getAbilityMods().getOrDefault(AbilityMod.HEALTH_ON_HIT, 0f));
-    DamageUtil.applyEnergyOnHit(attacker, ratio, mods.getHealMultiplier());
+    DamageUtil.applyHealthOnHit(attacker, healRatio, mods.getAbilityMods().getOrDefault(AbilityMod.HEALTH_ON_HIT, 0f));
+    DamageUtil.applyEnergyOnHit(attacker, ratio);
 
     DamageUtil.doReflectedDamage(defender, attacker);
 
@@ -991,16 +990,17 @@ public class DamageUtil {
 
   public static void applyLifeSteal(StrifeMob attacker, double damage, double healMultiplier, double bonus) {
     double lifeSteal = (attacker.getStat(StrifeStat.LIFE_STEAL) + bonus) / 100;
+    lifeSteal *= 1 + attacker.getStat(StrifeStat.HEALING_POWER) / 300;
     restoreHealthWithPenalties(attacker.getEntity(), damage * lifeSteal * healMultiplier);
   }
 
-  public static void applyHealthOnHit(StrifeMob attacker, double attackMultiplier, double healMult, double bonus) {
-    double health = (attacker.getStat(StrifeStat.HP_ON_HIT) + bonus) * attackMultiplier * healMult;
+  public static void applyHealthOnHit(StrifeMob attacker, float totalMult, double bonus) {
+    double health = (attacker.getStat(StrifeStat.HP_ON_HIT) + bonus) * totalMult;
     restoreHealthWithPenalties(attacker.getEntity(), health);
   }
 
-  public static void applyEnergyOnHit(StrifeMob attacker, float attackMultiplier, float healMultiplier) {
-    float energy = attacker.getStat(StrifeStat.ENERGY_ON_HIT) * attackMultiplier * healMultiplier;
+  public static void applyEnergyOnHit(StrifeMob attacker, float totalMult) {
+    float energy = attacker.getStat(StrifeStat.ENERGY_ON_HIT) * totalMult;
     StatUtil.changeEnergy(attacker, energy);
   }
 

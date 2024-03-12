@@ -50,7 +50,8 @@ public class CooldownTracker extends BukkitRunnable {
     this.ability = ability;
     this.slot = slot;
     float cdReduction = 1f - StatUtil.getStat(holder, StrifeStat.COOLDOWN_REDUCTION) / 100f;
-    float newCooldown = Math.max(ability.getMinCooldown(), cdReduction * ability.getCooldown());
+    float cooldown = holder.getEntity().isSneaking() ? ability.getSneakCooldown() : ability.getCooldown();
+    float newCooldown = Math.max(ability.getMinCooldown(), cdReduction * cooldown);
     maxDuration = (int) (newCooldown * 20 / TICK_TIME);
     duration = maxDuration;
     chargesLeft = ability.getMaxCharges();
@@ -103,7 +104,8 @@ public class CooldownTracker extends BukkitRunnable {
         StrifePlugin.getInstance().getServer().getPluginManager().callEvent(e);
       }
       float cdReduction = 1f - StatUtil.getStat(holder, StrifeStat.COOLDOWN_REDUCTION) / 100f;
-      float newCooldown = Math.max(ability.getMinCooldown(), cdReduction * ability.getCooldown());
+      float cooldown = holder.getEntity().isSneaking() ? ability.getSneakCooldown() : ability.getCooldown();
+      float newCooldown = Math.max(ability.getMinCooldown(), cdReduction * cooldown);
       maxDuration = (int) (newCooldown * 20 / TICK_TIME);
       duration += maxDuration;
     }

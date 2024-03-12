@@ -1,12 +1,17 @@
 package land.face.strife.managers;
 
+import com.mysql.cj.log.Log;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.UniqueEntity;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -15,6 +20,7 @@ public class ViolationManager {
   private StrifePlugin plugin;
 
   private static final Map<Player, Location> lastPlayerLocationOnKill = new WeakHashMap<>();
+  private static final Set<UUID> lastViolationTime = new HashSet<>();
   private static final Map<Player, Integer> violationLevel = new WeakHashMap<>();
   private static final Map<Player, Float> cachedViolation = new WeakHashMap<>();
 
@@ -31,6 +37,9 @@ public class ViolationManager {
 
   public float calculateSafespotViolationMult(Player player) {
     float mult = 1.0f;
+    if (lastViolationTime.contains(player.getUniqueId())) {
+      return cachedViolation.getOrDefault(player, 1.0f);
+    }
     if (lastPlayerLocationOnKill.containsKey(player)) {
       if (player.getLocation().getWorld() != lastPlayerLocationOnKill.get(player).getWorld() ||
           penaltyFreeWorlds.contains(player.getLocation().getWorld().getName())) {
@@ -46,11 +55,11 @@ public class ViolationManager {
         amount += 10;
       } else {
         double distance = lastPlayerLocationOnKill.get(player).distanceSquared(player.getLocation());
-        if (distance < 0.5) {
+        if (distance < 0.35) {
           amount += 3;
-        } else if (distance < 2) {
+        } else if (distance < 1.25) {
           amount += 2;
-        } else if (distance < 4) {
+        } else if (distance < 2) {
           amount += 1;
         } else if (distance < 9) {
           amount -= 12;
@@ -67,6 +76,8 @@ public class ViolationManager {
         mult = (200f - amount) / 200f;
       }
     }
+    lastViolationTime.add(player.getUniqueId());
+    Bukkit.getScheduler().runTaskLater(plugin, () -> lastViolationTime.remove(player.getUniqueId()), 2L);
     lastPlayerLocationOnKill.put(player, player.getLocation());
     cachedViolation.put(player, mult);
     return mult;

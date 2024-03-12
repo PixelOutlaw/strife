@@ -22,6 +22,8 @@ import land.face.strife.data.buff.Buff;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.EquipmentCache;
+import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.champion.SkillRank;
 import land.face.strife.events.BlockChangeEvent;
 import land.face.strife.events.RuneChangeEvent;
 import land.face.strife.managers.GuiManager;
@@ -188,6 +190,10 @@ public class StrifeMob {
     if (start != block) {
       Bukkit.getPluginManager().callEvent(new BlockChangeEvent(this, start, this.block));
     }
+  }
+
+  public boolean checkSkill(LifeSkillType type, SkillRank rank) {
+    return SkillRank.check(this, type, rank);
   }
 
   public void setBarrier(float barrier) {
