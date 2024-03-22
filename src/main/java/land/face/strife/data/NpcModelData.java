@@ -7,6 +7,8 @@ public class NpcModelData {
 
   private String model;
   private boolean showBaseEntity;
+  private float scale;
+  private float viewRange;
   private boolean nameTag;
 
 }

@@ -126,6 +126,7 @@ public abstract class Effect {
     RIPTIDE,
     EVENT,
     EQUIPMENT_SWAP,
+    EQUIP_MODEL_BONES,
     EVOKER_FANGS,
     FALLING_BLOCK,
     IGNITE,

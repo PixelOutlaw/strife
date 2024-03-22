@@ -96,6 +96,9 @@ public class DamageManager {
   }
 
   public float doEnergyAbsorb(StrifeMob defender, float damage) {
+    if (defender.hasTrait(StrifeTrait.MASOCHISM)) {
+      defender.setEnergy(defender.getEnergy() + damage * 0.2f);
+    }
     if (!defender.hasTrait(StrifeTrait.ENERGY_ABSORB)) {
       return damage;
     }

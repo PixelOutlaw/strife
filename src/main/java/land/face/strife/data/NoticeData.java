@@ -1,16 +1,20 @@
 package land.face.strife.data;
 
+import com.sentropic.guiapi.gui.GUIComponent;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import net.md_5.bungee.api.chat.TextComponent;
 
-@Data
+@Getter
+@Setter
 public class NoticeData {
 
-  private TextComponent textComponent;
+  private GUIComponent textComponent;
   private int durationTicks;
 
-  public NoticeData(TextComponent textComponent, int durationTicks) {
-    this.textComponent = textComponent;
+  public NoticeData(GUIComponent guiComponent, int durationTicks) {
+    this.textComponent = guiComponent;
     this.durationTicks = durationTicks;
   }
 

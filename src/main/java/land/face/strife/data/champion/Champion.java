@@ -108,7 +108,7 @@ public class Champion {
   }
 
   public boolean checkSkill(LifeSkillType type, SkillRank rank) {
-    return SkillRank.check(this, type, rank);
+    return SkillRank.isRank(this, type, rank);
   }
 
   public Ability getAbility(AbilitySlot slot) {

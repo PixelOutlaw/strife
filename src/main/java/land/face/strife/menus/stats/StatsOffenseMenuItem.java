@@ -232,7 +232,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     }
     lore.add(addStat("Elemental Status Chance: ", mob.getStat(StrifeStat.ELEMENTAL_STATUS), "%", INT_FORMAT));
     lore.add(breakLine);
-    lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));
+    lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help &8&ofor more info!"));
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);
 

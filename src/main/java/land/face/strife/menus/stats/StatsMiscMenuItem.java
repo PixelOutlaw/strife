@@ -23,6 +23,7 @@ import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -140,7 +141,7 @@ public class StatsMiscMenuItem extends MenuItem {
 
     lore.add(breakLine);
 
-    lore.add(PaletteUtil.color("|dgray||i|Use |lgray||i|/help stats |dgray||i|for info!"));
+    lore.add(TextUtils.color("&8&oUse &7&o/help &8&ofor more info!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);

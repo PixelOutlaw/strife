@@ -16,7 +16,6 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.Ability;
@@ -555,7 +554,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_INVALID_TARGET, 10));
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(), GuiManager.NOTICE_INVALID_TARGET, 10);
     ((Player) caster.getEntity()).playSound(caster.getEntity().getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.6f);
   }
 
@@ -564,7 +563,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    plugin.getGuiManager().postNotice((Player) caster.getEntity(), new NoticeData(GuiManager.NOTICE_REQUIREMENT, 10));
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(), GuiManager.NOTICE_REQUIREMENT, 10);
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.UI_BUTTON_CLICK, 1f, 0.6f);
   }
@@ -574,8 +573,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    plugin.getGuiManager().postNotice((Player) caster.getEntity(),
-        new NoticeData(GuiManager.NOTICE_COOLDOWN, 10));
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(), GuiManager.NOTICE_COOLDOWN, 10);
     ((Player) caster.getEntity()).playSound(caster.getEntity().getLocation(),
         Sound.UI_BUTTON_CLICK, 1f, 1.6f);
     Bukkit.getScheduler().runTaskLater(plugin, () -> ((Player) caster.getEntity())
@@ -587,8 +585,7 @@ public class AbilityManager {
     if (!(ability.isShowMessages() && caster.getEntity() instanceof Player)) {
       return;
     }
-    plugin.getGuiManager().postNotice((Player) caster.getEntity(),
-        new NoticeData(GuiManager.NOTICE_ENERGY, 10));
+    plugin.getGuiManager().postNotice((Player) caster.getEntity(), GuiManager.NOTICE_ENERGY, 10);
     ((Player) caster.getEntity())
         .playSound(caster.getEntity().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 1.5f);
   }

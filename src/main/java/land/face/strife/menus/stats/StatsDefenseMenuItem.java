@@ -171,7 +171,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BURNING_RESIST), FaceColor.ORANGE, "\uD83D\uDD25");
     lore.add(resistDisplay3.toString());
     lore.add(breakLine);
-    lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help stats &8&ofor info!"));
+    lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help &8&ofor more info!"));
 
     itemMeta.setLore(lore);
     itemStack.setItemMeta(itemMeta);

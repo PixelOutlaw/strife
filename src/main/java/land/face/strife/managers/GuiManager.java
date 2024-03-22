@@ -54,22 +54,26 @@ public class GuiManager {
   private final Map<Integer, GUIComponent> energySeparators = new HashMap<>();
 
   public static final TextComponent EMPTY = new TextComponent("");
-  public static final TextComponent NOTICE_COOLDOWN = noShadow(new TextComponent("᳥"));
-  public static final TextComponent NOTICE_ENERGY = noShadow(new TextComponent("᳣"));
-  public static final TextComponent NOTICE_REQUIREMENT = noShadow(new TextComponent("᳤"));
-  public static final TextComponent NOTICE_INVALID_TARGET = noShadow(new TextComponent("᳢"));
 
-  private GUIComponent NOTIF_EMPTY_MAIL = new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER);
-  private GUIComponent NOTIF_EMPTY_FRIEND = new GUIComponent("notif-friend", EMPTY, 0, 0, Alignment.CENTER);
-  private GUIComponent NOTIF_EMPTY_MARKET = new GUIComponent("notif-market", EMPTY, 0, 0, Alignment.CENTER);
-  private GUIComponent NOTIF_EMPTY_VOTE = new GUIComponent("notif-vote", EMPTY, 0, 0, Alignment.CENTER);
-  private GUIComponent NOTIF_EMPTY_DAILY = new GUIComponent("notif-daily", EMPTY, 0, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_COOLDOWN = new GUIComponent("notices", noShadow(new TextComponent("᳥")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_ENERGY = new GUIComponent("notices", noShadow(new TextComponent("᳣")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_ENERGY_JEB = new GUIComponent("notices", noShadow(new TextComponent("砣")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_REQUIREMENT = new GUIComponent("notices", noShadow(new TextComponent("᳤")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_INVALID_TARGET = new GUIComponent("notices", noShadow(new TextComponent("᳢")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_DODGE = new GUIComponent("notices", noShadow(new TextComponent("丞")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_BLOCK = new GUIComponent("notices", noShadow(new TextComponent("丟")), 171, 0, Alignment.CENTER);
 
-  private GUIComponent NOTIF_MAIL = new GUIComponent("notif-mail", notifMail, 12, -209, Alignment.CENTER);
-  private GUIComponent NOTIF_FRIEND = new GUIComponent("notif-friend", notifFriend, 12, -195, Alignment.CENTER);
-  private GUIComponent NOTIF_MARKET = new GUIComponent("notif-market", notifMarket, 13, -181, Alignment.CENTER);
-  private GUIComponent NOTIF_VOTE = new GUIComponent("notif-vote", notifVote, 12, -167, Alignment.CENTER);
-  private GUIComponent NOTIF_DAILY = new GUIComponent("notif-daily", notifDaily, 12, -154, Alignment.CENTER);
+  private final GUIComponent NOTIF_EMPTY_MAIL = new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER);
+  private final GUIComponent NOTIF_EMPTY_FRIEND = new GUIComponent("notif-friend", EMPTY, 0, 0, Alignment.CENTER);
+  private final GUIComponent NOTIF_EMPTY_MARKET = new GUIComponent("notif-market", EMPTY, 0, 0, Alignment.CENTER);
+  private final GUIComponent NOTIF_EMPTY_VOTE = new GUIComponent("notif-vote", EMPTY, 0, 0, Alignment.CENTER);
+  private final GUIComponent NOTIF_EMPTY_DAILY = new GUIComponent("notif-daily", EMPTY, 0, 0, Alignment.CENTER);
+
+  private final GUIComponent NOTIF_MAIL = new GUIComponent("notif-mail", notifMail, 12, -209, Alignment.CENTER);
+  private final GUIComponent NOTIF_FRIEND = new GUIComponent("notif-friend", notifFriend, 12, -195, Alignment.CENTER);
+  private final GUIComponent NOTIF_MARKET = new GUIComponent("notif-market", notifMarket, 13, -181, Alignment.CENTER);
+  private final GUIComponent NOTIF_VOTE = new GUIComponent("notif-vote", notifVote, 12, -167, Alignment.CENTER);
+  private final GUIComponent NOTIF_DAILY = new GUIComponent("notif-daily", notifDaily, 12, -154, Alignment.CENTER);
 
   private final Map<Integer, GUIComponent> builtXpFont = buildXpFont();
 
@@ -215,10 +219,14 @@ public class GuiManager {
     return t;
   }
 
-  public void postNotice(Player player, NoticeData data) {
-    noticeMap.put(player, data);
-    updateComponent(player,
-        new GUIComponent("notices", data.getTextComponent(), 171, 0, Alignment.CENTER));
+  public void postNotice(Player player, GUIComponent guiComponent, int durationTicks) {
+    if (guiComponent == GuiManager.NOTICE_ENERGY) {
+      if (Math.random() < 0.0002) {
+        guiComponent =  GuiManager.NOTICE_ENERGY_JEB;
+      }
+    }
+    noticeMap.put(player, new NoticeData (guiComponent, durationTicks));
+    updateComponent(player, guiComponent);
   }
 
   public void tickNotices(Player player) {

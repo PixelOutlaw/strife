@@ -80,6 +80,9 @@ public class CounterManager {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
             IndicatorStyle.BOUNCE, 7, COUNTER_MESSAGE, 1.0f, 1.0f, 1.0f);
       }
+      if (defender instanceof Player) {
+        plugin.getGuiManager().postNotice((Player) defender, GuiManager.NOTICE_BLOCK, 4);
+      }
       if (!data.isTriggered()) {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);
         Set<LivingEntity> entities = new HashSet<>();

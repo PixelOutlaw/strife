@@ -20,6 +20,7 @@ import land.face.strife.data.EquipmentItemData;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
+import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
@@ -79,6 +80,7 @@ import land.face.strife.data.effects.CreateModelAnimation.AnimationType;
 import land.face.strife.data.effects.Effect.EffectType;
 import land.face.strife.data.effects.Push.PushType;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
+import land.face.strife.data.pojo.ItemBoneData;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.AbilityMod;
@@ -100,6 +102,7 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemDisplay.ItemDisplayTransform;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -541,6 +544,33 @@ public class EffectManager {
           }
           ((EquipmentSwap) effect).addItem(slot, parts[1]);
         }
+      }
+      case EQUIP_MODEL_BONES -> {
+        effect = new EquipModelBones();
+        //((EquipModelBones) effect).setModelId(cs.getString("model-id"));
+        List<String> items = cs.getStringList("items");
+        Map<String, ItemBoneData> boneMap = new HashMap<>();
+        for (String s : items) {
+          String[] parts = s.split(":");
+          if (parts.length != 3) {
+            LogUtil.printWarning("Skipping entry in effect " + key + " - invalid equipment entry " + s);
+            continue;
+          }
+          ItemDisplayTransform transform;
+          try {
+            transform = ItemDisplayTransform.valueOf(parts[1]);
+          } catch (Exception e) {
+            LogUtil.printWarning("Skipping effect " + key + ". Invalid equipment enum " + parts[1]);
+            continue;
+          }
+          ItemStack stack = plugin.getEquipmentManager().getItem(parts[2]);
+          if (stack == null) {
+            LogUtil.printWarning("Skipping effect " + key + ". Invalid equipment " + parts[2]);
+            continue;
+          }
+          boneMap.put(parts[0], new ItemBoneData(parts[0], transform, stack));
+        }
+        ((EquipModelBones) effect).setBoneMap(boneMap);
       }
       case EVOKER_FANGS -> {
         effect = new EvokerFangEffect();

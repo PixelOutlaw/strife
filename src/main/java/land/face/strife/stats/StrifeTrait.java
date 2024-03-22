@@ -49,6 +49,12 @@ public enum StrifeTrait {
   IRON_SCARS("|orange||ul|Passive Effect - Iron Scars",
       " |yellow|Receive |white|60% |yellow|less bonus damage from",
       " |yellow|critical strikes"),
+  VENGEANCE("|orange||ul|Passive Effect - Vengeance",
+      " |yellow|Gain 1% Damage Per 1% Missing Life"),
+  REALLY_STUBBORN("|orange||ul|Passive Effect - Really Stubborn",
+      " |yellow|You cannot die"),
+  MASOCHISM("|orange||ul|Passive Effect - Masochism",
+      " |yellow|Gain |white|20% |yellow|of lost Life as Energy"),
 
   STRIDE("|orange||ul|Passive Effect - Stride",
       " |yellow|When |white|Slowness |yellow|is gained,",

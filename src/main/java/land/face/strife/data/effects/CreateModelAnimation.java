@@ -22,6 +22,7 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
 @Setter
@@ -89,28 +90,31 @@ public class CreateModelAnimation extends LocationEffect {
       e.setMarker(true);
       e.setCanTick(false);
       if (animationType == AnimationType.LOOK_DIRECTION) {
-        e.setVelocity(loc.getDirection().clone().multiply(0.05));
+        e.setVelocity(loc.getDirection().clone().multiply(0.03));
       }
       ChunkUtil.setDespawnOnUnload(e);
     });
     CURRENT_MODELS.add(stand);
 
     if (entityLock) {
-      Vector relativePos = loc.subtract(target.getEntity().getLocation()).toVector();
-      Vector direction = caster.getEntity().getLocation().clone().getDirection();
       BukkitRunnable runnable = new BukkitRunnable() {
         @Override
         public void run() {
-          if (stand.isValid()) {
-            Location newLoc = target.getEntity().getLocation().clone();
-            if (rotationLock) {
-              newLoc.setDirection(stand.getLocation().getDirection());
-            } else {
-              newLoc.setDirection(direction);
-            }
-            stand.teleport(newLoc.add(relativePos));
-          } else {
+          if (!stand.isValid()) {
             this.cancel();
+            return;
+          }
+          Location newLoc = target.getEntity().getLocation().clone();
+          Vector direction = target.getEntity().getEyeLocation().getDirection();
+          float pitch = target.getEntity().getPitch();
+          float yaw = target.getEntity().getYaw();
+          if (!rotationLock) {
+            newLoc.setDirection(direction);
+            stand.teleport(newLoc);
+            stand.setRotation(yaw, pitch);
+            stand.setVelocity(direction.multiply(0.03));
+          } else {
+            stand.teleport(newLoc);
           }
         }
       };
@@ -160,7 +164,7 @@ public class CreateModelAnimation extends LocationEffect {
       e.setMarker(true);
       e.setCanTick(false);
       if (animationType == AnimationType.LOOK_DIRECTION) {
-        e.setVelocity(loc.getDirection().multiply(0.05));
+        e.setVelocity(loc.getDirection().multiply(0.03));
       }
       ChunkUtil.setDespawnOnUnload(e);
     });
@@ -232,5 +236,39 @@ public class CreateModelAnimation extends LocationEffect {
         }
       }
     }, 0L);
+  }
+
+  private static EulerAngle convertVectorToEulerAngle(Vector vec) {
+
+    double x = vec.getX();
+    double y = vec.getY();
+    double z = vec.getZ();
+
+    double xz = Math.sqrt(x * x + z * z);
+
+    double eulX;
+    if (x < 0) {
+      if (y == 0) {
+        eulX = Math.PI * 0.5;
+      } else {
+        eulX = Math.atan(xz / y) + Math.PI;
+      }
+    } else {
+      eulX = Math.atan(y / xz) + Math.PI * 0.5;
+    }
+
+    double eulY;
+    if (x == 0) {
+      if (z > 0) {
+        eulY = Math.PI;
+      } else {
+        eulY = 0;
+      }
+    } else {
+      eulY = Math.atan(z / x) + Math.PI * 0.5;
+    }
+
+    return new EulerAngle(eulX, eulY, 0);
+
   }
 }

@@ -33,6 +33,7 @@ import com.tealcube.minecraft.bukkit.shade.acf.PaperCommandManager;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
+import com.ticxo.modelengine.api.ModelEngineAPI;
 import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.config.VersionedConfiguration;
@@ -181,6 +182,7 @@ import land.face.strife.util.LogUtil;
 import land.face.strife.util.LogUtil.LogLevel;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
+import land.face.strife.util.StrifeScriptReader;
 import lombok.Getter;
 import lombok.Setter;
 import ninja.amp.ampmenus.MenuListener;
@@ -329,6 +331,9 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private com.tealcube.minecraft.bukkit.shade.effectlib.effectlib.EffectManager effectLibManager;
 
+  @Getter
+  private StrifeScriptReader strifeScriptReader;
+
   public static float WALK_COST;
   public static float WALK_COST_PERCENT;
   public static float RUN_COST;
@@ -393,6 +398,7 @@ public class StrifePlugin extends FacePlugin {
     commandManager = new PaperCommandManager(this);
 
     attributeManager = new StrifeAttributeManager(attributesYAML);
+    equipmentManager = new EntityEquipmentManager();
 
     effectManager = new EffectManager(this);
     abilityManager = new AbilityManager(this);
@@ -417,7 +423,6 @@ public class StrifePlugin extends FacePlugin {
     indicatorManager = new IndicatorManager(this);
     prayerManager = new PrayerManager(this);
     topBarManager = new TopBarManager(this);
-    equipmentManager = new EntityEquipmentManager();
     buildEquipment();
     displayManager = new DisplayManager(this);
     boostManager = new BoostManager(this);
@@ -514,6 +519,10 @@ public class StrifePlugin extends FacePlugin {
     for (int i = 0; i < 200; i++) {
       levelingRate.put(i, i, (int) Math.round(normalExpr.setVariable("LEVEL", i).evaluate()));
     }
+
+    //strifeScriptReader = new StrifeScriptReader(this);
+    //ModelEngineAPI.getAPI().getScriptReaderRegistry().register("str", strifeScriptReader);
+
     taskList.add(Bukkit.getScheduler().runTaskTimer(this,
         () -> championManager.tickPassiveLoreAbilities(),
         20L * 10, // Start save after 10s

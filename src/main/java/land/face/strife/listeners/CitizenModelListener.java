@@ -46,6 +46,8 @@ public class CitizenModelListener implements Listener {
         npcModelData.setModel(npcSection.getString("model-id"));
         npcModelData.setShowBaseEntity(npcSection.getBoolean("show-base-entity", false));
         npcModelData.setNameTag(npcSection.getBoolean("show-name-tag", false));
+        npcModelData.setScale((float) npcSection.getDouble("scale", 1.0));
+        npcModelData.setViewRange((float) npcSection.getDouble("view-range", 36));
         npcModelMap.put(Integer.valueOf(key), npcModelData);
       } catch (Exception e) {
         e.printStackTrace();
@@ -72,6 +74,8 @@ public class CitizenModelListener implements Listener {
             activeModel.setShadowVisible(true);
             modeledEntity.addModel(activeModel, true);
             modeledEntity.setBaseEntityVisible(npcModelData.isShowBaseEntity());
+            activeModel.setScale(npcModelData.getScale());
+            modeledEntity.getBase().setRenderRadius((int) npcModelData.getViewRange());
             if (npcModelData.isNameTag()) {
               activeModel.getBone("name").ifPresent(modelBone -> {
                 modelBone.getBoneBehavior(BoneBehaviorTypes.NAMETAG).ifPresent(head -> {

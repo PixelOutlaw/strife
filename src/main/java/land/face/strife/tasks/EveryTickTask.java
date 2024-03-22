@@ -44,19 +44,19 @@ public class EveryTickTask extends BukkitRunnable {
   private final Map<Player, Integer> lastBarrierNum = new WeakHashMap<>();
 
   private final List<GUIComponent> attackIndication = List.of(
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兰")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("共")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兲")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("关")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兴")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兵")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("其")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("具")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("典")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兹")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兺")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("养")), 23, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兼")), 23, 0, Alignment.CENTER)
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兰")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("共")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兲")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("关")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兴")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兵")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("其")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("具")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("典")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兹")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兺")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("养")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兼")), 45, 0, Alignment.CENTER)
   );
   private final int arrLen = attackIndication.size();
   private final GUIComponent emptyAttack = new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER);

@@ -60,8 +60,7 @@ public class SkillLevelUpListener implements Listener {
     String name = event.getSkillType().getPrettyName();
     int level = event.getNewSkillLevel();
     String upperTitle = color + "SKILL UP!";
-    String lowerTitle =
-        color + "You've reached " + FaceColor.WHITE + name + " Lv" + level + color + "!";
+    String lowerTitle = color + "You've reached " + FaceColor.WHITE + name + " Lv" + level + color + "!";
 
     TitleUtils.sendTitle(event.getPlayer(), upperTitle, lowerTitle, 20, 5, 5);
 
@@ -72,12 +71,19 @@ public class SkillLevelUpListener implements Listener {
       xpSoundMercyMap.put(event.getPlayer(), System.currentTimeMillis() + 500);
     }
 
-    if (event.getNewSkillLevel() > 9 && event.getNewSkillLevel() % 5 == 0) {
-      String discordMessage = ":crafting: **" + event.getPlayer().getDisplayName() + " has reached "
-            + event.getSkillType().getPrettyName() + " skill level " + event.getNewSkillLevel() + "!**";
+    if (event.getNewSkillLevel() % 20 == 0 || event.getNewSkillLevel() == 99) {
+      String rankName = switch (event.getNewSkillLevel()) {
+        case 20 -> "Apprentice";
+        case 40 -> "Journeyman";
+        case 60 -> "Expert";
+        case 80 -> "Master";
+        default -> "MAX LEVEL";
+      };
+      String discordMessage = ":crafting: **" + event.getPlayer().getDisplayName() + " has reached " + rankName +
+          " in " + event.getSkillType().getPrettyName() + "!**";
       TextChannel textChannel = DiscordSRV.getPlugin().getMainTextChannel();
       DiscordUtil.sendMessage(textChannel, discordMessage);
-      String msg = PaletteUtil.color(buildMessage(event.getPlayer().getDisplayName(), name, color, level));
+      String msg = PaletteUtil.color(buildMessage(event.getPlayer().getDisplayName(), name, color, rankName));
       for (Player p : Bukkit.getOnlinePlayers()) {
         MessageUtils.sendMessage(p, msg);
       }
@@ -93,10 +99,10 @@ public class SkillLevelUpListener implements Listener {
         .replace("{n}", name);
   }
 
-  private String buildMessage(String playerName, String name, ChatColor color, int level) {
+  private String buildMessage(String playerName, String name, ChatColor color, String rankName) {
     return BROADCAST_MESSAGE
         .replace("{p}", playerName)
-        .replace("{l}", String.valueOf(level))
+        .replace("{l}", rankName)
         .replace("{c}", "" + color)
         .replace("{n}", name);
   }

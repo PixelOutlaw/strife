@@ -44,6 +44,7 @@ import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.events.StrifeEarlyDamageEvent;
 import land.face.strife.managers.BossBarManager;
+import land.face.strife.managers.GuiManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
@@ -323,36 +324,40 @@ public class DamageUtil {
 
     rawDamage *= DamageUtil.getTenacityMult(defender, false);
 
-    if (attacker.getEntity().getFreezeTicks() > 0 && !(attacker.getEntity() instanceof Player)) {
-      rawDamage *= 1 - 0.3f * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity().getMaxFreezeTicks());
+    if (attackType != AttackType.BONUS) {
+      if (attacker.getEntity().getFreezeTicks() > 0 && !(attacker.getEntity() instanceof Player)) {
+        rawDamage *= 1 -
+            0.3f * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity().getMaxFreezeTicks());
+      }
+      if (defender.hasTrait(StrifeTrait.STONE_SKIN)) {
+        rawDamage *= 1 - (0.03f * defender.getEarthRunes());
+      }
+      if (mods.isFromAbility()) {
+        rawDamage *= 1 + attacker.getStat(StrifeStat.ABILITY_DAMAGE) / 100;
+      }
+      if (attacker.hasTrait(StrifeTrait.VENGEANCE)) {
+        rawDamage *= 2f - (float) (attacker.getEntity().getHealth() / attacker.getMaxLife());
+      }
+      DamageUtil.applyLifeSteal(attacker,
+          Math.min(rawDamage, defender.getEntity().getHealth()),
+          mods.getHealMultiplier(),
+          mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL, 0f)
+      );
+      if (mods.isSneakAttack()) {
+        if (!SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
+          rawDamage += doSneakAttack(attacker, defender, mods);
+          boolean finishingBlow = rawDamage > defender.getEntity().getHealth() + defender.getBarrier();
+          float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
+              attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
+          plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
+              LifeSkillType.SNEAK, gainedXp, false, false);
+        }
+        plugin.getStealthManager().unstealthPlayer((Player) attacker.getEntity());
+      }
     }
-    if (defender.hasTrait(StrifeTrait.STONE_SKIN)) {
-      rawDamage *= 1 - (0.03f * defender.getEarthRunes());
-    }
-    if (mods.isFromAbility()) {
-      rawDamage *= 1 + attacker.getStat(StrifeStat.ABILITY_DAMAGE) / 100;
-    }
-
-    DamageUtil.applyLifeSteal(attacker,
-        Math.min(rawDamage, defender.getEntity().getHealth()),
-        mods.getHealMultiplier(),
-        mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL, 0f)
-    );
 
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
     rawDamage += DamageUtil.getKnowledgeMult(attacker, defender);
-
-    if (mods.isSneakAttack()) {
-      if (!SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
-        rawDamage += doSneakAttack(attacker, defender, mods);
-        boolean finishingBlow = rawDamage > defender.getEntity().getHealth() + defender.getBarrier();
-        float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
-            attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
-        plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
-            LifeSkillType.SNEAK, gainedXp, false, false);
-      }
-      plugin.getStealthManager().unstealthPlayer((Player) attacker.getEntity());
-    }
 
     if (mods.getAbilityMods().containsKey(AbilityMod.MAX_DAMAGE)) {
       rawDamage = Math.min(mods.getAbilityMods().get(AbilityMod.MAX_DAMAGE), rawDamage);
@@ -909,10 +914,16 @@ public class DamageUtil {
   public static boolean isEvaded(StrifeMob attacker, StrifeMob defender, Map<AbilityMod, Float> attackModifiers) {
     if (StrifePlugin.RNG.nextFloat() < defender.getStat(StrifeStat.DODGE_CHANCE) / 100) {
       DamageUtil.doEvasion(attacker, defender);
+      if (defender.getEntity() instanceof Player) {
+        plugin.getGuiManager().postNotice((Player) defender.getEntity(), GuiManager.NOTICE_DODGE, 4);
+      }
       return true;
     }
     if (rollDodgeFromEvasion(attacker, defender, attackModifiers)) {
       DamageUtil.doEvasion(attacker, defender);
+      if (defender.getEntity() instanceof Player) {
+        plugin.getGuiManager().postNotice((Player) defender.getEntity(), GuiManager.NOTICE_DODGE, 4);
+      }
       return true;
     }
     return false;
@@ -1143,6 +1154,10 @@ public class DamageUtil {
 
   public static float doPreDeath(StrifeMob victim, float damage) {
     plugin.getStrifeMobManager().updateEquipmentStats(victim);
+    if (victim.hasTrait(StrifeTrait.REALLY_STUBBORN)) {
+      victim.getEntity().setHealth(1);
+      return 0.05f;
+    }
     Set<LoreAbility> abilitySet = new HashSet<>(victim.getLoreAbilities(ON_DEATH));
     executeBoundEffects(victim, victim, abilitySet);
     executeFiniteEffects(victim, victim, new HashSet<>(List.of(ON_DEATH)));

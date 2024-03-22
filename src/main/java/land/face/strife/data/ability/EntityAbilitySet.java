@@ -108,13 +108,13 @@ public class EntityAbilitySet {
 
   public static Phase phaseFromEntityHealth(LivingEntity le) {
     double percent = le.getHealth() / le.getMaxHealth();
-    if (percent >= 0.79) {
+    if (percent >= 0.799) {
       return Phase.PHASE_ONE;
-    } else if (percent >= 0.59) {
+    } else if (percent >= 0.599) {
       return Phase.PHASE_TWO;
-    } else if (percent >= 0.39) {
+    } else if (percent >= 0.399) {
       return Phase.PHASE_THREE;
-    } else if (percent >= 0.19) {
+    } else if (percent >= 0.199) {
       return Phase.PHASE_FOUR;
     }
     return Phase.PHASE_FIVE;

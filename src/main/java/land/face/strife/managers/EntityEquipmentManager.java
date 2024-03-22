@@ -30,7 +30,10 @@ public class EntityEquipmentManager {
   }
 
   public ItemStack getItem(String key) {
-    return itemMap.getOrDefault(key, null);
+    if (itemMap.get(key) == null) {
+      return null;
+    }
+    return itemMap.get(key).clone();
   }
 
   public Map<EquipmentSlot, ItemStack> getEquipmentMap(Map<EquipmentSlot, String> data) {
