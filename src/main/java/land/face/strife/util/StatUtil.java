@@ -1,5 +1,8 @@
 package land.face.strife.util;
 
+import static org.bukkit.potion.PotionEffectType.REGENERATION;
+import static org.bukkit.potion.PotionEffectType.WITHER;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
@@ -21,6 +24,7 @@ import land.face.strife.stats.StrifeTrait;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -33,7 +37,9 @@ public class StatUtil {
   public static String COMBAT_EXIT_TOAST;
 
   public static float ARMOR_DENOMINATOR;
-  public static float WARD_DENOMINATOR;
+
+  private static final float POTION_REGEN_FLAT_PER_LEVEL = 2f;
+  private static final float POTION_REGEN_PERCENT_PER_LEVEL = 0.005f;
 
   public static void refreshPlugin(StrifePlugin strifePlugin) {
     plugin = strifePlugin;
@@ -41,7 +47,32 @@ public class StatUtil {
     COMBAT_EXIT_TOAST = FaceColor.NO_SHADOW + UnicodeUtil.unicodePlacehold("<toast_exit_combat>");
 
     ARMOR_DENOMINATOR = (float) plugin.getSettings().getDouble("config.mechanics.defense.armor-denominator", 110);
-    WARD_DENOMINATOR = (float) plugin.getSettings().getDouble("config.mechanics.defense.ward-denominator", 110);
+  }
+
+  public static float getLifeRegen(StrifeMob mob) {
+    if (mob.getEntity().hasPotionEffect(WITHER)) {
+      return 0;
+    }
+    float amount = mob.getStatRaw(StrifeStat.REGENERATION) * (1 + mob.getStatRaw(StrifeStat.REGEN_MULT) / 100);
+    if (mob.getEntity().hasPotionEffect(REGENERATION)) {
+      int potionIntensity = mob.getEntity().getPotionEffect(REGENERATION).getAmplifier() + 1;
+      amount += potionIntensity * POTION_REGEN_FLAT_PER_LEVEL;
+      amount += potionIntensity * mob.getMaxLife() * POTION_REGEN_PERCENT_PER_LEVEL;
+    }
+    if (!mob.isInCombat()) {
+      if (mob.getEntity().getType() == EntityType.PLAYER && !mob.isInCombat()) {
+        amount *= 1.5F;
+        amount += 4;
+      }
+      if (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.THREE)) {
+        amount += 10;
+      }
+    }
+    if (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.SIX)) {
+      amount += 50;
+      amount += (float) (mob.getMaxLife() - mob.getEntity().getHealth());
+    }
+    return amount;
   }
 
   public static float getStat(StrifeMob mob, StrifeStat stat) {
@@ -52,16 +83,7 @@ public class StatUtil {
             (1 + stats.getOrDefault(StrifeStat.ARMOR_MULT, 0f) / 100);
       }
       case REGENERATION -> {
-        float amount = stats.getOrDefault(StrifeStat.REGENERATION, 0f) *
-            (1 + stats.getOrDefault(StrifeStat.REGEN_MULT, 0f) / 100);
-        if (!mob.isInCombat() && plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.THREE)) {
-          amount += 10;
-        }
-        if (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.SIX)) {
-          amount += 50;
-          amount += (float) (mob.getMaxLife() - mob.getEntity().getHealth());
-        }
-        return amount;
+        return getLifeRegen(mob);
       }
       case ENERGY_REGEN -> {
         float amount = stats.getOrDefault(StrifeStat.ENERGY_REGEN, 0f);
@@ -160,7 +182,8 @@ public class StatUtil {
       case BARRIER_REGEN -> {
         if (mob.hasTrait(StrifeTrait.OVERSHIELD) && mob.getEntity().getHealth() > mob.getMaxLife() - 0.01) {
           float amount = stats.getOrDefault(StrifeStat.BARRIER_REGEN, 0f);
-          amount += getStat(mob, StrifeStat.REGENERATION) * 0.3f;
+          float lifeRegen = mob.getStatRaw(StrifeStat.REGENERATION) * (1 + mob.getStatRaw(StrifeStat.REGEN_MULT) / 100);
+          amount += lifeRegen * 0.3f;
           return amount;
         } else
           return stats.getOrDefault(StrifeStat.BARRIER_REGEN, 0f);
@@ -201,7 +224,7 @@ public class StatUtil {
   public static float getBarrierPerSecond(StrifeMob ae) {
     float baseRestoreSpeed = DamageUtil.FLAT_BARRIER_PER_SECOND +
         (ae.getMaxBarrier() * DamageUtil.PERCENT_BARRIER_PER_SECOND);
-    return baseRestoreSpeed * (1 + (ae.getStat(StrifeStat.BARRIER_SPEED) / 100));
+    return baseRestoreSpeed * (1 + (ae.getStatRaw(StrifeStat.BARRIER_SPEED) / 100));
   }
 
   public static float getCriticalChance(StrifeMob attacker, float attackMult, float bonusCrit) {
@@ -233,17 +256,17 @@ public class StatUtil {
     ae.getEntity().removePotionEffect(PotionEffectType.FAST_DIGGING);
     ae.getEntity().removePotionEffect(PotionEffectType.SLOW_DIGGING);
     if (attackTime > 1.6) {
-      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 10, 1, true, false));
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 14, 1, true, false));
     } else if (attackTime > 1.405) {
-      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 9, 0, true, false));
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 12, 0, true, false));
     } else if (attackTime > 1.15) {
       // do nothing
     } else if (attackTime > 0.85) {
-      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 8, 0, true, false));
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 10, 0, true, false));
     } else if (attackTime > 0.55) {
-      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 7, 1, true, false));
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 9, 1, true, false));
     } else {
-      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 6, 2, true, false));
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 8, 2, true, false));
     }
 
     return attackTime;

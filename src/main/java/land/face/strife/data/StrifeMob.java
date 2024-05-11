@@ -213,7 +213,7 @@ public class StrifeMob {
   }
 
   public void addFrost(float added) {
-    frostGraceTicks = 2;
+    frostGraceTicks = 4;
     added *= 1 - getStat(StrifeStat.ICE_RESIST) / 100;
     setFrost(frost + added);
   }
@@ -422,13 +422,27 @@ public class StrifeMob {
       return new HashSet<>(List.of(winningKiller));
     } else {
       return new HashSet<>(SnazzyPartiesPlugin.getInstance().getPartyManager()
-          .getNearbyPlayers(winningParty, mob.getEntity().getLocation(), 30));
+          .getNearbyPlayers(winningParty, mob.getEntity().getLocation(), 50));
     }
   }
 
   public boolean cacheUpdateRequired() {
     return reCache || lastEquipmentUpdate != equipmentCache.getLastUpdate() ||
         (getChampion() != null && getChampion().getLastChanged() != lastChampionUpdate);
+  }
+
+  public float getStatRaw(StrifeStat stat) {
+    if (cacheUpdateRequired()) {
+      statCache.clear();
+      statCache.putAll(getFinalStats());
+      reCache = false;
+      lastEquipmentUpdate = equipmentCache.getLastUpdate();
+      if (getChampion() != null) {
+        lastChampionUpdate = getChampion().getLastChanged();
+      }
+      setMaxBlock(StatUtil.getStat(this, StrifeStat.BLOCK));
+    }
+    return getStatCache().getOrDefault(stat, 0f);
   }
 
   public float getStat(StrifeStat stat) {

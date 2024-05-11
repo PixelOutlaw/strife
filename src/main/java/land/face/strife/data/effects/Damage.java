@@ -39,6 +39,7 @@ public class Damage extends Effect {
   private boolean canSneakAttack;
   private boolean isBlocking;
   private boolean applyOnHitEffects;
+  private boolean canCrit;
   private boolean useBasicDamageMult;
   private boolean useMinionDamage;
   private boolean showPopoffs;
@@ -73,6 +74,7 @@ public class Damage extends Effect {
     mods.setCanBeEvaded(canBeEvaded);
     mods.setCanBeBlocked(canBeBlocked);
     mods.setApplyOnHitEffects(applyOnHitEffects);
+    mods.setCanCrit(canCrit);
     mods.setShowPopoffs(showPopoffs);
     mods.setUseBasicDamageMult(useBasicDamageMult);
     mods.setApplyMinionDamageMult(useMinionDamage);
@@ -114,9 +116,7 @@ public class Damage extends Effect {
     if (selfInflict) {
       target = caster;
     }
-    if (attackType != AttackType.BONUS) {
-      DamageUtil.applyElementalEffects(caster, target, damage, mods);
-    }
+    DamageUtil.applyElementalEffects(caster, target, damage, mods);
     DamageUtil.reduceDamage(caster, target, damage, mods);
     float finalDamage = DamageUtil.calculateFinalDamage(caster, target, attackType, damage, mods);
 
@@ -143,7 +143,7 @@ public class Damage extends Effect {
       getPlugin().getEffectManager().executeEffectList(caster, response, killEffects);
     }
 
-    if (damage.containsKey(DamageType.PHYSICAL)) {
+    if (damage.containsKey(DamageType.PHYSICAL) && mods.isApplyOnHitEffects()) {
       DamageUtil.attemptBleed(caster, target, damage.get(DamageType.PHYSICAL), mods, true,false);
     }
 

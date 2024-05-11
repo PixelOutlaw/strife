@@ -12,12 +12,12 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.Damage;
 import land.face.strife.data.effects.Effect;
-import land.face.strife.data.effects.LocationEffect;
 import land.face.strife.data.effects.Push;
 import land.face.strife.util.LogUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
@@ -47,8 +47,8 @@ public class WorldSpaceEffect {
 
   public WorldSpaceEffect(final StrifeMob caster, final Map<Integer, List<Effect>> effectSchedule,
       Location nextLocation, final Vector velocity, final float gravity, final float friction,
-      final float maxDisplacement, final int maxTicks, final int lifespan, String modelEffect,
-      int maxFallTicks, boolean destroyOnContact) {
+      final float maxDisplacement, final int maxTicks, final int lifespan, String modelEffect, Color modelColor,
+      double modelSize, int maxFallTicks, boolean destroyOnContact) {
     this.caster = caster;
     this.effectSchedule = effectSchedule;
     this.maxDisplacement = maxDisplacement;
@@ -69,13 +69,19 @@ public class WorldSpaceEffect {
         stand.setGravity(false);
         stand.setAI(false);
         stand.setInvulnerable(true);
+        stand.setMarker(true);
         ChunkUtil.setDespawnOnUnload(stand);
         modeledEntity = ModelEngineAPI.createModeledEntity(stand);
         if (modeledEntity != null) {
+          if (modelColor != null) {
+            model.setDefaultTint(modelColor);
+          }
+          model.setScale(modelSize);
           modeledEntity.getBase().getBodyRotationController().setYBodyRot(stand.getLocation().getYaw());
           modeledEntity.addModel(model, true);
           //modeledEntity.detectPlayers();
           modeledEntity.setBaseEntityVisible(false);
+
         }
       }
     }
@@ -117,6 +123,21 @@ public class WorldSpaceEffect {
     newLocation.setDirection(velocity);
 
     Block block = newLocation.getBlock();
+
+    // Make one attempt to move along the ground on collide, only
+    // if the angle isn't too steep
+    if (velocity.getY() < 0 &&
+        newLocation.getPitch() > 0 && newLocation.getPitch() <= 22.5 && block.getType().isSolid()) {
+      newLocation.subtract(velocity);
+      double power = velocity.length();
+      velocity.setY(0.0001);
+      velocity.normalize();
+      velocity.multiply(power);
+      this.velocity = velocity;
+      newLocation.add(velocity);
+      newLocation.setDirection(velocity);
+    }
+
     if (maxDisplacement > 0) {
       float displacement = 0;
       while (block.getType().isSolid()) {
@@ -136,6 +157,7 @@ public class WorldSpaceEffect {
     nextLocation = newLocation;
     if (modeledEntity != null) {
       stand.teleport(nextLocation);
+      stand.setVelocity(velocity);
     }
 
     lifespan -= 1;

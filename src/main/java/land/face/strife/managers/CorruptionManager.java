@@ -65,27 +65,6 @@ public class CorruptionManager {
     return true;
   }
 
-  /*
-  public void pushRuneGui(StrifeMob mob, int corruption) {
-    if (mob.getEntity().getType() != EntityType.PLAYER) {
-      return;
-    }
-    if (corruption < 1) {
-      StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-          new GUIComponent("corrupt-display", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
-      StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-          new GUIComponent("corrupt-amount", GuiManager.EMPTY, 0, 0, Alignment.RIGHT));
-      return;
-    }
-    StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("corrupt-display", GuiManager.CORRUPT_ICON, 14, 112, Alignment.CENTER));
-    String string = StrifePlugin.getInstance().getGuiManager().convertToEnergyDisplayFont(corruption);
-    TextComponent aaa = GuiManager.noShadow(new TextComponent(string));
-    StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("corrupt-amount", aaa, string.length() * 8, 113, Alignment.CENTER));
-  }
-  */
-
   public float getCorruptionMultiplier(StrifeMob mob) {
     return mob.getCorruption() > 0 ? 1 + 0.01f * mob.getCorruption() : 1;
   }

@@ -35,13 +35,17 @@ public enum StrifeTrait {
       " |yellow|Apply 30% more |cyan|Frost |yellow|to |red|Bleeding |yellow|enemies",
       " |yellow|Apply 30% more |red|Bleed to |cyan|Frosted |yellow|enemies"),
   OVERSHIELD("|orange||ul|Passive Effect - Overshield",
-      " |yellow|When your |white|Life |yellow|is full, gain |white|30% |yellow|of",
+      " |yellow|When your |white|Life |yellow|is full, gain |white|50% |yellow|of",
       " |yellow|your |white|Life Regen. |yellow|as |white|Barrier Regen."),
   ELEMENTAL_CRITS_2("|orange||ul|Passive Effect - Status Strike",
       " |yellow|Critical strikes trigger |teal|elemental status",
       " |yellow|instead of dealing extra damage"),
   ICY_VEINS("|orange||ul|Passive Effect - Icy Veins",
       " |yellow|Cold environments do not freeze you"),
+  CORPSE_EATER("|orange||ul|Passive Effect - Corpse Eater",
+      " |white|Life On Kill |yellow|ignores |white|Rotting"),
+  DIVINE_BLOOD("|orange||ul|Passive Effect - Divine Blood",
+      " |yellow|Prayer altars fully heal you"),
   LETHAL_STRIKE("|orange||ul|Passive Effect - Lethal Strike",
       " |yellow|Attacks with over 100% Crit. Chance",
       " |yellow|can trigger a |red||ul|Lethal Strike|yellow|, doubling",
@@ -65,6 +69,10 @@ public enum StrifeTrait {
       " |yellow|Grants immunity to |white|Vulnerable"),
   HIGHLY_MOTIVATED("|orange||ul|Passive Effect - Highly Motivated",
       " |yellow|Grants immunity to |white|Weakness"),
+  EXTRA_FRESH("|orange||ul|Passive Effect - Extra Fresh",
+      " |yellow|Grants immunity to |white|Rotting"),
+  LEMON_SCENTED("|orange||ul|Passive Effect - Lemon Scented",
+      " |yellow|Grants immunity to |white|Stink"),
   ANTI_POISON("|orange||ul|Passive Effect - Anti-poison",
       " |yellow|Grants immunity to |white|Poison"),
 
@@ -97,9 +105,9 @@ public enum StrifeTrait {
   SLURP("|orange||ul|Passive Effect - Super Slurper",
       " |yellow|Drink potions twice as quickly"),
   FAST_ACTING("|orange||ul|Passive Effect - Fast Acting",
-      " |yellow| Life/Energy from potions",
-      " |yellow| that applies over time is",
-      " |yellow| instead applied instantly"
+      " |yellow|Life/Energy from potions",
+      " |yellow|that applies over time is",
+      " |yellow|instead applied instantly"
   ),
   SOUL_FLAME("|orange||ul|Passive Effect - Blue Flame");
 

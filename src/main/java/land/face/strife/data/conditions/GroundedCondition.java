@@ -2,7 +2,7 @@ package land.face.strife.data.conditions;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import land.face.strife.data.StrifeMob;
-import org.bukkit.Material;
+import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Shulker;
@@ -10,11 +10,13 @@ import org.bukkit.entity.Shulker;
 public class GroundedCondition extends Condition {
 
   private final boolean strict;
+  private final int leeway;
   private final boolean ignoreLiquids;
 
-  public GroundedCondition(boolean strict, boolean ignoreLiquids) {
+  public GroundedCondition(boolean strict, boolean ignoreLiquids, int leeway) {
     this.strict = strict;
     this.ignoreLiquids = ignoreLiquids;
+    this.leeway = leeway;
   }
 
   public boolean isMet(StrifeMob caster, StrifeMob target) {
@@ -28,7 +30,7 @@ public class GroundedCondition extends Condition {
       if (strict) {
         return caster.getEntity().isOnGround();
       } else {
-        return isGroundedOrCloseToGround(caster.getEntity());
+        return isGroundedOrCloseToGround(caster.getEntity(), leeway);
       }
     } else {
       if (target.getEntity() instanceof Shulker) {
@@ -40,7 +42,7 @@ public class GroundedCondition extends Condition {
       if (strict) {
         return target.getEntity().isOnGround();
       } else {
-        return isGroundedOrCloseToGround(target.getEntity());
+        return isGroundedOrCloseToGround(target.getEntity(), leeway);
       }
     }
   }
@@ -48,7 +50,25 @@ public class GroundedCondition extends Condition {
   // For fluid gameplay, treat being recently on the ground
   // as grounded for players, so small falls and knockbacks
   // don't disable ground based conditions
-  private boolean isGroundedOrCloseToGround(LivingEntity le) {
-    return le.isOnGround() || (le instanceof Player && MoveUtil.timeOffGround((Player) le) <= 151);
+  private boolean isGroundedOrCloseToGround(LivingEntity le, int leeway) {
+    if (le.isOnGround() || (le instanceof Player && MoveUtil.timeOffGround((Player) le) <= 151)) {
+      return true;
+    }
+    if (leeway == 0) {
+      return false;
+    }
+    int check = 0;
+    Location position = le.getLocation().clone().add(0, -0.1, 0);
+    if (position.getBlock().isSolid()) {
+      return true;
+    }
+    while (check < leeway) {
+      position.add(0, -1, 0);
+      if (position.getBlock().isSolid()) {
+        return true;
+      }
+      check++;
+    }
+    return false;
   }
 }

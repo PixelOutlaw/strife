@@ -1,6 +1,5 @@
 package land.face.strife.managers;
 
-import com.mysql.cj.log.Log;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,10 +16,10 @@ import org.bukkit.entity.Player;
 
 public class ViolationManager {
 
-  private StrifePlugin plugin;
+  private final StrifePlugin plugin;
 
   private static final Map<Player, Location> lastPlayerLocationOnKill = new WeakHashMap<>();
-  private static final Set<UUID> lastViolationTime = new HashSet<>();
+  private static final Map<UUID, Long> lastViolationTime = new HashMap<>();
   private static final Map<Player, Integer> violationLevel = new WeakHashMap<>();
   private static final Map<Player, Float> cachedViolation = new WeakHashMap<>();
 
@@ -36,51 +35,59 @@ public class ViolationManager {
   }
 
   public float calculateSafespotViolationMult(Player player) {
+    if (lastViolationTime.getOrDefault(player.getUniqueId(), 0L) > System.currentTimeMillis()) {
+      return cachedViolation.getOrDefault(player, 1f);
+    }
+    if (!lastPlayerLocationOnKill.containsKey(player)) {
+      lastPlayerLocationOnKill.put(player, player.getLocation());
+      return 1f;
+    }
+    if (player.getLocation().getWorld() != lastPlayerLocationOnKill.get(player).getWorld() ||
+        penaltyFreeWorlds.contains(player.getLocation().getWorld().getName())) {
+      violationLevel.put(player, 0);
+      lastPlayerLocationOnKill.put(player, player.getLocation());
+      cachedViolation.put(player, 1.0f);
+      return 1f;
+    }
     float mult = 1.0f;
-    if (lastViolationTime.contains(player.getUniqueId())) {
-      return cachedViolation.getOrDefault(player, 1.0f);
+    int amount = violationLevel.getOrDefault(player, 0);
+    amount += getViolationChange(player);
+    amount = Math.max(amount, 0);
+    amount = Math.min(amount, 200);
+    violationLevel.put(player, amount);
+    if (amount >= 100) {
+      mult = (200f - amount) / 100f;
     }
-    if (lastPlayerLocationOnKill.containsKey(player)) {
-      if (player.getLocation().getWorld() != lastPlayerLocationOnKill.get(player).getWorld() ||
-          penaltyFreeWorlds.contains(player.getLocation().getWorld().getName())) {
-        violationLevel.put(player, 0);
-        lastPlayerLocationOnKill.put(player, player.getLocation());
-        cachedViolation.put(player, 1.0f);
-        return mult;
-      }
-      int amount = violationLevel.getOrDefault(player, 0);
-      if (!MoveUtil.hasMoved(player, 60000)) {
-        amount = 200;
-      } else if (!MoveUtil.hasMoved(player, 10000)) {
-        amount += 10;
-      } else {
-        double distance = lastPlayerLocationOnKill.get(player).distanceSquared(player.getLocation());
-        if (distance < 0.35) {
-          amount += 3;
-        } else if (distance < 1.25) {
-          amount += 2;
-        } else if (distance < 2) {
-          amount += 1;
-        } else if (distance < 9) {
-          amount -= 12;
-        } else if (distance < 16) {
-          amount -= 70;
-        } else {
-          amount = 0;
-        }
-      }
-      amount = Math.max(amount, 0);
-      amount = Math.min(amount, 200);
-      violationLevel.put(player, amount);
-      if (amount > 70) {
-        mult = (200f - amount) / 200f;
-      }
-    }
-    lastViolationTime.add(player.getUniqueId());
-    Bukkit.getScheduler().runTaskLater(plugin, () -> lastViolationTime.remove(player.getUniqueId()), 2L);
-    lastPlayerLocationOnKill.put(player, player.getLocation());
     cachedViolation.put(player, mult);
+    lastViolationTime.put(player.getUniqueId(), System.currentTimeMillis() + 100L);
+    lastPlayerLocationOnKill.put(player, player.getLocation());
     return mult;
+  }
+
+  private int getViolationChange(Player player) {
+    if (!MoveUtil.hasMoved(player, 60000)) {
+      return 200;
+    }
+    if (!MoveUtil.hasMoved(player, 10000)) {
+      return 10;
+    }
+    double distance = lastPlayerLocationOnKill.get(player).distanceSquared(player.getLocation());
+    if (distance < 0.35) {
+      return 3;
+    }
+    if (distance < 1.25) {
+      return 2;
+    }
+    if (distance < 2) {
+      return 1;
+    }
+    if (distance < 16) {
+      return -12;
+    }
+    if (distance < 25) {
+      return -70;
+    }
+    return -200;
   }
 
   public float calculateLevelPenalty(float baseXpMult, int mobLevel, Set<Player> partyMembers, UniqueEntity uniqueEntity) {

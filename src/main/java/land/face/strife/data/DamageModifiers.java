@@ -32,6 +32,7 @@ public class DamageModifiers {
   private boolean canBeBlocked = true;
   private boolean canBeEvaded = true;
   private boolean applyOnHitEffects = true;
+  private boolean canCrit = true;
   private boolean scaleChancesWithAttack = false;
   private boolean showPopoffs = true;
   private boolean useBasicDamageMult = true;

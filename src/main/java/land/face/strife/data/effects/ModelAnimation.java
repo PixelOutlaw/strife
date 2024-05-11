@@ -19,6 +19,7 @@ public class ModelAnimation extends Effect {
   public void apply(StrifeMob caster, StrifeMob target) {
     if (target.getModelEntity() != null) {
       if (lockTicks > 0) {
+        target.getModelEntity().getBase().getBodyRotationController().setYBodyRot(target.getModelEntity().getYHeadRot());
         target.getModelEntity().setModelRotationLocked(true);
         Bukkit.getScheduler().runTaskLater(getPlugin(), () ->
             target.getModelEntity().setModelRotationLocked(false), lockTicks);

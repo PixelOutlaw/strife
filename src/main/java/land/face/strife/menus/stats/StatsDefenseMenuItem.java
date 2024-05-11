@@ -167,7 +167,6 @@ public class StatsDefenseMenuItem extends MenuItem {
     resistDisplay3.append(" ");
     addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BLEED_RESIST), FaceColor.CRIMSON, "儉");
     addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.POISON_RESIST), FaceColor.GREEN, "儉");
-    addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.WITHER_RESIST), FaceColor.DARK_GRAY, "☠");
     addResist(resistDisplay3, StatUtil.getStat(mob, StrifeStat.BURNING_RESIST), FaceColor.ORANGE, "\uD83D\uDD25");
     lore.add(resistDisplay3.toString());
     lore.add(breakLine);

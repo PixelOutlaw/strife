@@ -37,6 +37,7 @@ import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.timers.EntityAbilityTimer;
 import land.face.strife.timers.SoulTimer;
+import land.face.strife.util.HitDetectionUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
@@ -475,13 +476,13 @@ public class AbilityManager {
         return new TargetResponse(targets, true);
       }
       case NEARBY_ALLIES -> {
-        targets = TargetingUtil.getEntitiesInArea(caster.getEntity().getLocation(), ability.getRange());
+        targets = HitDetectionUtil.getEntitiesInArea(caster.getEntity().getLocation(), ability.getRange());
         TargetingUtil.filterFriendlyEntities(targets, caster, true);
         TargetingUtil.filterByTargetPriority(targets, ability.getTargetingPriority(), caster, ability.getMaxTargets());
         return new TargetResponse(targets, true);
       }
       case NEARBY_ENEMIES -> {
-        targets = TargetingUtil.getEntitiesInArea(caster.getEntity().getLocation(), ability.getRange());
+        targets = HitDetectionUtil.getEntitiesInArea(caster.getEntity().getLocation(), ability.getRange());
         TargetingUtil.filterFriendlyEntities(targets, caster, false);
         TargetingUtil.filterByTargetPriority(targets, ability.getTargetingPriority(), caster, ability.getMaxTargets());
         return new TargetResponse(targets, true);
@@ -523,10 +524,9 @@ public class AbilityManager {
         return new TargetResponse(loc);
       }
       case TARGET_GROUND -> {
-        LivingEntity targetEntity = (target == null || target.getEntity() == null)
-            ? null : target.getEntity();
-        Location loc2 = TargetingUtil.getTargetLocation(caster.getEntity(), targetEntity,
-            ability.getRange(), ability.isRaycastsTargetEntities(), ability.isFriendly());
+        LivingEntity targetEntity = (target == null || target.getEntity() == null) ? null : target.getEntity();
+        Location loc2 = TargetingUtil.getTargetLocation(caster.getEntity(),
+            targetEntity, ability.getRange(), ability.isRaycastsTargetEntities(), ability.isFriendly());
         loc2 = TargetingUtil.modifyLocation(loc2, ability.getRange() + 2);
         return new TargetResponse(loc2);
       }

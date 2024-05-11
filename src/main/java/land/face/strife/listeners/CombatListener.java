@@ -60,6 +60,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
 
 public class CombatListener implements Listener {
 
@@ -221,7 +222,6 @@ public class CombatListener implements Listener {
 
     float onHitChance = 1.0f;
     float attackMultiplier = 1.0f;
-    float damageReductionRatio = 1.0f;
     float healMultiplier = 1f;
     float multishotRatio = 1f;
     boolean backAttack = false;
@@ -231,10 +231,10 @@ public class CombatListener implements Listener {
     if (attackType == AttackType.MELEE) {
       ItemStack item = attackEntity.getEquipment() == null ? null : attackEntity.getEquipment().getItemInMainHand();
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
+      onHitChance = attackMultiplier;
       if (item != null && (item.getType() == Material.BOW || item.getType() == Material.WOODEN_SWORD)) {
         attackMultiplier *= 0.35f;
       }
-      onHitChance = attackMultiplier;
       //double angle = attackEntity.getEyeLocation().getDirection()
       //    .angle(defendEntity.getEyeLocation().getDirection());
       //backAttack = angle < 1;
@@ -283,7 +283,7 @@ public class CombatListener implements Listener {
     mods.setAttackType(attackType);
     mods.setAttackMultiplier(attackMultiplier);
     mods.setHealMultiplier(healMultiplier);
-    mods.setDamageReductionRatio(1.0f);
+    mods.setDamageReductionRatio(0.5f + attackMultiplier / 2f);
     // TODO: actually handle on hit projectiles better
     if (onHitProjectile && multishotRatio == 1f) {
       mods.setScaleChancesWithAttack(false);
@@ -379,9 +379,10 @@ public class CombatListener implements Listener {
     }
     StrifeMob killer = plugin.getStrifeMobManager().getStatMob(event.getEntity().getKiller());
     if (killer.getStat(StrifeStat.HP_ON_KILL) > 0.1) {
-      float healRatio =  1 + killer.getStat(StrifeStat.HEALING_POWER) / 300;
-      DamageUtil.restoreHealthWithPenalties(event.getEntity().getKiller(),
-          killer.getStat(StrifeStat.HP_ON_KILL) * healRatio);
+      if (!killer.getEntity().hasPotionEffect(PotionEffectType.WITHER) || killer.hasTrait(StrifeTrait.CORPSE_EATER)) {
+        float healRatio = 1 + killer.getStat(StrifeStat.HEALING_POWER) / 300;
+        DamageUtil.restoreHealth(event.getEntity().getKiller(), killer.getStat(StrifeStat.HP_ON_KILL) * healRatio, true, true);
+      }
     }
     if (killer.getStat(StrifeStat.ENERGY_ON_KILL) > 0.1) {
       StatUtil.changeEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));

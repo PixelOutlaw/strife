@@ -126,7 +126,7 @@ public class PlayerMountManager {
   }
 
   private void createMount(Player player, LoadedMount loadedMount) {
-
+    player.setSprinting(false);
     Cow mountEntity = player.getWorld().spawn(player.getLocation(), Cow.class);
 
     mountEntity.setAdult();
@@ -200,6 +200,7 @@ public class PlayerMountManager {
     ownerMap.put(player.getUniqueId(), mountTask);
     Champion champion = plugin.getChampionManager().getChampion(player);
     champion.getSaveData().setOnMount(true);
+    player.setSprinting(false);
   }
 
   public void updateAllMountCollisions() {
@@ -226,6 +227,7 @@ public class PlayerMountManager {
     if (task == null) {
       return;
     }
+    player.setSprinting(false);
     Champion champion = plugin.getChampionManager().getChampion(player);
     champion.getSaveData().setOnMount(false);
     player.leaveVehicle();
@@ -242,6 +244,7 @@ public class PlayerMountManager {
     if (!task.isCancelled()) {
       task.cancel();
     }
+    player.setSprinting(false);
   }
 
   public void clearAll() {

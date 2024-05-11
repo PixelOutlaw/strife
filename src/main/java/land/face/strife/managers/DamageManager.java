@@ -28,6 +28,7 @@ import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
+import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import org.bukkit.entity.Entity;
@@ -87,11 +88,10 @@ public class DamageManager {
       defender.getEntity().setKiller((Player) attacker.getEntity());
     }
     if (damage >= defender.getEntity().getHealth() && defender.isPlayer()) {
-      sourceOfDeath.put(defender.getEntity().getUniqueId(), attacker.getEntity().getCustomName());
+      sourceOfDeath.put(defender.getEntity().getUniqueId(), PlayerDataUtil.getName(attacker.getEntity()));
     }
     defender.getEntity().damage(damage);
     handledDamages.remove(attacker.getEntity().getUniqueId());
-
     return damage;
   }
 

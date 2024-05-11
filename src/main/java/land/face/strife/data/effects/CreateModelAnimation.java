@@ -1,21 +1,16 @@
 package land.face.strife.data.effects;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.tuple.Triple;
 import com.ticxo.modelengine.api.ModelEngineAPI;
-import com.ticxo.modelengine.api.generator.blueprint.BlueprintBone;
-import com.ticxo.modelengine.api.generator.blueprint.ModelBlueprint;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
-import com.ticxo.modelengine.api.model.bone.ModelBone;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.TargetingUtil;
+import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -26,15 +21,15 @@ import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 
 @Setter
+@Getter
 public class CreateModelAnimation extends LocationEffect {
 
   public static Set<ArmorStand> CURRENT_MODELS = new HashSet<>();
-  private final Map<String, ModelBlueprint> cachedAnimationModels = new HashMap<>();
 
   private String modelId;
-  private String boneId;
   private String animationId;
-  private List<String> animations;
+  private String startAnimation;
+  private String endAnimation;
   private float lerpIn;
   private float lerpOut;
   private float speed = 1;
@@ -44,8 +39,8 @@ public class CreateModelAnimation extends LocationEffect {
   private boolean entityLock;
   private boolean rotationLock;
   private boolean forceGrounded;
+  private boolean strictDuration;
   private Color color = null;
-  private Map<Integer, List<Triple<String, String, String>>> complexPart = null;
 
   public enum AnimationType {
     LOOK_DIRECTION,
@@ -78,6 +73,9 @@ public class CreateModelAnimation extends LocationEffect {
         loc.setY(loc.getY() - 0.5);
         tries--;
       }
+      if (tries == 0) {
+        return;
+      }
     }
 
     ArmorStand stand = loc.getWorld().spawn(loc, ArmorStand.class, e -> {
@@ -104,7 +102,7 @@ public class CreateModelAnimation extends LocationEffect {
             this.cancel();
             return;
           }
-          Location newLoc = target.getEntity().getLocation().clone();
+          Location newLoc = TargetingUtil.getOriginLocation(target.getEntity(), getOrigin());
           Vector direction = target.getEntity().getEyeLocation().getDirection();
           float pitch = target.getEntity().getPitch();
           float yaw = target.getEntity().getYaw();
@@ -120,13 +118,7 @@ public class CreateModelAnimation extends LocationEffect {
       };
       runnable.runTaskTimer(getPlugin(), 1L, 1L);
     }
-
-    Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-      stand.remove();
-      CURRENT_MODELS.remove(stand);
-    }, lifespan);
-
-    applyModelStuff(stand, model, loc.getYaw());
+    applyModelStuff(caster, stand, model, loc.getYaw());
   }
 
   @Override
@@ -152,6 +144,9 @@ public class CreateModelAnimation extends LocationEffect {
         loc.setY(loc.getY() - 0.5);
         tries--;
       }
+      if (tries == 0) {
+        return;
+      }
     }
 
     ArmorStand stand = loc.getWorld().spawn(loc, ArmorStand.class, e -> {
@@ -171,15 +166,10 @@ public class CreateModelAnimation extends LocationEffect {
     stand.getEyeLocation().setDirection(loc.getDirection());
     CURRENT_MODELS.add(stand);
 
-    Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-      stand.remove();
-      CURRENT_MODELS.remove(stand);
-    }, lifespan);
-
-    applyModelStuff(stand, model, loc.getYaw());
+    applyModelStuff(caster, stand, model, loc.getYaw());
   }
 
-  private void applyModelStuff(ArmorStand stand, ActiveModel model, float yaw) {
+  private void applyModelStuff(StrifeMob caster, ArmorStand stand, ActiveModel model, float yaw) {
     model.setScale(scale);
     if (color != null) {
       model.setDefaultTint(color);
@@ -192,49 +182,46 @@ public class CreateModelAnimation extends LocationEffect {
         modeledEntity.getBase().getBodyRotationController().setYBodyRot(stand.getLocation().getYaw());
         modeledEntity.getBase().getBodyRotationController().setYHeadRot(stand.getEyeLocation().getYaw());
         modeledEntity.getBase().getBodyRotationController().setXHeadRot(stand.getEyeLocation().getPitch());
+        modeledEntity.getBase().setRenderRadius(36);
         modeledEntity.addModel(model, false);
         modeledEntity.setModelRotationLocked(rotationLock);
         modeledEntity.setBaseEntityVisible(false);
       }
 
+      float effectDuration = strictDuration ? 1f : 1f + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
+      float realSpeed = speed / effectDuration;
+
+      int realLifespan = lifespan;
       if (animationId != null) {
-        model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, speed, true);
-      }
-
-      if (complexPart != null) {
-        for (int i : complexPart.keySet()) {
-          Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-            if (!stand.isValid()) {
-              return;
-            }
-            for (Triple<String, String, String> triple : complexPart.get(i)) {
-              String base = triple.getLeft();
-              String targetPartId = triple.getMiddle();
-              String newPartId = triple.getRight();
-
-              ModelBlueprint blueprint;
-              if (cachedAnimationModels.containsKey(base)) {
-                blueprint = cachedAnimationModels.get(base);
-              } else {
-                blueprint = ModelEngineAPI.getBlueprint(base);
-                cachedAnimationModels.put(base, blueprint);
-              }
-              final ModelBone bone = model.getBone(targetPartId).get();
-              BlueprintBone bpBone = blueprint.getBones().get(newPartId);
-              if (bpBone == null) {
-                continue;
-              }
-              if (bone.getParent() == null) {
-                model.removeBone(targetPartId);
-                model.forceGenerateBone(null, null, bpBone);
-              } else {
-                model.removeBone(targetPartId);
-                model.forceGenerateBone(bone.getParent().getBoneId(), null, bpBone);
-              }
-            }
-          }, i);
+        if (lifespan == -1) {
+          double animationDuration = model.getBlueprint().getAnimations().get(animationId).getLength() / realSpeed;
+          realLifespan = (int) Math.floor(20 * animationDuration) + 1;
+        } else {
+          realLifespan = (int) (lifespan * effectDuration);
         }
       }
+      if (realLifespan == -1) {
+        Bukkit.getLogger().warning(
+            "[Strife] You screwed up effect " + getId() + " only supply -1 lifespan if an animation-id is defined!");
+        realLifespan = 20;
+      }
+      if (animationId != null) {
+        model.getAnimationHandler().forceStopAllAnimations();
+        model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, realSpeed, true);
+      }
+      if (startAnimation != null) {
+        model.getAnimationHandler().playAnimation(startAnimation, 0, 0, 1, true);
+      }
+      if (endAnimation != null) {
+        int endTicks = (int) (20f * model.getBlueprint().getAnimations().get(endAnimation).getLength());
+        Bukkit.getScheduler().runTaskLater(getPlugin(), () ->
+            model.getAnimationHandler().playAnimation(endAnimation, 0, 0, 1, true),
+            Math.max(1, 1 + realLifespan - endTicks));
+      }
+      Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
+        stand.remove();
+        CURRENT_MODELS.remove(stand);
+      }, 1 + realLifespan);
     }, 0L);
   }
 

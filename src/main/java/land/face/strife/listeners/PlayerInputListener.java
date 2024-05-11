@@ -1,7 +1,6 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
-import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import land.face.dinvy.DeluxeInvyPlugin;
 import land.face.dinvy.events.OpenEquipmentEvent;

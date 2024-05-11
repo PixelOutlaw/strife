@@ -8,6 +8,9 @@ public class RangeCondition extends Condition {
   private double rangeSquared;
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
+    if (attacker.getEntity().getWorld() != target.getEntity().getWorld()) {
+      return false;
+    }
     double distSquared = attacker.getEntity().getLocation().distanceSquared(target.getEntity().getLocation());
     return PlayerDataUtil.conditionCompare(getComparison(), distSquared, rangeSquared);
   }

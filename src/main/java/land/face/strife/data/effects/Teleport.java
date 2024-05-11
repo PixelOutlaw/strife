@@ -39,7 +39,7 @@ public class Teleport extends LocationEffect {
 
     Location finalLocation = location;
     if (finalLocation.getBlock().isSolid() ||
-        finalLocation.getBlock().getRelative(BlockFace.UP).getType() != Material.AIR) {
+        finalLocation.getBlock().getRelative(BlockFace.UP).getType().isSolid()) {
       return;
     }
     caster.getEntity().setVelocity(new Vector(0, 0, 0));

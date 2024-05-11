@@ -33,7 +33,7 @@ public class FangUtil {
   }
 
   private static void playFangEffects(EvokerFangs fangs, StrifeMob owner, List<Effect> effects, String effectId) {
-    Set<LivingEntity> targets = TargetingUtil.getEntitiesInArea(fangs.getLocation(), 0.5);
+    Set<LivingEntity> targets = HitDetectionUtil.getEntitiesInArea(fangs.getLocation(), 1.85f);
     targets.removeIf(t -> HIT_DELAY_IDS.contains(t.getUniqueId() + effectId));
 
     if (targets.isEmpty()) {

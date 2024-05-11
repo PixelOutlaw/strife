@@ -11,6 +11,7 @@ import land.face.strife.data.ability.Ability;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.managers.UnionManager;
 import land.face.strife.stats.AbilitySlot;
+import land.face.strife.util.HitDetectionUtil;
 import land.face.strife.util.TargetingUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -65,7 +66,7 @@ public class Union {
     }
     if (ticksRemaining % 10 == 0) {
       if (System.currentTimeMillis() > stallStamp && autoAttackAbility != null) {
-        Set<LivingEntity> targets = TargetingUtil.getEntitiesInLine(mob.getEntity().getEyeLocation(), 4, 3);
+        Set<LivingEntity> targets = HitDetectionUtil.getEntitiesInLine(mob.getEntity().getEyeLocation(), 4, 3);
         TargetingUtil.filterFriendlyEntities(targets, mob, false);
         if (!targets.isEmpty()) {
           doAutoAttack();

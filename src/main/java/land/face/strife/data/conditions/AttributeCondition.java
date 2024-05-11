@@ -18,8 +18,8 @@ public class AttributeCondition extends Condition {
       return false;
     }
     int statValue = getCompareTarget() == CompareTarget.SELF ?
-        attacker.getChampion().getLevelMap().get(strifeAttribute)
-            : target.getChampion().getLevelMap().get(strifeAttribute);
+        attacker.getChampion().getLevelMap().getOrDefault(strifeAttribute, 0)
+            : target.getChampion().getLevelMap().getOrDefault(strifeAttribute, 0);
     return PlayerDataUtil.conditionCompare(getComparison(), statValue, getValue());
   }
 }

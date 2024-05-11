@@ -9,6 +9,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
 import lombok.Setter;
+import org.bukkit.Color;
 import org.bukkit.Location;
 
 public class CreateWorldSpaceEntity extends LocationEffect {
@@ -26,6 +27,10 @@ public class CreateWorldSpaceEntity extends LocationEffect {
   private boolean zeroVerticalAxis;
   @Setter
   private String modelEffect;
+  @Setter
+  private Color color;
+  @Setter
+  private double modelSize;
   @Setter
   private int maxFallTicks;
   @Setter
@@ -45,7 +50,7 @@ public class CreateWorldSpaceEntity extends LocationEffect {
     cacheEffects();
     getPlugin().getWseManager().createAtTarget(caster, location, lifespan, gravity, friction,
         maxTicks, velocity, maxDisplacement, cachedEffectSchedule, strictDuration,
-        zeroVerticalAxis, modelEffect, maxFallTicks, destroyOnContact);
+        zeroVerticalAxis, modelEffect, color, modelSize, maxFallTicks, destroyOnContact);
   }
 
   public void setEffectSchedule(Map<Integer, List<String>> effectSchedule) {

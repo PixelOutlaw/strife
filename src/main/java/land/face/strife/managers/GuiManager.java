@@ -55,13 +55,20 @@ public class GuiManager {
 
   public static final TextComponent EMPTY = new TextComponent("");
 
-  public static final GUIComponent NOTICE_COOLDOWN = new GUIComponent("notices", noShadow(new TextComponent("᳥")), 171, 0, Alignment.CENTER);
-  public static final GUIComponent NOTICE_ENERGY = new GUIComponent("notices", noShadow(new TextComponent("᳣")), 171, 0, Alignment.CENTER);
-  public static final GUIComponent NOTICE_ENERGY_JEB = new GUIComponent("notices", noShadow(new TextComponent("砣")), 171, 0, Alignment.CENTER);
-  public static final GUIComponent NOTICE_REQUIREMENT = new GUIComponent("notices", noShadow(new TextComponent("᳤")), 171, 0, Alignment.CENTER);
-  public static final GUIComponent NOTICE_INVALID_TARGET = new GUIComponent("notices", noShadow(new TextComponent("᳢")), 171, 0, Alignment.CENTER);
-  public static final GUIComponent NOTICE_DODGE = new GUIComponent("notices", noShadow(new TextComponent("丞")), 171, 0, Alignment.CENTER);
-  public static final GUIComponent NOTICE_BLOCK = new GUIComponent("notices", noShadow(new TextComponent("丟")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_COOLDOWN =
+      new GUIComponent("notices", noShadow(new TextComponent("᳥")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_ENERGY =
+      new GUIComponent("notices", noShadow(new TextComponent("᳣")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_ENERGY_JEB =
+      new GUIComponent("notices", noShadow(new TextComponent("砣")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_REQUIREMENT =
+      new GUIComponent("notices", noShadow(new TextComponent("᳤")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_INVALID_TARGET =
+      new GUIComponent("notices", noShadow(new TextComponent("᳢")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_DODGE =
+      new GUIComponent("notices", noShadow(new TextComponent("丞")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_BLOCK =
+      new GUIComponent("notices", noShadow(new TextComponent("丟")), 171, 0, Alignment.CENTER);
 
   private final GUIComponent NOTIF_EMPTY_MAIL = new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER);
   private final GUIComponent NOTIF_EMPTY_FRIEND = new GUIComponent("notif-friend", EMPTY, 0, 0, Alignment.CENTER);
@@ -132,7 +139,8 @@ public class GuiManager {
   );
 
   @SuppressWarnings("deprecation")
-  private final List<GUIComponent> oxygenBar = List.of(
+  private static final GUIComponent emptyAirBar = new GUIComponent("air-bar", EMPTY, 0, 0, Alignment.CENTER);
+  public static final List<GUIComponent> oxygenBar = List.of(
       new GUIComponent("air-bar", noShadow(new TextComponent("懀")), 27, 104, Alignment.CENTER),
       new GUIComponent("air-bar", noShadow(new TextComponent("懁")), 27, 104, Alignment.CENTER),
       new GUIComponent("air-bar", noShadow(new TextComponent("懂")), 27, 104, Alignment.CENTER),
@@ -298,6 +306,9 @@ public class GuiManager {
   }
 
   public GUI getGui(Player p) {
+    if (!guiMap.containsKey(p)) {
+      setupGui(p);
+    }
     return guiMap.get(p);
   }
 
@@ -339,21 +350,17 @@ public class GuiManager {
     gui.update(builtXpFont.get((int) Math.floor(1000 * player.getExp())));
   }
 
-  public void updateAir(GUI gui, Player player) {
-    if (player.getRemainingAir() == player.getMaximumAir()) {
-      gui.update(new GUIComponent("air-bar", EMPTY, 0, 0, Alignment.CENTER));
-    } else if (player.getRemainingAir() < 1) {
-      gui.update(oxygenBar.get(0));
-    } else {
-      float barSize = oxygenBar.size() - 1;
-      int progress = (int) Math.ceil(barSize * ((float) player.getRemainingAir()) / player.getMaximumAir());
-      gui.update(oxygenBar.get(progress));
+  public void updateAir(GUI gui, int oxygenState) {
+    if (oxygenState == 22) {
+      gui.update(emptyAirBar);
+      return;
     }
+    gui.update(oxygenBar.get(oxygenState));
   }
 
   public void buildLifeSegments() {
     lifeSeparators.clear();
-    for (int i = 105; i < 1000; i++) {
+    for (int i = 105; i <= 3480; i++) {
       float lifeSeparation = (float) (Math.floor(i) / 100);
       int pixelDiff = (int) (178f / lifeSeparation);
       int lineSeparators = (int) Math.floor(lifeSeparation);
@@ -372,7 +379,7 @@ public class GuiManager {
 
   public void buildEnergySegments() {
     energySeparators.clear();
-    for (int i = 105; i < 1000; i++) {
+    for (int i = 105; i <= 3480; i++) {
       float energySeparation = (float) (Math.floor(i) / 100);
       int pixelDiff = (int) (178f / energySeparation);
       int lineSeparators = (int) Math.floor(energySeparation);

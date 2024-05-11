@@ -1,12 +1,15 @@
 package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
+import land.face.strife.listeners.PotionListener;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
+import lombok.Setter;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+@Setter
 public class PotionEffectAction extends Effect {
 
   private PotionEffectType potionEffectType;
@@ -15,6 +18,7 @@ public class PotionEffectAction extends Effect {
   private boolean remove;
   private boolean bumpUpToIntensity;
   private boolean strictDuration;
+  private boolean ignoreFx;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -26,11 +30,16 @@ public class PotionEffectAction extends Effect {
     if (!strictDuration) {
       duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
+    if (ignoreFx) {
+      PotionListener.ignoreFx = true;
+    }
     if (bumpUpToIntensity) {
       bumpPotionEffect(target.getEntity(), duration);
+      PotionListener.ignoreFx = false;
       return;
     }
     target.getEntity().addPotionEffect(new PotionEffect(potionEffectType, (int) duration, intensity));
+    PotionListener.ignoreFx = false;
   }
 
   private void bumpPotionEffect(LivingEntity target, double duration) {
@@ -44,33 +53,5 @@ public class PotionEffectAction extends Effect {
       LogUtil.printDebug(" Target missing potion effect - adding at intensity 0");
     }
     target.addPotionEffect(new PotionEffect(potionEffectType, (int) duration, level));
-  }
-
-  public void setPotionEffectType(PotionEffectType potionEffectType) {
-    this.potionEffectType = potionEffectType;
-  }
-
-  public void setDuration(double duration) {
-    this.duration = duration;
-  }
-
-  public void setIntensity(int intensity) {
-    this.intensity = intensity;
-  }
-
-  public boolean isRemove() {
-    return remove;
-  }
-
-  public void setRemove(boolean remove) {
-    this.remove = remove;
-  }
-
-  public void setStrictDuration(boolean strictDuration) {
-    this.strictDuration = strictDuration;
-  }
-
-  public void setBumpUpToIntensity(boolean bumpUpToIntensity) {
-    this.bumpUpToIntensity = bumpUpToIntensity;
   }
 }

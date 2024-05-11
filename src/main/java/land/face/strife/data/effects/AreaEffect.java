@@ -16,6 +16,7 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
+import land.face.strife.util.HitDetectionUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
@@ -123,17 +124,16 @@ public class AreaEffect extends LocationEffect {
 
     Set<LivingEntity> areaTargets = new HashSet<>();
     switch (areaType) {
-      case RADIUS -> areaTargets.addAll(TargetingUtil.getEntitiesInArea(location, searchRadius));
-      case LINE -> areaTargets.addAll(TargetingUtil.getEntitiesInLine(location, searchRadius, radius));
-      case CONE -> areaTargets.addAll(TargetingUtil
+      case RADIUS -> areaTargets.addAll(HitDetectionUtil.getEntitiesInArea(location, searchRadius));
+      case LINE -> areaTargets.addAll(HitDetectionUtil.getEntitiesInLine(location, searchRadius, radius));
+      case CONE -> areaTargets.addAll(HitDetectionUtil
           .getEntitiesInCone(location, location.getDirection(), searchRadius, radius));
       case PARTY -> {
         if (caster.getEntity() instanceof Player) {
           areaTargets.addAll(StrifePlugin.getInstance().getSnazzyPartiesHook()
               .getNearbyPartyMembers((Player) caster.getEntity(), location, searchRadius));
         } else {
-          areaTargets.addAll(
-              TargetingUtil.getEntitiesInArea(caster.getEntity().getLocation(), searchRadius));
+          areaTargets.addAll(HitDetectionUtil.getEntitiesInArea(caster.getEntity().getLocation(), searchRadius));
         }
       }
     }

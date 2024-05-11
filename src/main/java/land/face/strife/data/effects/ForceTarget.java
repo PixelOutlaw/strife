@@ -19,12 +19,14 @@ public class ForceTarget extends Effect {
     LivingEntity toTarget = casterToTarget ? target.getEntity() : caster.getEntity();
     if (fromTarget instanceof Mob) {
       if (overwrite) {
-        ((Mob) fromTarget).setTarget(toTarget);
+        TargetingUtil.expandMobRange(toTarget, fromTarget);
+        //((Mob) fromTarget).setTarget(toTarget);
         return;
       }
       LivingEntity mobTarget = TargetingUtil.getMobTarget(fromTarget);
       if (mobTarget == null) {
-        ((Mob) fromTarget).setTarget(toTarget);
+        TargetingUtil.expandMobRange(toTarget, fromTarget);
+        //((Mob) fromTarget).setTarget(toTarget);
       }
     }
     LookAt.forceLook(fromTarget, toTarget);

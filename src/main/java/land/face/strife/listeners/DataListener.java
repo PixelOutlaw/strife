@@ -20,6 +20,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import land.face.dinvy.events.InventoryLoadComplete;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
 import land.face.strife.data.effects.Riptide;
 import land.face.strife.events.AbilityCastEvent;
 import land.face.strife.events.AbilityChangeEvent;
@@ -27,9 +28,11 @@ import land.face.strife.events.AbilityCooldownEvent;
 import land.face.strife.events.AbilityGainChargeEvent;
 import land.face.strife.events.CombatChangeEvent;
 import land.face.strife.events.CombatChangeEvent.NewCombatState;
+import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.menus.levelup.PathMenu;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
@@ -165,15 +168,19 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       if (ItemUtil.getCustomData(event.getItem().getItemStack()) == 42069) {
         event.setCancelled(true);
         event.getItem().remove();
-        MessageUtils.sendMessage(event.getEntity(),
-            "&a&oThe power of &f&l&oFaceguy &a&oflows through you..!");
-        ((Player) event.getEntity()).playSound(event.getEntity().getLocation(),
-            Sound.BLOCK_BEACON_POWER_SELECT, 1, 1);
+        MessageUtils.sendMessage(event.getEntity(), "&a&oThe power of &f&l&oFaceguy &a&oflows through you..!");
+        ((Player) event.getEntity()).playSound(event.getEntity().getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1, 1);
         event.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 240, 1, false));
         StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
         mob.setEnergy(mob.getEnergy() + 0.1f * (mob.getMaxEnergy() - mob.getEnergy()));
-        event.getEntity().setHealth(event.getEntity().getHealth() +
-            0.1f * (event.getEntity().getMaxHealth() - event.getEntity().getHealth()));
+        double amount = 0.1f * (event.getEntity().getMaxHealth() - event.getEntity().getHealth());
+        DamageUtil.restoreHealth(event.getEntity(), amount, false, false);
+        if (mob.getChampion().getSaveData().getSelectedGod() == SelectedGod.FACEGUY &&
+            plugin.getPrayerManager().isPrayerActive(event.getEntity(), Prayer.FOURTEEN)) {
+          plugin.getAbilityManager().reduceCooldownPercent(event.getEntity(), "Blink", 1);
+          plugin.getAbilityManager().reduceCooldownPercent(event.getEntity(), "Teleport Strike", 1);
+          plugin.getAbilityManager().reduceCooldownPercent(event.getEntity(), "Fade Step", 1);
+        }
       }
     }
   }
@@ -340,6 +347,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     mob.endRageTask();
     mob.setBlock(mob.getMaxBlock());
     mob.restartTimers();
+    Bukkit.getScheduler().runTaskLater(plugin, () -> event.getPlayer().setSprinting(false), 10L);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)

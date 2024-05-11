@@ -212,7 +212,10 @@ public class CombatCountdownTask extends BukkitRunnable {
     }
     if (target.getEntity().hasPotionEffect(PotionEffectType.POISON)) {
       name += "  " + FaceColor.GREEN +
-          (target.getEntity().getPotionEffect(PotionEffectType.POISON).getAmplifier() + 1) + "☠";
+          (target.getEntity().getPotionEffect(PotionEffectType.POISON).getAmplifier() + 1) + "儉";
+    }
+    if (target.getBleed() > 0.9) {
+      name += "  " + FaceColor.CRIMSON + (int) target.getBleed() + "儉";
     }
     return BossBarManager.covertStringToRetardComponent(name);
   }

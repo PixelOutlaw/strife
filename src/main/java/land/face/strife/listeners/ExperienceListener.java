@@ -106,7 +106,7 @@ public class ExperienceListener implements Listener {
     event.setDroppedExp(0);
 
     float expMultiplier = 1f / killers.size();
-    expMultiplier += (killers.size() - 1) * 0.2f;
+    expMultiplier += (killers.size() - 1) * 0.25f;
 
     expMultiplier = plugin.getViolationManager()
         .calculateLevelPenalty(expMultiplier, StatUtil.getMobLevel(event.getEntity()), killers, ue);

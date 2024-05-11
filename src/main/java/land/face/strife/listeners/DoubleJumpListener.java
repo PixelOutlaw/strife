@@ -196,8 +196,10 @@ public class DoubleJumpListener implements Listener {
         plugin.getAbilityManager().setGlobalCooldown(player, 16);
         plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
 
+        PotionListener.ignoreFx = true;
         player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20, 1, true, false));
         player.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, rollLeviTicks, 1, true, false));
+        PotionListener.ignoreFx = false;
 
         player.setVelocity(currentVelocity.add(horizontalMovement.normalize().multiply(rollPower)).setY(rollAscent));
         player.getWorld().spawnParticle(particle, player.getLocation(), 10, 0, 0, 0, longParticleSpeed);

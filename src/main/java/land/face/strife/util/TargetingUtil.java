@@ -1,5 +1,6 @@
 package land.face.strife.util;
 
+import static land.face.strife.util.HitDetectionUtil.getFirstEntityInLine;
 import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
@@ -34,6 +35,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -183,65 +185,6 @@ public class TargetingUtil {
     return false;
   }
 
-  public static Set<LivingEntity> getEntitiesInArea(Location loc, double size) {
-    size += 1;
-    Collection<Entity> targetList = Objects.requireNonNull(loc.getWorld()).getNearbyEntities(loc, size, size, size);
-    double circleDist = Math.pow(size, 2);
-    Set<LivingEntity> validTargets = new HashSet<>();
-    for (Entity entity : targetList) {
-      if (entity.getLocation().distanceSquared(loc) > circleDist || isInvalidTarget(entity)) {
-        continue;
-      }
-      validTargets.add((LivingEntity) entity);
-    }
-    return validTargets;
-  }
-
-  public static Set<LivingEntity> getEntitiesInCone(Location origin, Vector direction, float length,
-      float maxConeRadius) {
-    Collection<Entity> targetList = Objects.requireNonNull(origin.getWorld())
-        .getNearbyEntities(origin, length, length, length);
-    targetList.removeIf(TargetingUtil::isInvalidTarget);
-    Set<LivingEntity> validTargets = new HashSet<>();
-    for (float incRange = 0; incRange < length; incRange += 0.4) {
-      Location loc = origin.clone().add(direction.clone().multiply(incRange));
-      for (Entity entity : targetList) {
-        if (entityWithinRadius(entity, loc, 0.2f + (maxConeRadius * (incRange / length)))) {
-          validTargets.add((LivingEntity) entity);
-        }
-      }
-    }
-    return validTargets;
-  }
-
-  public static Set<LivingEntity> getEntitiesInLine(Location location, float range, float radius) {
-    Collection<Entity> targetList = Objects.requireNonNull(location.getWorld())
-        .getNearbyEntities(location, range, range, range);
-    targetList.removeIf(TargetingUtil::isInvalidTarget);
-
-    Map<BoundingBox, Entity> boundingBoxes = new HashMap<>();
-    for (Entity entity : targetList) {
-      boundingBoxes.put(entity.getBoundingBox().clone().expand(0.1 + radius), entity);
-    }
-
-    Location checkLocation = location.clone();
-    Vector incrementVector = location.getDirection().clone().multiply(0.3);
-
-    Set<LivingEntity> validTargets = new HashSet<>();
-    for (float incRange = 0; incRange <= range; incRange += 0.3) {
-      checkLocation.add(incrementVector);
-      Iterator<BoundingBox> iterator = boundingBoxes.keySet().iterator();
-      while (iterator.hasNext()) {
-        BoundingBox box = iterator.next();
-        if (box.contains(checkLocation.toVector())) {
-          validTargets.add((LivingEntity) boundingBoxes.get(box));
-          iterator.remove();
-        }
-      }
-    }
-    return validTargets;
-  }
-
   public static boolean hasLineOfSight(Location start, Location target, Entity entity) {
     if (start.getWorld() != target.getWorld()) {
       return false;
@@ -258,23 +201,7 @@ public class TargetingUtil {
     return result.getHitEntity() != null;
   }
 
-  public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range,
-      boolean friendly) {
-    RayTraceResult result = caster.getWorld().rayTrace(caster.getEyeLocation(), caster.getEyeLocation().getDirection(),
-        range, FluidCollisionMode.NEVER, true, 0.35, entity -> isValidRaycastTarget(caster, entity)
-            && friendly == isFriendly(caster, (LivingEntity) entity));
-    if (result == null || result.getHitEntity() == null) {
-      return null;
-    }
-    if (result.getHitBlock() == null) {
-      return (LivingEntity) result.getHitEntity();
-    }
-    if (result.getHitBlock().getLocation().clone().add(0.5, 0.5, 0.5).distanceSquared(caster.getEyeLocation()) < result
-        .getHitEntity().getLocation().distanceSquared(caster.getEyeLocation())) {
-      return null;
-    }
-    return (LivingEntity) result.getHitEntity();
-  }
+
 
   public static boolean isInvalidTarget(Entity e) {
     if (!e.isValid() || e.isInvulnerable() || !(e instanceof LivingEntity) || e instanceof ArmorStand) {
@@ -290,6 +217,9 @@ public class TargetingUtil {
   }
 
   public static Location modifyLocation(Location loc, float verticalRange) {
+    if (loc == null) {
+      return null;
+    }
     Location detectionLocation = loc.toCenterLocation().clone();
     for (int i = 0; i < verticalRange; i++) {
       if (detectionLocation.getBlock().getRelative(BlockFace.DOWN, i).getType().isSolid()) {
@@ -300,16 +230,11 @@ public class TargetingUtil {
     return null;
   }
 
-  private static boolean isValidRaycastTarget(LivingEntity caster, Entity entity) {
+  public static boolean isValidRaycastTarget(LivingEntity caster, Entity entity) {
     return entity.isValid() && !entity.isInvulnerable() && entity instanceof LivingEntity &&
         entity != caster && !entity.hasMetadata("NPC") && !entity.hasMetadata("pet") &&
         !(entity instanceof Player && (((Player) entity).getGameMode() == GameMode.CREATIVE
             || ((Player) entity).getGameMode() == GameMode.SPECTATOR));
-  }
-
-  private static boolean entityWithinRadius(Entity e, Location loc, float radius) {
-    BoundingBox box = e.getBoundingBox().clone().expand(radius);
-    return box.contains(loc.toVector());
   }
 
   public static LivingEntity selectFirstEntityInSight(LivingEntity caster, double range, boolean friendly) {
@@ -352,7 +277,7 @@ public class TargetingUtil {
     }
     if (result.getHitBlock() != null) {
       LogUtil.printDebug(" - Using BLOCK location calculation");
-      switch (result.getHitBlockFace()) {
+      switch (Objects.requireNonNull(result.getHitBlockFace())) {
         case DOWN -> {
           Location loc = caster.getLocation().clone();
           loc.setX(result.getHitPosition().getX());
@@ -370,10 +295,10 @@ public class TargetingUtil {
         default -> {
           Block targetBlock = result.getHitBlock();
           Block hitBlockSpace = result.getHitBlock().getRelative(result.getHitBlockFace());
-          if (targetBlock.getRelative(BlockFace.UP, 1).isEmpty() &&
-              targetBlock.getRelative(BlockFace.UP, 2).isEmpty() &&
-              hitBlockSpace.getRelative(BlockFace.UP, 1).isEmpty() &&
-              hitBlockSpace.getRelative(BlockFace.UP, 2).isEmpty()) {
+          if (canPortTo(targetBlock.getRelative(BlockFace.UP, 1).getType()) &&
+              canPortTo(targetBlock.getRelative(BlockFace.UP, 2).getType()) &&
+              canPortTo(hitBlockSpace.getRelative(BlockFace.UP, 1).getType()) &&
+              canPortTo(hitBlockSpace.getRelative(BlockFace.UP, 2).getType())) {
             return result.getHitBlock().getLocation().add(0.5, 1.5, 0.5);
           }
           return result.getHitBlock().getLocation().add(0.5, 0.8, 0.5)
@@ -387,6 +312,13 @@ public class TargetingUtil {
         result.getHitPosition().getBlockY() + 0.25,
         result.getHitPosition().getZ()
     );
+  }
+
+  public static boolean canPortTo(Material material) {
+    return switch (material) {
+      case AIR, CAVE_AIR, CAVE_VINES, VINE, LADDER, SHORT_GRASS, TALL_GRASS, MOSS_CARPET -> true;
+      default -> false;
+    };
   }
 
   public static LivingEntity getMobTarget(StrifeMob strifeMob) {

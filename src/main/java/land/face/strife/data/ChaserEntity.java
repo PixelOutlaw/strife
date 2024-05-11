@@ -1,9 +1,13 @@
 package land.face.strife.data;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.Vector;
 
+@Getter
+@Setter
 public class ChaserEntity {
 
   private final StrifeMob caster;
@@ -30,55 +34,4 @@ public class ChaserEntity {
     this.currentTick = 0;
   }
 
-  public StrifeMob getCaster() {
-    return caster;
-  }
-
-  public String getChaserId() {
-    return chaserId;
-  }
-
-  public int getLifespan() {
-    return lifespan;
-  }
-
-  public float getSpeed() {
-    return speed;
-  }
-
-  public float getMaxSpeed() {
-    return maxSpeed;
-  }
-
-  public Vector getVelocity() {
-    return velocity;
-  }
-
-  public void setVelocity(Vector velocity) {
-    this.velocity = velocity;
-  }
-
-  public Location getLocation() {
-    return location;
-  }
-
-  public void setLocation(Location location) {
-    this.location = location;
-  }
-
-  public LivingEntity getTarget() {
-    return target;
-  }
-
-  public void setTarget(LivingEntity target) {
-    this.target = target;
-  }
-
-  public int getCurrentTick() {
-    return currentTick;
-  }
-
-  public void setCurrentTick(int currentTick) {
-    this.currentTick = currentTick;
-  }
 }

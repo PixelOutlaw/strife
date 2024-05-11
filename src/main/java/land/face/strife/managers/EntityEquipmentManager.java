@@ -1,5 +1,6 @@
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
@@ -103,6 +104,10 @@ public class EntityEquipmentManager {
     String name = cs.getString("name", "");
     if (StringUtils.isNotBlank(name)) {
       ItemStackExtensionsKt.setDisplayName(stack, StringExtensionsKt.chatColorize(name));
+    }
+    String trim = cs.getString("trim", "");
+    if (StringUtils.isNotBlank(trim)) {
+      ItemUtils.applyCustomTrim(stack, trim);
     }
     List<String> lore = new ArrayList<>();
     for (String line : cs.getStringList("lore")) {

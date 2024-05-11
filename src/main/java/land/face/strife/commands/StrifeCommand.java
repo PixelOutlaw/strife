@@ -59,13 +59,17 @@ import land.face.strife.managers.BossBarManager;
 import land.face.strife.menus.abilities.ReturnButton;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.EloUtil;
+import land.face.strife.util.HitDetectionUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import net.kyori.adventure.text.TextComponent;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
@@ -150,6 +154,13 @@ public class StrifeCommand extends BaseCommand {
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(target.getPlayer());
     StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
+    if (mob.hasTrait(StrifeTrait.DIVINE_BLOOD)) {
+      DamageUtil.restoreHealth(target.getPlayer(), 10000, false, true);
+      target.getPlayer().playSound(target.getPlayer().getLocation(), Sound.ENTITY_WARDEN_HEARTBEAT, 1, 2);
+    }
+    if (mob.getPrayer() != StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS)) {
+      PrayerCommand.sentFaithRestorePrompt(mob);
+    }
     mob.setPrayer(mob.getMaxPrayer());
     mob.getChampion().setGod(god);
     MessageUtils.sendMessage(sender, "Set god of " + target.getPlayer().getName() + " to " + godString);
@@ -314,8 +325,7 @@ public class StrifeCommand extends BaseCommand {
   @Subcommand("mobinfo|info")
   @CommandPermission("strife.info")
   public void infoCommand(Player sender) {
-    List<LivingEntity> targets = new ArrayList<>(
-        TargetingUtil.getEntitiesInLine(sender.getEyeLocation(), 30, 2));
+    List<LivingEntity> targets = new ArrayList<>(HitDetectionUtil.getEntitiesInLine(sender.getEyeLocation(), 30, 2));
     targets.remove(sender);
     if (targets.isEmpty()) {
       sendMessage(sender, "&eNo target found...");
@@ -353,8 +363,7 @@ public class StrifeCommand extends BaseCommand {
   @Subcommand("animation-test")
   @CommandPermission("strife.animation")
   public void animationTest(Player sender, String id, int lerpIn, int lerpOut, double speed) {
-    List<LivingEntity> targets = new ArrayList<>(
-        TargetingUtil.getEntitiesInLine(sender.getEyeLocation(), 30, 2));
+    List<LivingEntity> targets = new ArrayList<>(HitDetectionUtil.getEntitiesInLine(sender.getEyeLocation(), 30, 2));
     targets.remove(sender);
     if (targets.isEmpty()) {
       sendMessage(sender, "&eNo target found...");

@@ -39,7 +39,7 @@ public class AbilityMacroCommand extends BaseCommand {
   @Subcommand("cast")
   public void baseCommand(Player sender, String slot) {
     int slotNum = NumberUtils.toInt(slot, -1) - 1;
-    if (slotNum > 2) {
+    if (slotNum > 3) {
       sendFailureHelp(sender);
       return;
     }
@@ -57,6 +57,6 @@ public class AbilityMacroCommand extends BaseCommand {
 
   private void sendFailureHelp(Player player) {
     MessageUtils.sendMessage(player, "&cInvalid cast usage. Valid args for [slot]:");
-    MessageUtils.sendMessage(player, "&cSLOT_A, SLOT_B, SLOT_C, 1, 2, 3");
+    MessageUtils.sendMessage(player, "&cSLOT_A, SLOT_B, SLOT_C, SLOT_D, 1, 2, 3, 4");
   }
 }

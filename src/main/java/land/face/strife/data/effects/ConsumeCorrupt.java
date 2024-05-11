@@ -1,6 +1,7 @@
 package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
+import land.face.strife.util.DamageUtil;
 
 public class ConsumeCorrupt extends Effect {
 
@@ -17,8 +18,7 @@ public class ConsumeCorrupt extends Effect {
     if (damageRatio > 0.01) {
       target.getEntity().damage(value * damageRatio, caster.getEntity());
     }
-    caster.getEntity().setHealth(Math.min(caster.getEntity().getHealth() + value * healRatio,
-        caster.getEntity().getMaxHealth()));
+    DamageUtil.restoreHealth(caster.getEntity(),  value * healRatio, true, false);
   }
 
   public double getDamageRatio() {

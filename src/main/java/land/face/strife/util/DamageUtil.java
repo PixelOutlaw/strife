@@ -272,7 +272,7 @@ public class DamageUtil {
     float critMult = 0;
     boolean criticalHit = false;
 
-    if (attackType != AttackType.BONUS) {
+    if (mods.isCanCrit()) {
       potionMult = DamageUtil.getPotionMult(attacker.getEntity(), defender.getEntity());
       criticalHit = isCriticalHit(attacker, defender, mods) && !attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2);
       if (criticalHit && !attacker.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
@@ -326,8 +326,7 @@ public class DamageUtil {
 
     if (attackType != AttackType.BONUS) {
       if (attacker.getEntity().getFreezeTicks() > 0 && !(attacker.getEntity() instanceof Player)) {
-        rawDamage *= 1 -
-            0.3f * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity().getMaxFreezeTicks());
+        rawDamage *= 1 - 0.3f * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity().getMaxFreezeTicks());
       }
       if (defender.hasTrait(StrifeTrait.STONE_SKIN)) {
         rawDamage *= 1 - (0.03f * defender.getEarthRunes());
@@ -406,7 +405,7 @@ public class DamageUtil {
   }
 
   public static void postDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods, boolean isBasicAttack) {
-    if (mods.getAttackType() == AttackType.BONUS) {
+    if (!mods.isApplyOnHitEffects()) {
       return;
     }
     float ratio = mods.getDamageReductionRatio() * mods.getHealMultiplier();
@@ -477,7 +476,9 @@ public class DamageUtil {
         .getOrDefault(AbilityMod.CRITICAL_CHANCE, 0f));
     boolean success = critChance >= rollDouble(hasLuck(attacker.getEntity()));
     if (success) {
-      DamageUtil.callCritEvent(attacker, defender);
+      if (mods.isCanCrit()) {
+        DamageUtil.callCritEvent(attacker, defender);
+      }
       defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
           Sound.ENTITY_GENERIC_BIG_FALL, 2f, 0.75f);
     }
@@ -508,23 +509,19 @@ public class DamageUtil {
   public static float applyDamageScale(StrifeMob caster, StrifeMob target,
       BonusDamage bonusDamage) {
     float amount = bonusDamage.getAmount();
-    return switch (bonusDamage.getDamageScale()) {
+    return (float) switch (bonusDamage.getDamageScale()) {
       case FLAT -> amount;
-      case CASTER_STAT_PERCENT -> bonusDamage.getAmount() *
-          caster.getStat(bonusDamage.getDamageStat());
-      case TARGET_STAT_PERCENT -> bonusDamage.getAmount() *
-          target.getStat(bonusDamage.getDamageStat());
+      case CASTER_STAT_PERCENT -> bonusDamage.getAmount() * caster.getStat(bonusDamage.getDamageStat());
+      case TARGET_STAT_PERCENT -> bonusDamage.getAmount() * target.getStat(bonusDamage.getDamageStat());
       case CASTER_LEVEL -> amount * StatUtil.getMobLevel(caster.getEntity());
       case TARGET_LEVEL -> amount * StatUtil.getMobLevel(target.getEntity());
       case CASTER_DAMAGE -> amount * DamageUtil.getRawDamage(caster, bonusDamage.getDamageType());
-      case TARGET_CURRENT_HEALTH -> amount * (float) target.getEntity().getHealth();
-      case CASTER_CURRENT_HEALTH -> amount * (float) caster.getEntity().getHealth();
-      case TARGET_MISSING_HEALTH -> amount *
-          (float) (target.getEntity().getMaxHealth() - target.getEntity().getHealth());
-      case CASTER_MISSING_HEALTH -> amount *
-          (float) (caster.getEntity().getMaxHealth() - caster.getEntity().getHealth());
-      case TARGET_MAX_HEALTH -> amount * (float) target.getEntity().getMaxHealth();
-      case CASTER_MAX_HEALTH -> amount * (float) caster.getEntity().getMaxHealth();
+      case TARGET_CURRENT_HEALTH -> amount * target.getEntity().getHealth();
+      case CASTER_CURRENT_HEALTH -> amount * caster.getEntity().getHealth();
+      case TARGET_MISSING_HEALTH -> amount * (target.getEntity().getMaxHealth() - target.getEntity().getHealth());
+      case CASTER_MISSING_HEALTH -> amount * (caster.getEntity().getMaxHealth() - caster.getEntity().getHealth());
+      case TARGET_MAX_HEALTH -> amount * target.getEntity().getMaxHealth();
+      case CASTER_MAX_HEALTH -> amount * caster.getEntity().getMaxHealth();
       case TARGET_CURRENT_BARRIER -> amount * target.getBarrier();
       case CASTER_CURRENT_BARRIER -> amount * caster.getBarrier();
       case TARGET_MISSING_BARRIER -> amount * (target.getMaxBarrier() - target.getBarrier());
@@ -543,6 +540,8 @@ public class DamageUtil {
       case CASTER_CURRENT_CORRUPTION -> amount * caster.getCorruption();
       case TARGET_MAX_RAGE -> amount * target.getMaxRage();
       case CASTER_MAX_RAGE -> amount * caster.getMaxRage();
+      case TARGET_MAX_BLOCK -> amount * target.getMaxBlock();
+      case CASTER_MAX_BLOCK -> amount * caster.getMaxBlock();
       case CASTER_ATTRIBUTE -> amount * caster.getChampion().getAttributeLevel(bonusDamage.getAttribute());
       case TARGET_ATTRIBUTE -> amount * target.getChampion().getAttributeLevel(bonusDamage.getAttribute());
       case CASTER_SKILL_LEVEL -> amount * caster.getChampion().getLifeSkillLevel(bonusDamage.getLifeSkillType());
@@ -634,17 +633,19 @@ public class DamageUtil {
 
   public static void applyElementalEffects(StrifeMob attacker, StrifeMob defender, Map<DamageType, Float> damageMap,
       DamageModifiers mods) {
-    if (mods.getAttackType() == AttackType.BONUS) {
+    if (mods.getAttackType() != AttackType.BONUS) {
+      float baseDarkDamage = damageMap.getOrDefault(DamageType.DARK, 0f);
+      if (baseDarkDamage > 0.5) {
+        damageMap.put(DamageType.DARK,
+            baseDarkDamage * plugin.getCorruptionManager().getCorruptionMultiplier(defender));
+      }
+      float baseFireDmg = damageMap.getOrDefault(DamageType.FIRE, 0f);
+      if (baseFireDmg > 0.5 && defender.getEntity().getFireTicks() > 0) {
+        damageMap.put(DamageType.FIRE, baseFireDmg * 1.2f);
+      }
+    }
+    if (!mods.isApplyOnHitEffects()) {
       return;
-    }
-    float baseDarkDamage = damageMap.getOrDefault(DamageType.DARK, 0f);
-    if (baseDarkDamage != 0) {
-      damageMap.put(DamageType.DARK, baseDarkDamage *
-          plugin.getCorruptionManager().getCorruptionMultiplier(defender));
-    }
-    float baseFireDmg = damageMap.getOrDefault(DamageType.FIRE, 0f);
-    if (baseFireDmg > 0.04 && defender.getEntity().getFireTicks() > 0) {
-      damageMap.put(DamageType.FIRE, baseFireDmg * 1.2f);
     }
     float chance = (mods.getAbilityMods().getOrDefault(AbilityMod.STATUS_CHANCE, 0f) +
         attacker.getStat(StrifeStat.ELEMENTAL_STATUS)) / 100;
@@ -700,7 +701,7 @@ public class DamageUtil {
       }
       case DARK -> {
         mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
-        plugin.getCorruptionManager().addCorruption(defender, 12 + baseDarkDamage / 5, true);
+        plugin.getCorruptionManager().addCorruption(defender, 14f + damageMap.get(DamageType.DARK) * 0.1f, true);
       }
       case EARTH -> {
         mods.getElementalStatuses().add(ElementalStatus.CRUNCH);
@@ -1000,14 +1001,17 @@ public class DamageUtil {
   }
 
   public static void applyLifeSteal(StrifeMob attacker, double damage, double healMultiplier, double bonus) {
+    if (attacker.getEntity().hasPotionEffect(PotionEffectType.WITHER)) {
+      return;
+    }
     double lifeSteal = (attacker.getStat(StrifeStat.LIFE_STEAL) + bonus) / 100;
     lifeSteal *= 1 + attacker.getStat(StrifeStat.HEALING_POWER) / 300;
-    restoreHealthWithPenalties(attacker.getEntity(), damage * lifeSteal * healMultiplier);
+    restoreHealth(attacker.getEntity(), damage * lifeSteal * healMultiplier, true, false);
   }
 
   public static void applyHealthOnHit(StrifeMob attacker, float totalMult, double bonus) {
     double health = (attacker.getStat(StrifeStat.HP_ON_HIT) + bonus) * totalMult;
-    restoreHealthWithPenalties(attacker.getEntity(), health);
+    restoreHealth(attacker.getEntity(), health, true, false);
   }
 
   public static void applyEnergyOnHit(StrifeMob attacker, float totalMult) {
@@ -1017,10 +1021,7 @@ public class DamageUtil {
 
   public static boolean attemptBleed(StrifeMob attacker, StrifeMob defender, float rawPhysical,
       DamageModifiers mods, boolean bypassArmor, boolean bypassBarrier) {
-    if (defender.getBarrier() > 0 || mods.getAttackType() == AttackType.BONUS) {
-      return false;
-    }
-    if (defender.getStat(StrifeStat.BLEED_RESIST) > 99) {
+    if (defender.getBarrier() > 0 || defender.getStat(StrifeStat.BLEED_RESIST) > 99) {
       return false;
     }
     float chance = (attacker.getStat(StrifeStat.BLEED_CHANCE) +
@@ -1034,14 +1035,18 @@ public class DamageUtil {
           mods.getAbilityMods().getOrDefault(AbilityMod.BLEED_DAMAGE, 0f);
       damage *= 1 + (bleedDamage / 100);
       applyBleed(attacker, defender, damage, bypassBarrier, bypassArmor, false);
+      if (attacker.getEntity() instanceof Player && attacker != defender) {
+        ((Player) attacker.getEntity()).playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 20f, 0.8f);
+      }
+      if (defender.getEntity() instanceof Player) {
+        ((Player) defender.getEntity()).playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 0.8f);
+      }
+      return true;
     }
-    return true;
+    return false;
   }
 
   public static boolean attemptPoison(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
-    if (mods.getAttackType() == AttackType.BONUS) {
-      return false;
-    }
     if (defender.getStat(StrifeStat.POISON_RESIST) > 99) {
       return false;
     }
@@ -1102,6 +1107,7 @@ public class DamageUtil {
       amount *= 1 - defender.getStat(StrifeStat.BLEED_RESIST) / 100;
     }
     defender.addBleed(amount, bypassBarrier);
+    DOTUtil.spawnInstantBleedParticles(defender.getEntity());
   }
 
   public static void addFrost(StrifeMob attacker, StrifeMob defender, float amount) {
@@ -1186,21 +1192,22 @@ public class DamageUtil {
     return entity.hasPotionEffect(PotionEffectType.LUCK);
   }
 
-  public static double applyHealPenalties(LivingEntity entity, double amount) {
-    if (entity.hasPotionEffect(PotionEffectType.POISON)) {
-      return 0;
-    }
-    if (amount <= 0 || entity.getHealth() <= 0 || entity.isDead()) {
-      return 0;
-    }
-    return amount;
-  }
-
-  public static void restoreHealthWithPenalties(LivingEntity entity, double amount) {
-    restoreHealth(entity, applyHealPenalties(entity, amount));
-  }
-
   public static void restoreHealth(LivingEntity livingEntity, double amount) {
+    restoreHealth(livingEntity, amount, true, false);
+  }
+
+  public static void restoreHealth(LivingEntity livingEntity, double amount, boolean penalties, boolean bypassRot) {
+    if (livingEntity.hasPotionEffect(PotionEffectType.WITHER) && !bypassRot) {
+      return;
+    }
+    if (penalties) {
+      if (livingEntity.getFireTicks() > 0) {
+        amount *= 0.5;
+      }
+      if (livingEntity.hasPotionEffect(PotionEffectType.POISON)) {
+        amount *= 0.25;
+      }
+    }
     if (amount <= 0 || !livingEntity.isValid()) {
       return;
     }
@@ -1288,6 +1295,8 @@ public class DamageUtil {
     CASTER_CURRENT_CORRUPTION,
     TARGET_MAX_RAGE,
     CASTER_MAX_RAGE,
+    TARGET_MAX_BLOCK,
+    CASTER_MAX_BLOCK,
     CASTER_SKILL_LEVEL,
     TARGET_SKILL_LEVEL,
     CASTER_ATTRIBUTE,
@@ -1334,6 +1343,6 @@ public class DamageUtil {
   }
 
   public enum AttackType {
-    MELEE, PROJECTILE, AREA, OTHER, BONUS
+    MELEE, PROJECTILE, AREA, OTHER, BONUS, LINGERING
   }
 }

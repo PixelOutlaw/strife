@@ -1,6 +1,7 @@
 package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
+import land.face.strife.util.DamageUtil;
 
 public class ConsumeBleed extends Effect {
 
@@ -15,7 +16,7 @@ public class ConsumeBleed extends Effect {
     }
     target.clearBleed();
     target.getEntity().damage(value * damageRatio, caster.getEntity());
-    caster.getEntity().setHealth(caster.getEntity().getHealth() + value * healRatio);
+    DamageUtil.restoreHealth(caster.getEntity(),  value * healRatio, true, false);
   }
 
   public double getDamageRatio() {

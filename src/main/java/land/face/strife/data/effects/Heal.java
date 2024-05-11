@@ -10,6 +10,7 @@ import land.face.strife.util.DamageUtil.DamageScale;
 import land.face.strife.util.PlayerDataUtil;
 import lombok.Setter;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffectType;
 
 public class Heal extends Effect {
 
@@ -61,8 +62,9 @@ public class Heal extends Effect {
     }
 
     if (tickDuration == -1) {
-      DamageUtil.restoreHealth(healCaster ?
-          caster.getEntity() : target.getEntity(), applyMultipliers(caster, heal));
+      if (!caster.getEntity().hasPotionEffect(PotionEffectType.WITHER)) {
+        DamageUtil.restoreHealth(healCaster ? caster.getEntity() : target.getEntity(), applyMultipliers(caster, heal), true, false);
+      }
     } else {
       PlayerDataUtil.restoreHealthOverTime(healCaster ?
           caster.getEntity() : target.getEntity(), applyMultipliers(caster, heal), tickDuration);

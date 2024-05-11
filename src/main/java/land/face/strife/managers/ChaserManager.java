@@ -97,7 +97,7 @@ public class ChaserManager {
   }
 
   private boolean isChaserCloseEnough(ChaserEntity chaser, Location targetLoc) {
-    float hitRange = chaser.getMaxSpeed() + (float) chaser.getTarget().getWidth() / 2;
+    double hitRange = (chaser.getSpeed() + chaser.getTarget().getWidth()) / 1.5f;
     return Math.abs(chaser.getLocation().getX() - targetLoc.getX()) < hitRange &&
         Math.abs(chaser.getLocation().getY() - targetLoc.getY()) < hitRange &&
         Math.abs(chaser.getLocation().getZ() - targetLoc.getZ()) < hitRange;

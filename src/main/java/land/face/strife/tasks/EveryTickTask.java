@@ -42,6 +42,8 @@ public class EveryTickTask extends BukkitRunnable {
   private final Map<Player, Integer> lastLifeNum = new WeakHashMap<>();
   private final Map<Player, Integer> lastEnergyNum = new WeakHashMap<>();
   private final Map<Player, Integer> lastBarrierNum = new WeakHashMap<>();
+  private final Map<Player, Integer> lastOxygenNum = new WeakHashMap<>();
+  private final Map<Player, Integer> lastAttackProgress = new WeakHashMap<>();
 
   private final List<GUIComponent> attackIndication = List.of(
       new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兰")), 45, 0, Alignment.CENTER),
@@ -76,10 +78,13 @@ public class EveryTickTask extends BukkitRunnable {
 
         if (mob.isInCombat()) {
           int attackProgress = (int) (plugin.getAttackSpeedManager().getRawMultiplier(p.getUniqueId()) * arrLen);
-          if (attackProgress != arrLen) {
-            gui.update(attackIndication.get(attackProgress));
-          } else {
-            gui.update(emptyAttack);
+          if (lastAttackProgress.getOrDefault(p, arrLen) != attackProgress) {
+            lastAttackProgress.put(p, attackProgress);
+            if (attackProgress != arrLen) {
+              gui.update(attackIndication.get(attackProgress));
+            } else {
+              gui.update(emptyAttack);
+            }
           }
         }
 
@@ -120,7 +125,12 @@ public class EveryTickTask extends BukkitRunnable {
 
         // Energy separator logic - see history
 
-        plugin.getGuiManager().updateAir(gui, p);
+        float percentOxygen = (float) p.getRemainingAir() / p.getMaximumAir();
+        int progress = Math.round(((float) GuiManager.oxygenBar.size()) * percentOxygen);
+        if (lastOxygenNum.getOrDefault(p, 22) != progress) {
+          plugin.getGuiManager().updateAir(gui, progress);
+          lastOxygenNum.put(p, progress);
+        }
 
         double hoverPower = JumpUtil.determineHoverPower(p);
         if (hoverPower > 0) {

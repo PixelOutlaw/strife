@@ -20,8 +20,11 @@ package land.face.strife.commands;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.ShaderStyle;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils.ToastStyle;
 import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandPermission;
@@ -64,6 +67,7 @@ public class GodCommand extends BaseCommand {
     plugin.getChampionManager().addBoundLoreAbility(mob, selectedGod.name() + "-1");
     StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
     if (mob.getPrayer() != StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS)) {
+      ToastUtils.sendToast(target.getPlayer(), PrayerCommand.FAITH_TOAST, ItemUtils.BLANK, ToastStyle.INFO);
       PaletteUtil.sendMessage(target.getPlayer(), FaceColor.WHITE.s() + FaceColor.ITALIC + "Faith restored!");
       Audience audience = Audience.audience(target.getPlayer());
       audience.playSound(PrayerManager.FAITH_RESTORED);
@@ -142,6 +146,7 @@ public class GodCommand extends BaseCommand {
 
     StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
     if (mob.getPrayer() != StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS)) {
+      ToastUtils.sendToast(target.getPlayer(), PrayerCommand.FAITH_TOAST, ItemUtils.BLANK, ToastStyle.INFO);
       PaletteUtil.sendMessage(target.getPlayer(), FaceColor.WHITE.s() + FaceColor.ITALIC + "Faith restored!");
       Audience audience = Audience.audience(target.getPlayer());
       audience.playSound(PrayerManager.FAITH_RESTORED);

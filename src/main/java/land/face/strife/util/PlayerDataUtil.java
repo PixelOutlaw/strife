@@ -29,16 +29,17 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.potion.PotionEffectType;
 
 public class PlayerDataUtil {
 
   private static final Map<UUID, Set<Player>> NEARBY_PLAYER_CACHE = new HashMap<>();
   private static StrifePlugin plugin;
-  
+
   public static void refresh(StrifePlugin refreshedPlugin) {
     plugin = refreshedPlugin;
   }
-  
+
   public static LoadedKnowledge loadMobKnowledge(String key, int weight,
       ConfigurationSection knowledgeSection) {
     String name = PaletteUtil.color(knowledgeSection.getString("name",
@@ -75,7 +76,8 @@ public class PlayerDataUtil {
 
   public static LoadedKnowledge loadModKnowledge(String key, int weight,
       ConfigurationSection knowledgeSection) {
-    String name = PaletteUtil.color(knowledgeSection.getString("name", FaceColor.GRAY.getColor() + key + "(WORK IN PROGRESS)"));
+    String name = PaletteUtil.color(
+        knowledgeSection.getString("name", FaceColor.GRAY.getColor() + key + "(WORK IN PROGRESS)"));
     String lore1 = PaletteUtil.color(knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
     String lore2 = PaletteUtil.color(knowledgeSection.getString("lore2", "|black|Sadly, there's nothing here!"));
     String lore3 = PaletteUtil.color(knowledgeSection.getString("lore3", "|black|Sadly, there's nothing here!"));
@@ -101,10 +103,6 @@ public class PlayerDataUtil {
 
   public static boolean isGlowEnabled(Champion champion) {
     return champion.getSaveData().isGlowEnabled();
-  }
-
-  public static void restoreHealth(LivingEntity le, double amount) {
-    DamageUtil.restoreHealth(le, amount);
   }
 
   public static void restoreEnergy(LivingEntity le, float amount) {
@@ -146,17 +144,13 @@ public class PlayerDataUtil {
   }
 
   private static void swing(LivingEntity entity, EquipmentSlot slot) {
+    SwingListener.FAKE_SWING = true;
     if (slot == EquipmentSlot.HAND) {
-      SwingListener.spoofSwing(entity.getUniqueId());
       entity.swingMainHand();
-      Bukkit.getScheduler().runTaskLater(plugin, () ->
-          SwingListener.removeSwing(entity.getUniqueId()), 1L);
-    } else if (slot == EquipmentSlot.OFF_HAND) {
-      SwingListener.spoofSwing(entity.getUniqueId());
+    } else {
       entity.swingOffHand();
-      Bukkit.getScheduler().runTaskLater(plugin, () ->
-          SwingListener.removeSwing(entity.getUniqueId()), 1L);
     }
+    SwingListener.FAKE_SWING = false;
   }
 
   public static Set<Player> getCachedNearbyPlayers(LivingEntity le) {

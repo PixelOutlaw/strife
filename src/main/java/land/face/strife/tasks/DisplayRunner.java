@@ -7,7 +7,6 @@ import de.oliver.fancyholograms.api.HologramType;
 import de.oliver.fancyholograms.api.data.DisplayHologramData;
 import de.oliver.fancyholograms.api.data.HologramData;
 import de.oliver.fancyholograms.api.data.TextHologramData;
-import java.util.List;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DisplayFrame;

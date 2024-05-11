@@ -63,7 +63,6 @@ public enum StrifeStat {
   ALL_RESIST("Elemental Resist"),
 
   POISON_RESIST("Poison Resistance"),
-  WITHER_RESIST("Wither Resistance"),
   BURNING_RESIST("Burning Resistance"),
 
   BLOCK("Block"),

@@ -39,22 +39,17 @@ public class BarrierTask extends BukkitRunnable {
       cancel();
       return;
     }
-    //forceAbsorbHearts();
-    if (mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) || mob.getMaxBarrier() < 0.1) {
+    if (mob.getMaxBarrier() < 0.1 || mob.getBarrier() >= mob.getMaxBarrier()) {
       delayTicks = 10;
       return;
     }
     if (delayTicks > 0) {
       delayTicks--;
-      mob.restoreBarrier(StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN) * tickMultiplier);
-      return;
-    }
-    if (mob.getBarrier() >= mob.getMaxBarrier()) {
-      delayTicks = 10;
+      mob.restoreBarrier(StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN) * tickMultiplier * 0.1f);
       return;
     }
     float barrierGain = DamageUtil.TICK_RATE * StatUtil.getBarrierPerSecond(mob) / 20;
-    barrierGain += StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN) * tickMultiplier;
+    barrierGain += StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN) * tickMultiplier * 0.1f;
     mob.restoreBarrier(barrierGain);
   }
 
@@ -63,8 +58,7 @@ public class BarrierTask extends BukkitRunnable {
   }
 
   public void setDelayTicks(int delayTicks) {
-    this.delayTicks = Math.min(delayTicks, (int)
-        ((float) DamageUtil.BASE_RECHARGE_TICKS / DamageUtil.TICK_RATE));
+    this.delayTicks = Math.min(delayTicks, (int) ((float) DamageUtil.BASE_RECHARGE_TICKS / DamageUtil.TICK_RATE));
   }
 
   public static void spawnBarrierParticles(LivingEntity entity, float amount) {
@@ -78,22 +72,4 @@ public class BarrierTask extends BukkitRunnable {
         BLOCK_DATA
     );
   }
-
-  /*
-  public void forceAbsorbHearts() {
-    StrifeMob mob = parentMob.get();
-    if (mob.getChampion() == null) {
-      return;
-    }
-    if (mob.getBarrier() >= 1) {
-      mob.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.ABSORPTION,
-          99999, 50, true, false));
-      float percent = Math.min(1, mob.getBarrier() / mob.getMaxBarrier());
-      mob.getEntity().setAbsorptionAmount(percent * 20);
-    } else {
-      mob.getEntity().setAbsorptionAmount(0);
-      mob.getEntity().removePotionEffect(PotionEffectType.ABSORPTION);
-    }
-  }
-  */
 }

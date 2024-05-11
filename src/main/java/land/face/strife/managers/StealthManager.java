@@ -106,6 +106,13 @@ public class StealthManager {
     return stealthedPlayers.containsKey(player.getUniqueId());
   }
 
+  public boolean isStealthed(LivingEntity le) {
+    if (le instanceof Player) {
+      return isStealthed((Player) le);
+    }
+    return false;
+  }
+
   public boolean canSneakAttack(Player player) {
     return stealthedPlayers.containsKey(player.getUniqueId())
         && stealthedPlayers.get(player.getUniqueId()) < System.currentTimeMillis();

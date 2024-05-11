@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -48,7 +47,7 @@ public class VagabondManager {
   private final Map<String, VagabondClass> loadedVagabondClasses = new HashMap<>();
   private final List<String> vagabondNames = new ArrayList<>();
   @Getter
-  private int minimumLevel;
+  private int minLevel;
   @Getter
   private float spawnChance;
 
@@ -57,7 +56,7 @@ public class VagabondManager {
   public VagabondManager(StrifePlugin plugin) {
     this.plugin = plugin;
     spawnChance = (float) plugin.getSettings().getDouble("config.vagabonds.spawn-chance");
-    minimumLevel = plugin.getSettings().getInt("config.vagabonds.minimum-level");
+    minLevel = plugin.getSettings().getInt("config.vagabonds.minimum-level");
   }
 
   public Entity spawnVagabond(int level, Location location) {
@@ -91,7 +90,7 @@ public class VagabondManager {
 
     AttributeInstance attributeInstance = entity.getAttribute(GENERIC_FOLLOW_RANGE);
     if (attributeInstance != null) {
-      attributeInstance.setBaseValue(32);
+      attributeInstance.setBaseValue(27);
       for (AttributeModifier mod : attributeInstance.getModifiers()) {
         attributeInstance.removeModifier(mod);
       }
@@ -198,7 +197,7 @@ public class VagabondManager {
   public void loadClasses(ConfigurationSection vSection) {
     vagabondNames.addAll(vSection.getStringList("player-names"));
     spawnChance = (float) vSection.getDouble("spawn-chance");
-    minimumLevel = vSection.getInt("minimum-level", 1);
+    minLevel = vSection.getInt("minimum-level", 1);
     ConfigurationSection classesSection = vSection.getConfigurationSection("classes");
     for (String key : classesSection.getKeys(false)) {
       ConfigurationSection classSection = classesSection.getConfigurationSection(key);

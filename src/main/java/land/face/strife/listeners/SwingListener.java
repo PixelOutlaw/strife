@@ -19,90 +19,71 @@
 package land.face.strife.listeners;
 
 import io.papermc.paper.event.player.PlayerArmSwingEvent;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.ItemUtil;
-import land.face.strife.util.ProjectileUtil;
-import org.bukkit.Material;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.ShulkerBullet;
-import org.bukkit.event.Event.Result;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public record SwingListener(StrifePlugin plugin) implements Listener {
 
-  private static final Set<UUID> FAKE_SWINGS = new HashSet<>();
+  public static boolean FAKE_SWING = false;
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onInteractLowest(PlayerInteractEvent event) {
-    if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
+    if (FAKE_SWING) {
       event.setCancelled(true);
     }
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onDamageLowest(EntityDamageByEntityEvent event) {
-    if (FAKE_SWINGS.contains(event.getDamager().getUniqueId())) {
-      event.setCancelled(true);
-    }
-  }
-
-  @EventHandler(priority = EventPriority.NORMAL)
-  public void onDamageLowest(PlayerArmSwingEvent event) {
-    if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
+    if (FAKE_SWING &&
+        (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_SWEEP_ATTACK)) {
       event.setCancelled(true);
     }
   }
 
   @EventHandler(priority = EventPriority.LOW)
   public void onSwingLowest(PlayerAnimationEvent event) {
-    if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
+    if (FAKE_SWING) {
       event.setCancelled(true);
       return;
     }
-    if (event.getAnimationType() == PlayerAnimationType.ARM_SWING) {
-      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
-      if (ItemUtil.isTool(event.getPlayer().getEquipment().getItemInMainHand())) {
-        return;
+    if (event.getAnimationType() != PlayerAnimationType.ARM_SWING) {
+      return;
+    }
+    if (ItemUtil.isTool(event.getPlayer().getEquipment().getItemInMainHand())) {
+      return;
+    }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    if (ItemUtil.isMeleeWeapon(event.getPlayer().getEquipment().getItemInMainHand().getType())) {
+      plugin.getAttackSpeedManager().resetAttack(mob, 0.5f, false);
+      /*
+      if (ItemUtil.isDualWield(event.getPlayer().getEquipment())) {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+          FAKE_SWING = true;
+          event.getPlayer().swingOffHand();
+          FAKE_SWING = false;
+        }, plugin.getAttackSpeedManager().getOffswingTicks());
       }
-      if (ItemUtil.isMeleeWeapon(event.getPlayer().getEquipment().getItemInMainHand().getType())) {
-        plugin.getAttackSpeedManager().resetAttack(mob, 0.5f, false);
-      } else {
-        plugin.getAttackSpeedManager().resetAttack(mob, 1, false);
-      }
+      */
+    } else {
+      plugin.getAttackSpeedManager().resetAttack(mob, 1, false);
     }
   }
 
-  @EventHandler(priority = EventPriority.LOW)
-  public void onSwingMONITOR(PlayerAnimationEvent event) {
-    if (FAKE_SWINGS.contains(event.getPlayer().getUniqueId())) {
-      event.setCancelled(false);
+  @EventHandler(priority = EventPriority.NORMAL)
+  public void onDamageLowest(PlayerArmSwingEvent event) {
+    if (FAKE_SWING) {
+      event.setCancelled(true);
     }
-  }
-
-  @EventHandler(priority = EventPriority.LOWEST)
-  public void onAttackShulkerBullet(EntityDamageByEntityEvent event) {
-    if (event.getEntity() instanceof ShulkerBullet && event.getDamager() instanceof Player) {
-      if (((ShulkerBullet) event.getEntity()).getShooter() == event.getDamager()) {
-        event.setCancelled(true);
-      }
-    }
-  }
-
-  public static void spoofSwing(UUID uuid) {
-    FAKE_SWINGS.add(uuid);
-  }
-
-  public static void removeSwing(UUID uuid) {
-    FAKE_SWINGS.remove(uuid);
   }
 }

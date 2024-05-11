@@ -20,7 +20,6 @@ import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_RANGED
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_SNEAK_ATTACK;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.WHEN_HIT;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -157,30 +156,24 @@ public class LoreAbilityListener implements Listener {
       return;
     }
 
-    boolean trigger = StrifePlugin.RNG.nextFloat() < Math.max(event.getDamageModifiers().getAttackMultiplier(),
-        event.getDamageModifiers().getDamageReductionRatio());
-
     Set<TriggerType> applicableTriggers = new HashSet<>();
-    if (trigger) {
-      applicableTriggers.add(ON_HIT);
-      if (event.getDamageModifiers().isBasicAttack()) {
-        applicableTriggers.add(ON_BASIC_HIT);
-        if (event.getDamageModifiers().getAttackType() == AttackType.MELEE) {
-          applicableTriggers.add(ON_MELEE_HIT);
-          applicableTriggers.add(ON_BASIC_MELEE_HIT);
-        } else if (event.getDamageModifiers().getAttackType() == AttackType.PROJECTILE) {
-          applicableTriggers.add(ON_RANGED_HIT);
-          applicableTriggers.add(ON_BASIC_RANGED_HIT);
-        }
-      } else {
-        if (event.getDamageModifiers().getAttackType() == AttackType.MELEE) {
-          applicableTriggers.add(ON_MELEE_HIT);
-        } else if (event.getDamageModifiers().getAttackType() == AttackType.PROJECTILE) {
-          applicableTriggers.add(ON_RANGED_HIT);
-        }
+    applicableTriggers.add(ON_HIT);
+    if (event.getDamageModifiers().isBasicAttack()) {
+      applicableTriggers.add(ON_BASIC_HIT);
+      if (event.getDamageModifiers().getAttackType() == AttackType.MELEE) {
+        applicableTriggers.add(ON_MELEE_HIT);
+        applicableTriggers.add(ON_BASIC_MELEE_HIT);
+      } else if (event.getDamageModifiers().getAttackType() == AttackType.PROJECTILE) {
+        applicableTriggers.add(ON_RANGED_HIT);
+        applicableTriggers.add(ON_BASIC_RANGED_HIT);
+      }
+    } else {
+      if (event.getDamageModifiers().getAttackType() == AttackType.MELEE) {
+        applicableTriggers.add(ON_MELEE_HIT);
+      } else if (event.getDamageModifiers().getAttackType() == AttackType.PROJECTILE) {
+        applicableTriggers.add(ON_RANGED_HIT);
       }
     }
-
 
     Set<LoreAbility> abilitySet = new HashSet<>();
     for (TriggerType t : applicableTriggers) {
@@ -209,15 +202,8 @@ public class LoreAbilityListener implements Listener {
     if (attacker.isMasterOf(defender)) {
       return;
     }
-    boolean trigger = StrifePlugin.RNG.nextFloat() < Math.max(event.getDamageModifiers().getAttackMultiplier(),
-        event.getDamageModifiers().getDamageReductionRatio());
-    if (trigger) {
-      HashSet<LoreAbility> abilitySet = new HashSet<>(attacker.getLoreAbilities(EARLY_ON_HIT));
-      executeBoundEffects(attacker, defender, abilitySet);
-    }
-
+    executeBoundEffects(attacker, defender, new HashSet<>(attacker.getLoreAbilities(EARLY_ON_HIT)));
     executeFiniteEffects(attacker, defender, new HashSet<>(List.of(EARLY_ON_HIT)));
-
     if (defender.getEntity() instanceof Player) {
       executeBoundEffects(defender, attacker, event.getDefender().getLoreAbilities(EARLY_WHEN_HIT));
     }

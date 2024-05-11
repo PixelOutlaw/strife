@@ -111,7 +111,7 @@ public class GodPrayerIcon extends MenuItem {
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     SelectedGod god = mob.getChampion().getSaveData().getSelectedGod();
-    if (god == SelectedGod.NONE || mob.getChampion().getSaveData().getGodLevel().get(god) < godLevel) {
+    if (god == SelectedGod.NONE || mob.getChampion().getSaveData().getGodLevel().getOrDefault(god, 0) < godLevel) {
       return;
     }
     float cost = switch (godLevel) {

@@ -10,6 +10,7 @@ import land.face.strife.data.WorldSpaceEffect;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
@@ -23,7 +24,8 @@ public class WSEManager {
 
   public void createAtTarget(StrifeMob caster, Location location, int lifespan, float gravity, float friction,
       int maxTicks, double speed, float maxDisplacement, Map<Integer, List<Effect>> effects, boolean strictDuration,
-      boolean zeroVertical, String modelEffect, int maxFallTicks, boolean destroyOnContact) {
+      boolean zeroVertical, String modelEffect, Color modelColor, double modelSize, int maxFallTicks,
+      boolean destroyOnContact) {
     LogUtil.printDebug(" Creating world space entity with effects " + effects);
     double newLifeSpan = lifespan;
     if (!strictDuration) {
@@ -35,8 +37,22 @@ public class WSEManager {
       direction.normalize();
     }
     direction.multiply(speed);
-    WorldSpaceEffect entity = new WorldSpaceEffect(caster, effects, location, direction, gravity,
-        friction, maxDisplacement, maxTicks, (int) newLifeSpan, modelEffect, maxFallTicks, destroyOnContact);
+    WorldSpaceEffect entity = new WorldSpaceEffect(
+        caster,
+        effects,
+        location,
+        direction,
+        gravity,
+        friction,
+        maxDisplacement,
+        maxTicks,
+        (int) newLifeSpan,
+        modelEffect,
+        modelColor,
+        modelSize,
+        maxFallTicks,
+        destroyOnContact
+    );
     addWorldSpaceEffectEntity(entity);
   }
 

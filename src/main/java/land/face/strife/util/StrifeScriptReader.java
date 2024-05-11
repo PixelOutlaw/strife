@@ -1,25 +1,38 @@
 package land.face.strife.util;
 
+import com.tealcube.minecraft.bukkit.shade.google.gson.Gson;
 import com.ticxo.modelengine.api.animation.property.IAnimationProperty;
 import com.ticxo.modelengine.api.animation.script.ScriptReader;
 import com.ticxo.modelengine.api.generator.blueprint.ModelBlueprint;
 import com.ticxo.modelengine.api.model.ActiveModel;
-import com.ticxo.modelengine.api.utils.logger.TLogger;
+import java.util.HashMap;
+import java.util.Map;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.TargetResponse;
-import org.bukkit.entity.ArmorStand;
+import land.face.strife.data.pojo.KeyframeScript;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 
 public class StrifeScriptReader implements ScriptReader {
 
   private final StrifePlugin plugin;
+  private final Gson gson = new Gson();
+
+  private Map<String, KeyframeScript> scriptMap = new HashMap<>();
 
   public StrifeScriptReader(StrifePlugin plugin) {
     this.plugin = plugin;
   }
 
   public void read(IAnimationProperty property, String script) {
+    String key = property.getName() + script;
+    gson.fromJson(script, KeyframeScript.class);
+
+    ActiveModel model = property.getModel();
+    ModelBlueprint blueprint = model.getBlueprint();
+    Object original = model.getModeledEntity().getBase().getOriginal();
+    if (original instanceof Entity) {
+      Entity entity = (Entity) original;
+    }
+
     /*
     ActiveModel model = property.getModel();
     ModelBlueprint blueprint = model.getBlueprint();

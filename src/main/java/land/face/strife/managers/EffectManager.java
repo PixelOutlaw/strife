@@ -4,7 +4,6 @@ import static land.face.strife.util.PlayerDataUtil.getName;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.tuple.Triple;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -20,58 +19,15 @@ import land.face.strife.data.EquipmentItemData;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
-import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
-import land.face.strife.data.conditions.AliveCondition;
-import land.face.strife.data.conditions.AttributeCondition;
-import land.face.strife.data.conditions.BarrierCondition;
-import land.face.strife.data.conditions.BleedingCondition;
-import land.face.strife.data.conditions.BlockingCondition;
-import land.face.strife.data.conditions.BuffCondition;
-import land.face.strife.data.conditions.BurningCondition;
-import land.face.strife.data.conditions.ChanceCondition;
-import land.face.strife.data.conditions.Condition;
+import land.face.strife.data.conditions.*;
 import land.face.strife.data.conditions.Condition.CompareTarget;
 import land.face.strife.data.conditions.Condition.Comparison;
 import land.face.strife.data.conditions.Condition.ConditionType;
 import land.face.strife.data.conditions.Condition.ConditionUser;
-import land.face.strife.data.conditions.CorruptionCondition;
-import land.face.strife.data.conditions.EarthRunesCondition;
-import land.face.strife.data.conditions.EndlessEffectCondition;
-import land.face.strife.data.conditions.EnergyCondition;
-import land.face.strife.data.conditions.EntityTypeCondition;
-import land.face.strife.data.conditions.FactionCondition;
-import land.face.strife.data.conditions.FlyingCondition;
-import land.face.strife.data.conditions.FrostCondition;
-import land.face.strife.data.conditions.GroundedCondition;
-import land.face.strife.data.conditions.HasMinionCondition;
-import land.face.strife.data.conditions.HealthCondition;
-import land.face.strife.data.conditions.HeightCondition;
-import land.face.strife.data.conditions.InCombatCondition;
-import land.face.strife.data.conditions.LevelCondition;
-import land.face.strife.data.conditions.LightCondition;
-import land.face.strife.data.conditions.LoreCondition;
-import land.face.strife.data.conditions.MinionCondition;
-import land.face.strife.data.conditions.MovingCondition;
-import land.face.strife.data.conditions.NearbyEntitiesCondition;
-import land.face.strife.data.conditions.OrderEntityExistsCondition;
-import land.face.strife.data.conditions.OrderEntityCanOrderCondition;
-import land.face.strife.data.conditions.PotionCondition;
-import land.face.strife.data.conditions.RageCondition;
-import land.face.strife.data.conditions.RangeCondition;
-import land.face.strife.data.conditions.SizeCondition;
-import land.face.strife.data.conditions.SneakCondition;
-import land.face.strife.data.conditions.StatCondition;
-import land.face.strife.data.conditions.StealthCondition;
-import land.face.strife.data.conditions.TimeCondition;
-import land.face.strife.data.conditions.UnionCondition;
-import land.face.strife.data.conditions.UniqueCondition;
-import land.face.strife.data.conditions.VelocityCondition;
 import land.face.strife.data.conditions.VelocityCondition.VelocityType;
-import land.face.strife.data.conditions.WaterCondition;
-import land.face.strife.data.conditions.WeaponsCondition;
 import land.face.strife.data.effects.*;
 import land.face.strife.data.effects.AreaEffect.AreaType;
 import land.face.strife.data.effects.AreaEffect.LineOfSight;
@@ -81,6 +37,7 @@ import land.face.strife.data.effects.Effect.EffectType;
 import land.face.strife.data.effects.Push.PushType;
 import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.data.pojo.ItemBoneData;
+import land.face.strife.listeners.PotionListener;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.AbilityMod;
@@ -94,6 +51,7 @@ import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect.Type;
@@ -112,7 +70,9 @@ import org.bukkit.util.Vector;
 public class EffectManager {
 
   private final StrifePlugin plugin;
+  @Getter
   private final Map<String, Effect> loadedEffects;
+  @Getter
   private final Map<String, Condition> conditions;
 
   public EffectManager(StrifePlugin plugin) {
@@ -257,13 +217,24 @@ public class EffectManager {
         effect = new SetFall();
         ((SetFall) effect).setAmount((float) cs.getDouble("amount", 0));
       }
+      case SET_PITCH -> {
+        effect = new SetPitch();
+        ((SetPitch) effect).setAngle((float) cs.getDouble("angle", 0));
+        ((SetPitch) effect).setAdd(cs.getBoolean("additive", false));
+        ((SetPitch) effect).setMinimum(cs.getBoolean("as-minimum", false));
+      }
       case RESTORE_BARRIER -> {
         effect = new RestoreBarrier();
         ((RestoreBarrier) effect).setAmount((float) cs.getDouble("amount", 1));
-        ((RestoreBarrier) effect).setDamageScale(
-            DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((RestoreBarrier) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((RestoreBarrier) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
         ((RestoreBarrier) effect).setNewDelayTicks(cs.getInt("new-barrier-delay-ticks", -1));
+      }
+      case RESTORE_BLOCK -> {
+        effect = new RestoreBlock();
+        ((RestoreBlock) effect).setAmount((float) cs.getDouble("amount", 1));
+        ((RestoreBlock) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((RestoreBlock) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
       }
       case RESTORE_ENERGY -> {
         effect = new ChangeEnergy();
@@ -278,30 +249,35 @@ public class EffectManager {
       }
       case DAMAGE -> {
         effect = new Damage();
+        AttackType attackType = AttackType.valueOf(cs.getString("attack-type", "OTHER"));
         float attackMult = (float) cs.getDouble("attack-multiplier", 1D);
         ((Damage) effect).setAttackMultiplier(attackMult);
         float damageReductionRatio = (float) cs.getDouble("damage-reduction-ratio", 1D);
         ((Damage) effect).setDamageReductionRatio(damageReductionRatio);
-        ((Damage) effect).setHealMultiplier(
-            (float) cs.getDouble("heal-multiplier", Math.min(1.0, damageReductionRatio)));
-        ((Damage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", true));
-        ((Damage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", true));
-        ((Damage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
-        ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects",
-            attackMult >= 0.6 || damageReductionRatio >= 0.6));
-        ((Damage) effect).setShowPopoffs(cs.getBoolean("show-popoffs", true));
-        ((Damage) effect).setUseBasicDamageMult(cs.getBoolean("use-basic-damage-mult", true));
+        boolean selfInflict = (cs.getBoolean("self-inflict", false));
+        ((Damage) effect).setSelfInflict(selfInflict);
+        boolean defaultOnHit = true;
+        if (attackType == AttackType.BONUS || attackType == AttackType.LINGERING ||
+            (attackMult < 0.6 && damageReductionRatio < 0.6) || selfInflict) {
+          defaultOnHit = false;
+        }
+        ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects", defaultOnHit));
+        ((Damage) effect).setCanCrit(cs.getBoolean("can-crit", defaultOnHit));
+        ((Damage) effect).setShowPopoffs(cs.getBoolean("show-popoffs", !selfInflict));
+        ((Damage) effect).setUseBasicDamageMult(cs.getBoolean("use-basic-damage-mult", !selfInflict));
         ((Damage) effect).setUseMinionDamage(cs.getBoolean("use-minion-damage-mult", false));
         ((Damage) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
         ((Damage) effect).setGuardBreak(cs.getBoolean("guard-break", false));
-        ((Damage) effect).setSelfInflict(cs.getBoolean("self-inflict", false));
+        ((Damage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", defaultOnHit));
+        ((Damage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", defaultOnHit));
+        ((Damage) effect).setHealMultiplier((float) cs.getDouble("heal-multiplier", Math.min(1.0, damageReductionRatio)));
+        ((Damage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
         List<String> hitEffects = cs.getStringList("hit-effects");
         delayedSetEffects(((Damage) effect).getHitEffects(), hitEffects, key, false);
         List<String> killEffects = cs.getStringList("kill-effects");
         delayedSetEffects(((Damage) effect).getKillEffects(), killEffects, key, false);
-        AttackType attackType = AttackType.valueOf(cs.getString("attack-type", "OTHER"));
         ((Damage) effect).setAttackType(attackType);
-        ((Damage) effect).setFromAbility(attackType != AttackType.BONUS);
+        ((Damage) effect).setFromAbility(attackType != AttackType.BONUS && !selfInflict);
         ConfigurationSection multCs = cs.getConfigurationSection("damage-multipliers");
         Map<DamageType, Float> multMap = new HashMap<>();
         if (multCs != null) {
@@ -335,6 +311,11 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setMaxTicks(cs.getInt("refresh-delay", 5));
         ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
         ((CreateWorldSpaceEntity) effect).setModelEffect(cs.getString("model-effect", null));
+        ((CreateWorldSpaceEntity) effect).setModelSize(cs.getDouble("model-size", 1));
+        if (cs.getString("model-color") != null) {
+          java.awt.Color c = java.awt.Color.decode(cs.getString("model-color"));
+          ((CreateWorldSpaceEntity) effect).setColor(Color.fromRGB(c.getRed(), c.getGreen(), c.getBlue()));
+        }
         ((CreateWorldSpaceEntity) effect).setMaxFallTicks(cs.getInt("max-fall-ticks", 3));
         ((CreateWorldSpaceEntity) effect).setMaxDisplacement(
             (float) cs.getDouble("max-displacement", 0));
@@ -390,6 +371,16 @@ public class EffectManager {
         ((DisplaySpawn) effect).setDisplayId(cs.getString("display-id"));
         ((DisplaySpawn) effect).setEntityLock(cs.getBoolean("entity-lock", false));
         ((DisplaySpawn) effect).setFaceColor(FaceColor.valueOf(cs.getString("color", "NONE")));
+      }
+      case BURST_ITEM -> {
+        effect = new BurstItem();
+        ((BurstItem) effect).setEquipmentId(cs.getString("equipment-id"));
+        ((BurstItem) effect).setMobId(cs.getString("entity-type"));
+        ((BurstItem) effect).setAmount(cs.getInt("amount", 8));
+        ((BurstItem) effect).setMinSpeed((float) cs.getDouble("min-speed", 0.25));
+        ((BurstItem) effect).setMinSpeed((float) cs.getDouble("max-speed", 0.75));
+        ((BurstItem) effect).setMinLife(cs.getInt("min-life"));
+        ((BurstItem) effect).setMaxLife(cs.getInt("max-life"));
       }
       case AREA_EFFECT -> {
         effect = new AreaEffect();
@@ -794,7 +785,9 @@ public class EffectManager {
       case CREATE_MODEL -> {
         effect = new CreateModelAnimation();
         ((CreateModelAnimation) effect).setModelId(cs.getString("model-id"));
-        ((CreateModelAnimation) effect).setAnimationId(cs.getString("animation-id"));
+        ((CreateModelAnimation) effect).setAnimationId(cs.getString("animation-id", "idle"));
+        ((CreateModelAnimation) effect).setStartAnimation(cs.getString("animation-id-start"));
+        ((CreateModelAnimation) effect).setEndAnimation(cs.getString("animation-id-end"));
         ((CreateModelAnimation) effect).setLerpIn((float) cs.getDouble("lerp-in", 0));
         ((CreateModelAnimation) effect).setLerpOut((float) cs.getDouble("lerp-out", 0));
         ((CreateModelAnimation) effect).setSpeed((float) cs.getDouble("speed", 1));
@@ -805,24 +798,10 @@ public class EffectManager {
             AnimationType.valueOf(cs.getString("rotation-type", "RANDOM_ROTATION")));
         ((CreateModelAnimation) effect).setRotationLock(cs.getBoolean("rotation-lock", false));
         ((CreateModelAnimation) effect).setForceGrounded(cs.getBoolean("force-grounded", false));
+        ((CreateModelAnimation) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
         if (cs.getString("color") != null) {
           java.awt.Color c = java.awt.Color.decode(cs.getString("color"));
           ((CreateModelAnimation) effect).setColor(Color.fromRGB(c.getRed(), c.getGreen(), c.getBlue()));
-        }
-        if (cs.getConfigurationSection("animation") != null) {
-          Map<Integer, List<Triple<String, String, String>>> animationMap = new HashMap<>();
-          Set<String> keys = cs.getConfigurationSection("animation").getKeys(false);
-          for (String s : keys) {
-            int frame = Integer.parseInt(s);
-            List<String> values = cs.getStringList("animation." + s);
-            List<Triple<String, String, String>> triple = new ArrayList<>();
-            for (String input : values) {
-              String[] str = input.split(":");
-              triple.add(Triple.of(str[0], str[1], str[2]));
-            }
-            animationMap.put(frame, triple);
-          }
-          ((CreateModelAnimation) effect).setComplexPart(animationMap);
         }
       }
       case CHANGE_PART -> {
@@ -898,8 +877,8 @@ public class EffectManager {
         ((PotionEffectAction) effect).setIntensity(cs.getInt("intensity", 0));
         ((PotionEffectAction) effect).setDuration(cs.getInt("duration", 0));
         ((PotionEffectAction) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
-        ((PotionEffectAction) effect).setBumpUpToIntensity(
-            cs.getBoolean("bump-up-to-intensity", false));
+        ((PotionEffectAction) effect).setIgnoreFx(cs.getBoolean("ignore-fx", false));
+        ((PotionEffectAction) effect).setBumpUpToIntensity(cs.getBoolean("bump-up-to-intensity", false));
       }
       case SOUND -> {
         effect = new PlaySound();
@@ -1010,6 +989,7 @@ public class EffectManager {
     }
     loadedEffects.put(key, effect);
     LogUtil.printDebug("Loaded effect " + key + " successfully.");
+    PotionListener.buildPotionVfx();
   }
 
   private List<BonusDamage> loadBonusDamages(String effectId, ConfigurationSection section) {
@@ -1225,7 +1205,11 @@ public class EffectManager {
         condition = new BlockingCondition(cs.getBoolean("state", true));
         break;
       case GROUNDED:
-        condition = new GroundedCondition(cs.getBoolean("strict", false), cs.getBoolean("ignore-liquids", false));
+        condition = new GroundedCondition(
+            cs.getBoolean("strict", false),
+            cs.getBoolean("ignore-liquids", false),
+            cs.getInt("leeway", 0)
+        );
         break;
       case WATER:
         condition = new WaterCondition(
@@ -1324,14 +1308,6 @@ public class EffectManager {
     }
     LogUtil.printWarning("Attempted to get unknown effect '" + key + "'");
     return null;
-  }
-
-  public Map<String, Effect> getLoadedEffects() {
-    return loadedEffects;
-  }
-
-  public Map<String, Condition> getConditions() {
-    return conditions;
   }
 
   private void delayedSetEffects(List<Effect> effects, List<String> effectIds, String effectId, boolean locationOnly) {

@@ -36,26 +36,25 @@ public class Spawner extends BukkitRunnable {
 
   public static int SPAWNER_OFFSET = 0;
 
-  private final Set<LivingEntity> entities = new HashSet<>();
-  private final List<Long> respawnTimes = new ArrayList<>();
+  @Getter private final Set<Mob> trackedMobs = new HashSet<>();
+  @Getter private final List<Long> respawnTimes = new ArrayList<>();
 
-  private final String id;
-  private final String uniqueId;
-  private final UniqueEntity uniqueEntity;
+  @Getter private final String id;
+  @Getter private final String uniqueId;
+  @Getter private final UniqueEntity uniqueEntity;
 
-  private int amount;
-  @Getter @Setter
-  private int level = -1;
-  private Location location;
-  private double leashRange;
+  @Getter @Setter private int amount;
+  @Getter @Setter private int level = -1;
+  @Getter private Location location;
+  @Getter private double leashRange;
+  @Getter @Setter private long respawnSeconds;
+  @Getter private String chunkKey;
+  @Getter @Setter private int startTime;
+  @Getter @Setter private int endTime;
+
+  @Getter @Setter private long snoozeTime = System.currentTimeMillis();
+
   private transient float squaredLeashRange;
-  private long respawnSeconds;
-  @Getter
-  private String chunkKey;
-  private int startTime;
-  private int endTime;
-
-  private long snoozeTime = System.currentTimeMillis();
 
   public Spawner(String id, UniqueEntity uniqueEntity, String uniqueId, int amount,
       Location location, int respawnSeconds, double leashRange) {
@@ -69,126 +68,131 @@ public class Spawner extends BukkitRunnable {
     squaredLeashRange = (float) Math.pow(leashRange, 2);
     chunkKey = ChunkUtil.buildChunkKey(location.getChunk());
 
-    runTaskTimer(StrifePlugin.getInstance(), (20L * 30) + (SPAWNER_OFFSET % 20), 50L);
+    runTaskTimer(StrifePlugin.getInstance(), (20L * 10) + (SPAWNER_OFFSET % 100), 100L);
     SPAWNER_OFFSET++;
     LogUtil.printDebug("Created Spawner with taskId " + getTaskId());
   }
 
   @Override
   public void run() {
-    Iterator<LivingEntity> iterator = entities.iterator();
+    Iterator<Mob> iterator = trackedMobs.iterator();
     while (iterator.hasNext()) {
-      LivingEntity le = iterator.next();
-      if (le == null || !le.isValid()) {
+      Mob mob = iterator.next();
+      if (mob == null || !mob.isValid()) {
         iterator.remove();
         continue;
       }
-      if (location.distanceSquared(le.getLocation()) > squaredLeashRange) {
-        despawnParticles(le);
-        Set<Player> players = new HashSet<>(le.getLocation()
-            .getNearbyEntitiesByType(Player.class, 15));
+      if (mob.getTarget() != null && location.distanceSquared(mob.getLocation()) > squaredLeashRange) {
+        despawnParticles(mob);
+        Set<Player> players = new HashSet<>(mob.getLocation().getNearbyEntitiesByType(Player.class, 15));
         for (Player p : players) {
-          StrifePlugin.getInstance().getIndicatorManager().addIndicator(p, le,
+          StrifePlugin.getInstance().getIndicatorManager().addIndicator(p, mob,
               IndicatorStyle.FLOAT_UP_MEDIUM, 30, "<red><bold>OUT OF RANGE", 1.0f, 1.0f, 1.0f);
         }
-        if (StrifePlugin.getInstance().getStrifeMobManager().isTrackedEntity(le)) {
-          StrifePlugin.getInstance().getStrifeMobManager().removeStrifeMob(le);
+        if (StrifePlugin.getInstance().getStrifeMobManager().isTrackedEntity(mob)) {
+          StrifePlugin.getInstance().getStrifeMobManager().removeStrifeMob(mob);
         }
-        le.remove();
+        mob.remove();
         iterator.remove();
         LogUtil.printDebug("Cancelled SpawnerTimer with id " + getTaskId() + " due to leash range");
       }
     }
-    spawnSpawner(this);
+    if (!ChunkUtil.isChuckLoaded(chunkKey)) {
+      return;
+    }
+    activateSpawner(this);
   }
 
-  public static void spawnSpawner(Spawner spawner) {
-    if (spawner.getUniqueEntity() == null || spawner.getLocation() == null) {
-      return;
-    }
-    if (!DateTimeUtil.isWorldTimeInRange(spawner.getLocation().getWorld(),
-        spawner.getStartTime(), spawner.getEndTime())) {
-      return;
-    }
-    if (System.currentTimeMillis() < spawner.getSnoozeTime()) {
-      return;
-    }
-
-    spawner.getRespawnTimes().removeIf(aLong -> System.currentTimeMillis() > aLong);
-
-    int totalMobSlotsInUse = spawner.getRespawnTimes().size() + spawner.getEntities().size();
-    int maxMobs = spawner.getAmount();
-    if (totalMobSlotsInUse >= maxMobs) {
-      return;
-    }
-    if (!ChunkUtil.isChuckLoaded(spawner.chunkKey)) {
-      return;
-    }
-
-    if (spawner.getUniqueEntity().isVagabondAllowed()) {
-      if (spawner.getUniqueEntity().getBaseLevel() > StrifePlugin.getInstance()
-          .getVagabondManager().getMinimumLevel()) {
-        if (StrifePlugin.getInstance().getVagabondManager().getSpawnChance() > StrifePlugin.RNG.nextFloat()) {
-          int level = spawner.getUniqueEntity().getBaseLevel();
-          StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
-              (LivingEntity) StrifePlugin.getInstance().getVagabondManager().spawnVagabond(level,
-                  spawner.getLocation()));
-          if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
-            Bukkit.getLogger().warning("Spawner failed to spawn vagabond! " + spawner.getId());
+  public static void activateSpawner(Spawner spawner) {
+    Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () -> {
+      if (spawner.getUniqueEntity() == null || spawner.getLocation() == null) {
+        return;
+      }
+      if (!DateTimeUtil.isWorldTimeInRange(spawner.getLocation().getWorld(),
+          spawner.getStartTime(), spawner.getEndTime())) {
+        return;
+      }
+      if (System.currentTimeMillis() < spawner.getSnoozeTime()) {
+        return;
+      }
+      spawner.getRespawnTimes().removeIf(aLong -> System.currentTimeMillis() > aLong);
+      int totalMobSlotsInUse = spawner.getRespawnTimes().size() + spawner.getTrackedMobs().size();
+      int maxMobs = spawner.getAmount();
+      if (totalMobSlotsInUse >= maxMobs) {
+        return;
+      }
+      if (spawner.getUniqueEntity().isVagabondAllowed()) {
+        if (spawner.getUniqueEntity().getBaseLevel() > StrifePlugin.getInstance().getVagabondManager().getMinLevel()) {
+          if (StrifePlugin.getInstance().getVagabondManager().getSpawnChance() > StrifePlugin.RNG.nextFloat()) {
+            spawnVagabond(spawner);
             return;
           }
-          spawner.addEntity(mob.getEntity());
-          return;
         }
       }
-    }
+      spawnMob(spawner);
+    });
+  }
 
-    StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
-        (LivingEntity) StrifePlugin.getInstance().getUniqueEntityManager()
-            .spawnUnique(spawner.getUniqueEntity(), spawner.getLocation()));
+  private static void spawnMob(Spawner spawner) {
+    Bukkit.getScheduler().runTask(StrifePlugin.getInstance(), () -> {
+      if (!ChunkUtil.isChuckLoaded(spawner.getChunkKey())) {
+        return;
+      }
+      StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
+          (LivingEntity) StrifePlugin.getInstance().getUniqueEntityManager()
+              .spawnUnique(spawner.getUniqueEntity(), spawner.getLocation()));
+      SpawnerSpawnEvent spawnerSpawnEvent = new SpawnerSpawnEvent(mob, spawner);
+      Bukkit.getPluginManager().callEvent(spawnerSpawnEvent);
+      if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
+        //Bukkit.getLogger().warning("Spawner failed to spawn unique! " + spawner.getId());
+        return;
+      }
+      mob.setSpawner(spawner);
+      if (spawner.getLevel() > 0) {
+        SpecialStatusUtil.setMobLevel(mob.getEntity(), spawner.getLevel());
+      }
 
-    SpawnerSpawnEvent spawnerSpawnEvent = new SpawnerSpawnEvent(mob, spawner);
-    Bukkit.getPluginManager().callEvent(spawnerSpawnEvent);
+      if (StringUtils.isBlank(spawner.getUniqueEntity().getMount())
+          && mob.getEntity().getVehicle() != null) {
+        mob.getEntity().getVehicle().remove();
+      }
 
-    if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
-      Bukkit.getLogger().warning("Spawner failed to spawn unique! " + spawner.getId());
-      return;
-    }
-    mob.setSpawner(spawner);
-    if (spawner.getLevel() > 0) {
-      SpecialStatusUtil.setMobLevel(mob.getEntity(), spawner.getLevel());
-    }
+      ChunkUtil.setDespawnOnUnload(mob.getEntity());
+      spawner.addEntity(mob.getEntity());
 
-    if (StringUtils.isBlank(spawner.getUniqueEntity().getMount())
-        && mob.getEntity().getVehicle() != null) {
-      mob.getEntity().getVehicle().remove();
-    }
-
-    ChunkUtil.setDespawnOnUnload(mob.getEntity());
-    spawner.addEntity(mob.getEntity());
-
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
       if (mob.getEntity() == null || !mob.getEntity().isValid()) {
         spawner.setSnoozeTime(System.currentTimeMillis() + 10000);
-      } else {
-        if (mob.getMods().size() >= 2) {
-          announceSpawnToNearbyPlayers(mob, spawner.getLocation());
-        }
-        // Random displacement to prevent clumping
-        if (spawner.getUniqueEntity().getDisplaceMultiplier() != 0) {
-          Vector vec = new Vector(-1 + StrifePlugin.RNG.nextFloat() * 2, 0.1, -1 + StrifePlugin.RNG.nextFloat() * 2).normalize();
-          vec.multiply(spawner.getUniqueEntity().getDisplaceMultiplier());
-          mob.getEntity().setVelocity(vec);
-          mob.getEntity().getLocation().setDirection(mob.getEntity().getVelocity().normalize());
-        }
-        if (mob.getEntity() instanceof Mob) {
-          ReturnHomeGoal returnHomeGoal = new ReturnHomeGoal((Mob) mob.getEntity(), spawner.squaredLeashRange * 0.75);
-          if (!Bukkit.getMobGoals().hasGoal((Mob) mob.getEntity(), returnHomeGoal.getKey())) {
-            Bukkit.getMobGoals().addGoal((Mob) mob.getEntity(), 0, returnHomeGoal);
-          }
-        }
+        return;
       }
-    }, 1L);
+      if (mob.getMods().size() >= 2) {
+        announceSpawnToNearbyPlayers(mob, spawner.getLocation());
+      }
+      // Random displacement to prevent clumping
+      if (spawner.getUniqueEntity().getDisplaceMultiplier() != 0) {
+        Vector vec = new Vector(-1 + StrifePlugin.RNG.nextFloat() * 2, 0.1,
+            -1 + StrifePlugin.RNG.nextFloat() * 2).normalize();
+        vec.multiply(spawner.getUniqueEntity().getDisplaceMultiplier());
+        mob.getEntity().setVelocity(vec);
+        mob.getEntity().getLocation().setDirection(mob.getEntity().getVelocity().normalize());
+      }
+      ReturnHomeGoal returnHomeGoal = new ReturnHomeGoal((Mob) mob.getEntity(), spawner.squaredLeashRange * 0.75);
+      if (!Bukkit.getMobGoals().hasGoal((Mob) mob.getEntity(), returnHomeGoal.getKey())) {
+        Bukkit.getMobGoals().addGoal((Mob) mob.getEntity(), 0, returnHomeGoal);
+      }
+    });
+  }
+
+  private static void spawnVagabond(Spawner spawner) {
+    int level = spawner.getUniqueEntity().getBaseLevel();
+    Bukkit.getScheduler().runTask(StrifePlugin.getInstance(), () -> {
+      StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
+          (LivingEntity) StrifePlugin.getInstance().getVagabondManager().spawnVagabond(level, spawner.getLocation()));
+      if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
+        //Bukkit.getLogger().warning("Spawner failed to spawn vagabond! " + spawner.getId());
+        return;
+      }
+      spawner.addEntity(mob.getEntity());
+    });
   }
 
   private static void announceSpawnToNearbyPlayers(StrifeMob mob, Location location) {
@@ -203,27 +207,18 @@ public class Spawner extends BukkitRunnable {
             "&7&o&lWoah!! &f" + mob.getEntity().getCustomName() + "&f has spawned nearby!\n "));
         TextComponent waypointButton = new TextComponent("[Click For Waypoint]");
         waypointButton.setColor(ChatColor.AQUA);
-        waypointButton.setClickEvent(
-            new ClickEvent(Action.RUN_COMMAND,
-                "/waypointer point " + location.getX() + " " + (location.getY() + 2) + " "
-                    + location.getZ() + " " + location.getWorld().getName() + " Mob_Spawn"));
+        waypointButton.setClickEvent(new ClickEvent(Action.RUN_COMMAND,
+            "/waypointer point " + location.getX() + " " + (location.getY() + 2) + " " + location.getZ() + " "
+                + location.getWorld().getName() + " Mob_Spawn"));
 
-        p.spigot().sendMessage(
-            new ComponentBuilder(text)
-                .append(waypointButton)
-                .create()
-        );
-        /*
-        MessageUtils.sendMessage(p,
-            "&7&o&lWoah!! &f" + mob.getEntity().getCustomName() + "&f has spawned nearby! º");
-            */
+        p.spigot().sendMessage(new ComponentBuilder(text).append(waypointButton).create());
       }
     }
   }
 
   public void addRespawnTimeIfApplicable(LivingEntity livingEntity) {
-    if (entities.contains(livingEntity)) {
-      entities.remove(livingEntity);
+    if (trackedMobs.contains(livingEntity)) {
+      trackedMobs.remove(livingEntity);
       respawnTimes.add(System.currentTimeMillis() + getRespawnMillis());
     }
   }
@@ -236,37 +231,9 @@ public class Spawner extends BukkitRunnable {
         height, width, 0);
   }
 
-  public String getId() {
-    return id;
-  }
-
-  public String getUniqueId() {
-    return uniqueId;
-  }
-
-  public UniqueEntity getUniqueEntity() {
-    return uniqueEntity;
-  }
-
-  public int getAmount() {
-    return amount;
-  }
-
-  public void setAmount(int amount) {
-    this.amount = amount;
-  }
-
-  public Location getLocation() {
-    return location;
-  }
-
   public void setLocation(Location location) {
     this.location = location;
     chunkKey = ChunkUtil.buildChunkKey(location.getChunk());
-  }
-
-  public double getLeashRange() {
-    return leashRange;
   }
 
   public void setLeashRange(double leashRange) {
@@ -278,47 +245,11 @@ public class Spawner extends BukkitRunnable {
     return respawnSeconds * 1000L;
   }
 
-  public long getRespawnSeconds() {
-    return respawnSeconds;
-  }
-
-  public void setRespawnSeconds(long respawnSeconds) {
-    this.respawnSeconds = respawnSeconds;
-  }
-
-  public Set<LivingEntity> getEntities() {
-    return entities;
-  }
-
   public void addEntity(LivingEntity trackedEntity) {
-    entities.add(trackedEntity);
-  }
-
-  public List<Long> getRespawnTimes() {
-    return respawnTimes;
-  }
-
-  public long getSnoozeTime() {
-    return snoozeTime;
-  }
-
-  public void setSnoozeTime(long snoozeTime) {
-    this.snoozeTime = snoozeTime;
-  }
-
-  public int getStartTime() {
-    return startTime;
-  }
-
-  public void setStartTime(int startTime) {
-    this.startTime = startTime;
-  }
-
-  public int getEndTime() {
-    return endTime;
-  }
-
-  public void setEndTime(int endTime) {
-    this.endTime = endTime;
+    if (trackedEntity instanceof Mob) {
+      trackedMobs.add((Mob) trackedEntity);
+    } else {
+      Bukkit.getLogger().warning("[Strife] Tried to add " + trackedEntity.getType() + " to spawner, but its not a mob");
+    }
   }
 }
