@@ -24,7 +24,6 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
@@ -86,6 +85,11 @@ public class DamageManager {
       attacker.bumpCombat(defender);
       defender.bumpCombat(null);
       defender.getEntity().setKiller((Player) attacker.getEntity());
+    }
+    if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player &&
+        attacker.getEntity() != defender.getEntity()) {
+      attacker.flagPvp();
+      defender.flagPvp();
     }
     if (damage >= defender.getEntity().getHealth() && defender.isPlayer()) {
       sourceOfDeath.put(defender.getEntity().getUniqueId(), PlayerDataUtil.getName(attacker.getEntity()));

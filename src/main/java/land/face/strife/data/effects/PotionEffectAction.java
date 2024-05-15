@@ -2,7 +2,9 @@ package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
 import land.face.strife.listeners.PotionListener;
+import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.LogUtil;
 import lombok.Setter;
 import org.bukkit.entity.LivingEntity;
@@ -34,7 +36,7 @@ public class PotionEffectAction extends Effect {
       PotionListener.ignoreFx = true;
     }
     if (bumpUpToIntensity) {
-      bumpPotionEffect(target.getEntity(), duration);
+      bumpPotionEffect(target, duration);
       PotionListener.ignoreFx = false;
       return;
     }
@@ -42,16 +44,23 @@ public class PotionEffectAction extends Effect {
     PotionListener.ignoreFx = false;
   }
 
-  private void bumpPotionEffect(LivingEntity target, double duration) {
+  private void bumpPotionEffect(StrifeMob mob, double duration) {
     LogUtil.printDebug(" Bumping potion effect");
     int level = 0;
-    if (target.hasPotionEffect(potionEffectType)) {
-      level = target.getPotionEffect(potionEffectType).getAmplifier();
-      level = Math.min(level + 1, intensity);
+    int maxIntensity = intensity;
+    if (mob.hasTrait(StrifeTrait.STRIDE) ||
+        getPlugin().getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.EIGHT)) {
+      maxIntensity--;
+    }
+    if (mob.getEntity().hasPotionEffect(potionEffectType)) {
+      level = mob.getEntity().getPotionEffect(potionEffectType).getAmplifier();
+      level = Math.min(level + 1, maxIntensity);
       LogUtil.printDebug(" Bumped from " + level + " to " + (level + 1) + ". MAX: " + intensity);
     } else {
       LogUtil.printDebug(" Target missing potion effect - adding at intensity 0");
     }
-    target.addPotionEffect(new PotionEffect(potionEffectType, (int) duration, level));
+    PotionListener.ignoreStride = true;
+    mob.getEntity().addPotionEffect(new PotionEffect(potionEffectType, (int) duration, level));
+    PotionListener.ignoreStride = false;
   }
 }

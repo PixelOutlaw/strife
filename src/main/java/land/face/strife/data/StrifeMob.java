@@ -229,7 +229,7 @@ public class StrifeMob {
   }
 
   public float addCorruption(float amount) {
-    corruption += amount;
+    corruption = Math.min(corruption + amount, 100);
     return corruption;
   }
 

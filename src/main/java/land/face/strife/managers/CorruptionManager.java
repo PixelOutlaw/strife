@@ -61,7 +61,6 @@ public class CorruptionManager {
     if (!corruptMap.containsKey(mob.getEntity().getUniqueId())) {
       corruptMap.put(mob.getEntity().getUniqueId(), new CorruptionTimer(this, mob));
     }
-    // pushRuneGui(mob, (int) mob.getCorruption());
     return true;
   }
 
@@ -74,7 +73,6 @@ public class CorruptionManager {
     newCorruption -= flatCorruptPerTick;
     mob.setCorruption(newCorruption);
     spawnCorruptionParticles(mob.getEntity(), mob.getCorruption());
-    // pushRuneGui(mob, (int) newCorruption);
   }
 
   public void spawnCorruptionParticles(LivingEntity target, float corruption) {

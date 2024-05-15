@@ -161,41 +161,44 @@ public class ExperienceListener implements Listener {
     event.setDroppedExp(0);
   }
 
-  @EventHandler(priority = EventPriority.HIGHEST)
+  @EventHandler(priority = EventPriority.NORMAL)
   public void onPlayerRespawn(PlayerRespawnEvent event) {
     Player p = event.getPlayer();
     if (plugin.getDamageManager().getSourceOfDeath().containsKey(p.getUniqueId())) {
-      PaletteUtil.sendMessage(p, "|none|\uD83D\uDC80 |gray|You have been slain by " +
-          plugin.getDamageManager().getSourceOfDeath().get(p.getUniqueId()) + "|gray|!");
+      PaletteUtil.sendMessage(p, "|crimson| Slain By: |white|" +
+          plugin.getDamageManager().getSourceOfDeath().get(p.getUniqueId()));
       plugin.getDamageManager().getSourceOfDeath().remove(p.getUniqueId());
     }
     if (penaltyFreeWorlds.contains(p.getWorld().getName())) {
+      PaletteUtil.sendMessage(p, " |crimson|Experience Lost: |white|0 XP");
       return;
     }
     StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(p);
     if (plugin.getStrifeMobManager().getStatMob(p).diedFromPvp()) {
+      PaletteUtil.sendMessage(p, " |crimson|Experience Lost: |white|0 XP\n|yellow||i|  (PvP))");
       return;
     }
     if (p.getLevel() >= 100) {
       return;
     }
     if (p.getLevel() < 10) {
-      sendMessage(p, "&cYou lost &f0 XP &cfrom dying &a(No loss below level 10!)");
+      PaletteUtil.sendMessage(p, " |crimson|Experience Lost: |white|0 XP\n|yellow||i|  No XP loss below level 10");
       return;
     }
     PlayerInventory inv = p.getInventory();
     double lostXP = 0;
     float lossReduction = playerMob.getStat(StrifeStat.XP_LOST_ON_DEATH);
     if (lossReduction >= 99.5) {
-      sendMessage(p, "&a&oSomehow, your stats reduce XP loss so low that you didn't lose any! Good job!");
+      PaletteUtil.sendMessage(p, " |crimson|Experience Lost: |white|0 XP");
+      //sendMessage(p, "&a&oSomehow, your stats reduce XP loss so low that you didn't lose any! Good job!");
     } else if (hadSoulShard(inv)) {
-      sendMessage(p, "&a&oYou consumed a &f&oSoul Shard&a&o! You lost &f&o0 XP&a&o!");
+      PaletteUtil.sendMessage(p, " |crimson|Experience Lost: |lgreen|0 XP\n|yellow||i|  Soul Shard consumed");
     } else {
       double currentLevelMaxXP = plugin.getExperienceManager().getMaxFaceExp(p.getLevel());
       float xpLossPercent = 0.03f;
       xpLossPercent *= 1 - lossReduction / 100;
       lostXP = Math.min(currentLevelMaxXP * xpLossPercent, p.getExp() * currentLevelMaxXP);
-      sendMessage(p, "&cAlas! You lost &f" + StrifePlugin.INT_FORMAT.format(lostXP) + " XP &cfrom dying!");
+      PaletteUtil.sendMessage(p, " |crimson|Experience Lost: |white|" + StrifePlugin.INT_FORMAT.format(lostXP) + " XP");
       p.setExp(Math.max(p.getExp() - xpLossPercent, 0.00001f));
     }
     if (lostXP > 0) {

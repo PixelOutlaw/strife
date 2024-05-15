@@ -17,6 +17,7 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import land.face.dinvy.events.InventoryLoadComplete;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -71,7 +72,6 @@ import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
-import org.bukkit.inventory.MainHand;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -222,7 +222,17 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     plugin.getStrifeMobManager().updateEquipmentStats(event.getPlayer());
   }
 
-  @EventHandler(priority = EventPriority.NORMAL)
+  @EventHandler(priority = EventPriority.LOW)
+  public void onRespawnStart(final PlayerRespawnEvent event) {
+    PaletteUtil.sendMessage(event.getPlayer(), " \n|none| \uD83D\uDC80 |crimson||b|You Died!|none| \uD83D\uDC80\n ");
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void onRespawnEnd(final PlayerRespawnEvent event) {
+    event.getPlayer().sendMessage("\n");
+  }
+
+  @EventHandler(priority = EventPriority.LOW)
   public void onPlayerRespawn(final PlayerRespawnEvent event) {
     ensureAbilitiesDontInstantCast(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
@@ -338,7 +348,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
         plugin.getLevelupMenu().open((Player) event.getPlayer()), 1L);
   }
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.LOW)
   public void onRespawn(PlayerRespawnEvent event) {
     Riptide.sendCancelPacket(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());

@@ -39,6 +39,7 @@ import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
 import land.face.strife.util.FangUtil;
 import land.face.strife.util.ItemUtil;
+import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
@@ -105,19 +106,6 @@ public class CombatListener implements Listener {
         event.getDamager().remove();
       }
       event.setCancelled(true);
-    }
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void pvpFlag(StrifeDamageEvent event) {
-    if (event.isCancelled()) {
-      return;
-    }
-    if (event.getAttacker().getEntity() instanceof Player &&
-        event.getDefender().getEntity() instanceof Player &&
-        (event.getAttacker() != event.getDefender())) {
-      event.getAttacker().flagPvp();
-      event.getDefender().flagPvp();
     }
   }
 
@@ -323,16 +311,22 @@ public class CombatListener implements Listener {
     strifeDamageEvent.setFinalDamage(finalDamage);
     Bukkit.getPluginManager().callEvent(strifeDamageEvent);
 
+
+
     if (strifeDamageEvent.isCancelled()) {
       event.setCancelled(true);
       return;
     }
 
     if (attackEntity instanceof Bee) {
-      plugin.getDamageManager().dealDamage(attacker, defender,
-          (float) strifeDamageEvent.getFinalDamage(), mods);
+      plugin.getDamageManager().dealDamage(attacker, defender, (float) strifeDamageEvent.getFinalDamage(), mods);
       event.setCancelled(true);
       return;
+    }
+
+    if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player && (attacker != defender)) {
+      attacker.flagPvp();
+      defender.flagPvp();
     }
 
     defender.trackDamage(attacker, (float) strifeDamageEvent.getFinalDamage());
@@ -353,7 +347,6 @@ public class CombatListener implements Listener {
       }
     }
 
-
     if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
       eventDamage *= 0.5F;
       float bleed = eventDamage;
@@ -368,6 +361,10 @@ public class CombatListener implements Listener {
 
     if (eventDamage >= defendEntity.getHealth()) {
       eventDamage = DamageUtil.doPreDeath(defender, eventDamage);
+    }
+    if (eventDamage >= defender.getEntity().getHealth() && defender.isPlayer()) {
+      plugin.getDamageManager().getSourceOfDeath().put(
+          defender.getEntity().getUniqueId(), PlayerDataUtil.getName(attacker.getEntity()));
     }
     event.setDamage(BASE, Math.max(eventDamage, 0));
   }

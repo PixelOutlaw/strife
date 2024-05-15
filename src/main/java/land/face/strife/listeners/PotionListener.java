@@ -30,8 +30,10 @@ public class PotionListener implements Listener {
   private final StrifePlugin plugin;
   public static final Map<String, PotionFx> POTION_VFX = new HashMap<>();
   public static final Set<UUID> CD = new HashSet<>();
-  public static boolean ignoreFx = false;
   private boolean ignorePotion = false;
+
+  public static boolean ignoreFx = false;
+  public static boolean ignoreStride = false;
 
   public PotionListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -58,9 +60,12 @@ public class PotionListener implements Listener {
           event.setCancelled(true);
           return;
         }
-        if (mob.hasTrait(StrifeTrait.STRIDE) || plugin.getPrayerManager().isPrayerActive(livingEntity, Prayer.EIGHT)) {
-          event.setCancelled(true);
-          reduceEffect(event.getNewEffect(), livingEntity);
+        if (ignoreStride) {
+          if (mob.hasTrait(StrifeTrait.STRIDE) || plugin.getPrayerManager()
+              .isPrayerActive(livingEntity, Prayer.EIGHT)) {
+            event.setCancelled(true);
+            reduceEffect(event.getNewEffect(), livingEntity);
+          }
         }
       }
       case "UNLUCK" -> {

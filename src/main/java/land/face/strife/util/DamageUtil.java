@@ -692,12 +692,12 @@ public class DamageUtil {
       case ICE -> {
         mods.getElementalStatuses().add(ElementalStatus.FREEZE);
         attemptFreeze(attacker, defender);
-        damageMap.put(finalElementType, damageMap.get(finalElementType) * 1.2f);
+        damageMap.put(finalElementType, damageMap.get(finalElementType) * 1.25f);
       }
       case LIGHTNING -> {
         mods.getElementalStatuses().add(ElementalStatus.SHOCK);
-        bonus = attemptShock(damageMap.get(finalElementType), defender.getEntity());
-        damageMap.put(finalElementType, damageMap.get(finalElementType) + bonus);
+        attemptShock(attacker, defender);
+        damageMap.put(finalElementType, damageMap.get(finalElementType) * 1.4f);
       }
       case DARK -> {
         mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
@@ -860,24 +860,22 @@ public class DamageUtil {
     Ignite.setFlames(defender, Math.max((int) duration, defender.getEntity().getFireTicks()));
   }
 
-  public static float attemptShock(float damage, LivingEntity defender) {
-    float multiplier = 0.5f;
-    float percentHealth = (float) defender.getHealth() /
-        (float) defender.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
-    if (percentHealth < 0.5f) {
-      multiplier = 1f / (float) Math.max(0.16, percentHealth * 2);
+  public static void attemptShock(StrifeMob attacker, StrifeMob defender) {
+    if (defender.getEntity() instanceof Player) {
+      float amountStolen = 1 + defender.getMaxEnergy() * 0.01f;
+      attacker.setEnergy(attacker.getEnergy() + amountStolen);
+      defender.setEnergy(defender.getEnergy() - amountStolen);
+    } else {
+      float amountStolen = 1 + StatUtil.getMobLevel(defender.getEntity()) * 0.03f;
+      attacker.setEnergy(attacker.getEnergy() + amountStolen);
+      if (defender instanceof Creeper) {
+        ((Creeper) defender).setPowered(true);
+      }
     }
-    double particles = damage * multiplier * 0.5;
-    double particleRange = 0.8 + multiplier * 0.2;
-    defender.getWorld()
-        .playSound(defender.getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.7f, 2f);
-    defender.getWorld()
-        .spawnParticle(Particle.ELECTRIC_SPARK, defender.getEyeLocation(), 10 + (int) particles,
-            particleRange, particleRange, particleRange, 0.12);
-    if (defender instanceof Creeper) {
-      ((Creeper) defender).setPowered(true);
-    }
-    return damage * multiplier;
+    defender.getEntity().getWorld().playSound(
+        defender.getEntity().getEyeLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.7f, 2f);
+    defender.getEntity().getWorld().spawnParticle(
+        Particle.ELECTRIC_SPARK, defender.getEntity().getEyeLocation(), 18, 0.5, 0.5, 0.5, 0.14);
   }
 
   public static void attemptFreeze(StrifeMob attacker, StrifeMob defender) {
