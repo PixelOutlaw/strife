@@ -57,7 +57,9 @@ public class FrostTask extends BukkitRunnable {
       if (mob.getFrostGraceTicks() > 0) {
         mob.setFrostGraceTicks(mob.getFrostGraceTicks() - 1);
       } else {
-        mob.removeFrost(4);
+        if (!mob.hasTrait(StrifeTrait.PERMAFROST)) {
+          mob.removeFrost(4);
+        }
       }
       playFrostParticles(mob.getEntity());
     }

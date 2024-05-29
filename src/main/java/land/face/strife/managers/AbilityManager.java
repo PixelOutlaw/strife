@@ -633,7 +633,7 @@ public class AbilityManager {
 
     float cooldown = (float) cs.getDouble("cooldown", 0);
     float sneakCooldown = (float) cs.getDouble("sneak-cooldown", cooldown);
-    float minCooldown = cs.getInt("min-cooldown", 0);
+    float minCooldown = (float) cs.getDouble("min-cooldown", 0);
     int maxCharges = cs.getInt("max-charges", 1);
     int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
     float range = (float) cs.getDouble("range", 0);

@@ -2,15 +2,16 @@ package land.face.strife.data.effects;
 
 import static land.face.strife.data.champion.EquipmentCache.EQUIPMENT_SLOTS;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.listeners.SpawnListener;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.MinionTask;
 import land.face.strife.util.ItemUtil;
-import land.face.strife.util.SpecialStatusUtil;
-import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
+import lombok.Getter;
+import lombok.Setter;
 import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
@@ -19,8 +20,6 @@ import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Camel;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Horse;
@@ -34,6 +33,7 @@ import org.bukkit.entity.ZombieHorse;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
+@Getter @Setter
 public class MinionSummon extends LocationEffect {
 
   private String uniqueEntity;
@@ -43,6 +43,7 @@ public class MinionSummon extends LocationEffect {
   private double lifespanSeconds;
   private boolean mount;
   private boolean clone;
+  private boolean raiseFromGround;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -58,6 +59,11 @@ public class MinionSummon extends LocationEffect {
       lifespan = Integer.MAX_VALUE;
     } else {
       lifespan = lifespanSeconds * (1 + (caster.getStat(StrifeStat.EFFECT_DURATION) / 100));
+    }
+
+    if (raiseFromGround) {
+      location = location.clone();
+      location.add(0, -0.8, 0);
     }
 
     for (int i = 0; i < amount; i++) {
@@ -90,8 +96,7 @@ public class MinionSummon extends LocationEffect {
                 .isWandOrStaff(caster.getEntity().getEquipment().getItem(EquipmentSlot.HAND))) {
               summonedEntity.getEntity().getEquipment().setItem(slot, SpawnListener.SKELETON_WAND);
             } else {
-              summonedEntity.getEntity().getEquipment()
-                  .setItem(slot, caster.getEntity().getEquipment().getItem(slot));
+              summonedEntity.getEntity().getEquipment().setItem(slot, caster.getEntity().getEquipment().getItem(slot));
             }
           }
         }, 2L);
@@ -124,36 +129,24 @@ public class MinionSummon extends LocationEffect {
           case PIG -> ((Pig) summon).setSaddle(true);
         }
         summon.addPassenger(caster.getEntity());
+      } else if (raiseFromGround) {
+        summon.setAI(false);
+        summon.setInvulnerable(true);
+        summon.setGravity(false);
+        AtomicInteger steps = new AtomicInteger(5);
+        Bukkit.getScheduler().runTaskTimer(StrifePlugin.getInstance(), (task) -> {
+          if (steps.get() == 0) {
+            summon.setAI(true);
+            summon.setInvulnerable(false);
+            summon.setGravity(true);
+            task.cancel();
+            return;
+          }
+          summon.teleport(summon.getLocation().clone().add(0, 0.161, 0));
+          steps.getAndDecrement();
+        }, 0L, 1L);
       }
     }
     MinionTask.expireMinions(caster);
-  }
-
-  public void setUniqueEntity(String uniqueEntity) {
-    this.uniqueEntity = uniqueEntity;
-  }
-
-  public void setAmount(int amount) {
-    this.amount = amount;
-  }
-
-  public void setLifespanSeconds(double lifespanSeconds) {
-    this.lifespanSeconds = lifespanSeconds;
-  }
-
-  public void setMount(boolean mount) {
-    this.mount = mount;
-  }
-
-  public void setSoundEffect(String soundEffect) {
-    this.soundEffect = soundEffect;
-  }
-
-  public void setLifeMult(float lifeMult) {
-    this.lifeMult = lifeMult;
-  }
-
-  public void setClone(boolean clone) {
-    this.clone = clone;
   }
 }

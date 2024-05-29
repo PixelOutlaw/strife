@@ -59,6 +59,8 @@ public enum StrifeTrait {
       " |yellow|You cannot die"),
   MASOCHISM("|orange||ul|Passive Effect - Masochism",
       " |yellow|Gain |white|20% |yellow|of lost Life as Energy"),
+  PERMAFROST("|orange||ul|Passive Effect - Permafrost",
+      " |cyan|Frost |yellow|does not decay"),
 
   STRIDE("|orange||ul|Passive Effect - Stride",
       " |yellow|When |white|Slowness |yellow|is gained,",

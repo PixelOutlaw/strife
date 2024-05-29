@@ -97,7 +97,8 @@ public class LoreAbilityManager {
     }
     List<String> description = PaletteUtil.color(cs.getStringList("description"));
     boolean hide = cs.getBoolean("hide", false);
-    LoreAbility loreAbility = new LoreAbility(key, triggerType, triggerText, ability, description, hide);
+    boolean cancelIfDead = cs.getBoolean("hide", false);
+    LoreAbility loreAbility = new LoreAbility(key, triggerType, triggerText, ability, description, hide, cancelIfDead);
     for (Effect e : effectList) {
       loreAbility.addEffect(e);
     }
@@ -131,14 +132,18 @@ public class LoreAbilityManager {
   public enum TriggerType {
     EARLY_ON_HIT,
     ON_HIT,
+    LATE_ON_HIT,
+
+    EARLY_WHEN_HIT,
+    WHEN_HIT,
+    LATE_WHEN_HIT,
+
     ON_BASIC_HIT,
     ON_MELEE_HIT,
     ON_BASIC_MELEE_HIT,
     ON_RANGED_HIT,
     ON_BASIC_RANGED_HIT,
     ON_KILL,
-    EARLY_WHEN_HIT,
-    WHEN_HIT,
     ON_CRIT,
     ON_DEATH,
     ON_BLOCK,

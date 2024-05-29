@@ -20,6 +20,7 @@ package land.face.strife.events;
 
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
+import lombok.Getter;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -32,8 +33,11 @@ public class StrifeEarlyDamageEvent extends Event implements Cancellable {
     return HANDLER_LIST;
   }
 
+  @Getter
   private final StrifeMob attacker;
+  @Getter
   private final StrifeMob defender;
+  @Getter
   private final DamageModifiers damageModifiers;
   private boolean cancel;
 
@@ -46,18 +50,6 @@ public class StrifeEarlyDamageEvent extends Event implements Cancellable {
   @Override
   public HandlerList getHandlers() {
     return HANDLER_LIST;
-  }
-
-  public StrifeMob getAttacker() {
-    return attacker;
-  }
-
-  public StrifeMob getDefender() {
-    return defender;
-  }
-
-  public DamageModifiers getDamageModifiers() {
-    return damageModifiers;
   }
 
   public void setCancelled(boolean cancel) {

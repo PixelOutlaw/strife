@@ -126,7 +126,7 @@ public class EveryTickTask extends BukkitRunnable {
         // Energy separator logic - see history
 
         float percentOxygen = (float) p.getRemainingAir() / p.getMaximumAir();
-        int progress = Math.round(((float) GuiManager.oxygenBar.size()) * percentOxygen);
+        int progress = Math.max(0, Math.round(((float) GuiManager.oxygenBar.size()) * percentOxygen));
         if (lastOxygenNum.getOrDefault(p, 22) != progress) {
           plugin.getGuiManager().updateAir(gui, progress);
           lastOxygenNum.put(p, progress);

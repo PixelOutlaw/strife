@@ -17,10 +17,11 @@ public class LoreAbility {
   private final List<String> description;
   private final Ability ability;
   private final List<Effect> effects;
+  private final boolean cancelIfDead;
   private final boolean hide;
 
   public LoreAbility(String id, TriggerType triggerType, String triggerText, Ability ability,
-      List<String> description, boolean hide) {
+      List<String> description, boolean hide, boolean cancelIfDead) {
     this.id = id;
     this.triggerType = triggerType;
     this.triggerText = triggerText;
@@ -28,6 +29,7 @@ public class LoreAbility {
     this.ability = ability;
     this.effects = new ArrayList<>();
     this.hide = hide;
+    this.cancelIfDead = cancelIfDead;
   }
 
   public void addEffect(Effect effect) {

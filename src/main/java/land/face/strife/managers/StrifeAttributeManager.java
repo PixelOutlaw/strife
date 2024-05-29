@@ -36,11 +36,13 @@ public class StrifeAttributeManager {
 
   private static Map<String, StrifeAttribute> attributeMap;
   private static final String upgradeAvailable = StringExtensionsKt.chatColorize(
-      "&a&lCLICK TO UPGRADE!");
+      "&aLEFT-CLICK TO UPGRADE!");
   private static final String pointCapReached = StringExtensionsKt.chatColorize(
-      "&f&lMaxed Out!");
+      "&8Maxed Out! Nice!");
+  private static final String downgrade = StringExtensionsKt.chatColorize(
+      "&eRIGHT-CLICK TO DOWNGRADE!");
   private static final String noUnspentPoints = StringExtensionsKt.chatColorize(
-      "&f&lNo Unspent Points");
+      "&8No Attribute Points Left!");
 
   public StrifeAttributeManager(VersionedSmartYamlConfiguration attributesYAML) {
     attributeMap = new LinkedHashMap<>();
@@ -108,11 +110,14 @@ public class StrifeAttributeManager {
     if (requirementList.isEmpty()) {
       if (allocatedPoints == attr.getMaxCap()) {
         requirementList.add(pointCapReached);
-      } else if (champion.getUnusedStatPoints() == 0) {
+      } else if (champion.getPendingUnusedStatPoints() == 0) {
         requirementList.add(noUnspentPoints);
       } else {
         requirementList.add(upgradeAvailable);
       }
+    }
+    if (allocatedPoints > champion.getAttributeLevel(attr)) {
+      requirementList.add(downgrade);
     }
     return requirementList;
   }

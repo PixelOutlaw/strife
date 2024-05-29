@@ -92,8 +92,6 @@ public class DamageUtil {
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   public static final DamageType[] DMG_TYPES = DamageType.values();
 
-  private static float PVP_MULT;
-
   private static final String POISON_TEXT = "彣";
 
   private static final ItemStack EARTH_CRACK = new ItemStack(Material.COARSE_DIRT);
@@ -106,28 +104,19 @@ public class DamageUtil {
   public static void refresh(StrifePlugin refreshedPlugin) {
     plugin = refreshedPlugin;
 
-    BASE_ATTACK_SECONDS = (float) plugin.getSettings()
-        .getDouble("config.mechanics.attack-speed.base-attack-time", 1.4);
+    BASE_ATTACK_SECONDS = (float) plugin.getSettings().getDouble("config.mechanics.attack-speed.base-attack-time", 1.4);
+    ATTACK_BLOCKED = PaletteUtil.color(plugin.getSettings().getString("language.status.block-message", "&e&lBlocked!"));
+    ATTACK_DODGED = PaletteUtil.color(plugin.getSettings().getString("language.status.evade-message", "&7&l&oDodge!"));
 
-    PVP_MULT = (float) plugin.getSettings()
-        .getDouble("config.mechanics.pvp-multiplier", 0.5);
-    ATTACK_BLOCKED = PaletteUtil.color(plugin.getSettings()
-        .getString("language.status.block-message", "&e&lBlocked!"));
-    ATTACK_DODGED = PaletteUtil.color(plugin.getSettings()
-        .getString("language.status.evade-message", "&7&l&oDodge!"));
-
-    BASE_RECHARGE_TICKS = plugin.getSettings()
-        .getInt("config.mechanics.barrier.base-delay-ticks", 100);
-    TICK_RATE = plugin.getSettings()
-        .getInt("config.mechanics.barrier.task-tick-rate", 3);
+    BASE_RECHARGE_TICKS = plugin.getSettings().getInt("config.mechanics.barrier.base-delay-ticks", 100);
+    TICK_RATE = plugin.getSettings().getInt("config.mechanics.barrier.task-tick-rate", 3);
     DELAY_TICKS = (int) ((float) BASE_RECHARGE_TICKS / TICK_RATE);
-    FLAT_BARRIER_PER_SECOND = plugin.getSettings()
-        .getInt("config.mechanics.barrier.flat-per-second", 4);
+    FLAT_BARRIER_PER_SECOND = plugin.getSettings().getInt("config.mechanics.barrier.flat-per-second", 4);
     PERCENT_BARRIER_PER_SECOND = (float) plugin.getSettings()
         .getDouble("config.mechanics.barrier.percent-per-second", 0.08);
 
-    deathMessage = BossBarManager.covertStringToRetardComponent(PaletteUtil.color(plugin.getSettings()
-        .getString("language.enemy-killed-title")));
+    deathMessage = BossBarManager.covertStringToRetardComponent(
+        PaletteUtil.color(plugin.getSettings().getString("language.enemy-killed-title")));
     sillyDeathMsgs = new ArrayList<>();
     for (String s : plugin.getSettings().getStringList("language.silly-enemy-killed-titles")) {
       sillyDeathMsgs.add(BossBarManager.covertStringToRetardComponent(PaletteUtil.color(s)));
@@ -326,7 +315,8 @@ public class DamageUtil {
 
     if (attackType != AttackType.BONUS) {
       if (attacker.getEntity().getFreezeTicks() > 0 && !(attacker.getEntity() instanceof Player)) {
-        rawDamage *= 1 - 0.3f * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity().getMaxFreezeTicks());
+        rawDamage *=
+            1 - 0.3f * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity().getMaxFreezeTicks());
       }
       if (defender.hasTrait(StrifeTrait.STONE_SKIN)) {
         rawDamage *= 1 - (0.03f * defender.getEarthRunes());
@@ -386,7 +376,7 @@ public class DamageUtil {
     if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player && attacker != defender) {
       if (rawDamage == 0) {
         plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 9,  "<aqua>０", 0.6f, 1.1f, 0.3f);
+            IndicatorStyle.RANDOM_POPOFF, 9, "<aqua>０", 0.6f, 1.1f, 0.3f);
       } else {
         damageString = buildDamageString(Math.round(rawDamage));
         if (criticalHit) {
@@ -563,13 +553,13 @@ public class DamageUtil {
         damageMap.put(damageType, amount);
       }
     }
-      for (BonusDamage bd : mods.getBonusDamages()) {
-        float bonus = applyDamageScale(attacker, target, bd);
-        if (bd.isNegateMinionDamage()) {
-          bonus /= DamageUtil.getMinionMult(attacker);
-        }
-        damageMap.put(bd.getDamageType(), damageMap.getOrDefault(bd.getDamageType(), 0f) + bonus);
+    for (BonusDamage bd : mods.getBonusDamages()) {
+      float bonus = applyDamageScale(attacker, target, bd);
+      if (bd.isNegateMinionDamage()) {
+        bonus /= DamageUtil.getMinionMult(attacker);
       }
+      damageMap.put(bd.getDamageType(), damageMap.getOrDefault(bd.getDamageType(), 0f) + bonus);
+    }
     return damageMap;
   }
 
@@ -701,7 +691,7 @@ public class DamageUtil {
       }
       case DARK -> {
         mods.getElementalStatuses().add(ElementalStatus.CORRUPT);
-        plugin.getCorruptionManager().addCorruption(defender, 14f + damageMap.get(DamageType.DARK) * 0.1f, true);
+        plugin.getCorruptionManager().addCorruption(defender, 12.5f, true);
       }
       case EARTH -> {
         mods.getElementalStatuses().add(ElementalStatus.CRUNCH);
@@ -722,7 +712,8 @@ public class DamageUtil {
         // half of your healing power, as a multiplier
         float healingBonus = Math.max(0, StatUtil.getStat(attacker, StrifeStat.HEALING_POWER) / 200);
         float lightDamage = damageMap.get(DamageType.LIGHT) * (1 + 0.2f + healingBonus);
-        defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.BLOCK_BELL_RESONATE, 1f, 2f);
+        defender.getEntity().getWorld()
+            .playSound(defender.getEntity().getEyeLocation(), Sound.BLOCK_BELL_RESONATE, 1f, 2f);
         defender.getEntity().getWorld().spawnParticle(
             Particle.FIREWORKS_SPARK,
             defender.getEntity().getLocation().clone().add(0, 0.4, 0),
@@ -1034,10 +1025,12 @@ public class DamageUtil {
       damage *= 1 + (bleedDamage / 100);
       applyBleed(attacker, defender, damage, bypassBarrier, bypassArmor, false);
       if (attacker.getEntity() instanceof Player && attacker != defender) {
-        ((Player) attacker.getEntity()).playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 20f, 0.8f);
+        ((Player) attacker.getEntity()).playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 20f,
+            0.8f);
       }
       if (defender.getEntity() instanceof Player) {
-        ((Player) defender.getEntity()).playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f, 0.8f);
+        ((Player) defender.getEntity()).playSound(defender.getEntity().getLocation(), Sound.ENTITY_SHEEP_SHEAR, 1f,
+            0.8f);
       }
       return true;
     }

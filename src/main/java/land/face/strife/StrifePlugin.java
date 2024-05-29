@@ -836,7 +836,7 @@ public class StrifePlugin extends FacePlugin {
   private void buildEffects() {
     LogUtil.printDebug("Starting effect load!");
     Effect.setPlugin(this);
-    for (int i = 1; i <= 100; i++) {
+    for (int i = 0; i <= 100; i++) {
       Wait wait = new Wait();
       wait.setTickDelay(i);
       effectManager.loadEffect("wait-" + i, wait);

@@ -745,8 +745,11 @@ public class EffectManager {
         ((MinionSummon) effect).setLifespanSeconds(cs.getInt("lifespan-seconds", 30));
         ((MinionSummon) effect).setLifeMult((float) cs.getDouble("life-multiplier", 1.0));
         ((MinionSummon) effect).setSoundEffect(cs.getString("sound-effect-id", null));
-        ((MinionSummon) effect).setMount(cs.getBoolean("mount", false));
-        ((MinionSummon) effect).setClone(cs.getBoolean("clone", false));
+        boolean mount = cs.getBoolean("mount", false);
+        ((MinionSummon) effect).setMount(mount);
+        boolean clone = cs.getBoolean("clone", false);
+        ((MinionSummon) effect).setClone(clone);
+        ((MinionSummon) effect).setRaiseFromGround(cs.getBoolean("raise-from-ground", (!mount && !clone)));
       }
       case MINION_BANISH -> {
         effect = new MinionRemove();

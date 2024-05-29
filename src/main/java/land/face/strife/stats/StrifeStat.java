@@ -27,6 +27,7 @@ public enum StrifeStat {
   SKILL_REQUIREMENT("Skill Requirement"),
 
   CHARACTER_SIZE("Character Size"),
+  ATTACK_RANGE("Attack Range"),
   WEIGHT("Weight"),
 
   HEALTH("Maximum Life"),
@@ -148,6 +149,9 @@ public enum StrifeStat {
   CRAFT_SKILL("Crafting Skill"),
   ENCHANT_SKILL("Enchanting Skill"),
   SNEAK_SKILL("Sneak Skill"),
+
+  SNEAK_SPEED("Sneaking Speed"),
+  STEALTH_BONUS("Stealthiness"),
 
   MINING_SPEED("Mining Speed"),
   MINING_GEMS("Mining Gems"),

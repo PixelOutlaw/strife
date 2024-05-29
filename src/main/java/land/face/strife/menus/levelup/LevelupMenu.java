@@ -32,7 +32,7 @@ public class LevelupMenu extends ItemMenu {
 
     for (StrifeAttribute attribute : attributes) {
       int slot = attribute.getSlot();
-      setItem(slot, new LevelupMenuItem(plugin, attribute));
+      setItem(slot, new AttributeIcon(plugin, attribute));
     }
 
     int pathIndex = 45;

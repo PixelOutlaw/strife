@@ -18,10 +18,10 @@
  */
 package land.face.strife.menus.levelup;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.StrifePlugin;
@@ -29,7 +29,6 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.StrifeAttribute;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
@@ -39,14 +38,15 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class LevelupMenuItem extends MenuItem {
+public class AttributeIcon extends MenuItem {
 
   private final StrifePlugin plugin;
   private final StrifeAttribute attribute;
 
-  private static final String breakLine = StringExtensionsKt.chatColorize("&7&m---------------------------");
+  private static final DecimalFormat format = new DecimalFormat("0.##");
+  private static final String breakLine = StringExtensionsKt.chatColorize("&f倕");
 
-  LevelupMenuItem(StrifePlugin plugin, StrifeAttribute strifeAttribute) {
+  AttributeIcon(StrifePlugin plugin, StrifeAttribute strifeAttribute) {
     super(strifeAttribute.getName(), new ItemStack(Material.MAGMA_CREAM));
     this.plugin = plugin;
     this.attribute = strifeAttribute;
@@ -80,21 +80,30 @@ public class LevelupMenuItem extends MenuItem {
     icon.setItemMeta(itemMeta);
 
     List<String> lore = new ArrayList<>();
-    List<String> reqList = plugin.getAttributeManager()
-        .generateRequirementString(attribute, champion, statCap);
+    List<String> reqList = plugin.getAttributeManager().generateRequirementString(attribute, champion, statCap);
     if (!reqList.isEmpty()) {
       lore.add(breakLine);
+      lore.add("");
     }
     lore.addAll(reqList);
     lore.add(breakLine);
+    lore.add("");
     for (String desc : attribute.getDescription()) {
-      lore.add(desc);
+      if (desc.contains("#")) {
+        int amount = Math.max(1, pendingPoints);
+        String[] segments = desc.split("#");
+        lore.add(desc.replace(
+            "#" + segments[1] + "#",
+            format.format(Double.parseDouble(segments[1]) * amount)));
+      } else {
+        lore.add(desc);
+      }
     }
-    lore.add(breakLine);
 
     if (pendingPoints > actualPoints) {
-      String pendingPlus = FaceColor.WHITE + "(+" + (pendingPoints - actualPoints) + " Pending)";
-      ItemStackExtensionsKt.setDisplayName(icon, getDisplayName() + " [" + pendingPoints + "/" + statCap + "]" + pendingPlus);
+      int bonus = (pendingPoints - actualPoints);
+      ItemStackExtensionsKt.setDisplayName(icon,
+          getDisplayName() + " [" + actualPoints + "+" + bonus + "/" + statCap + "]");
     } else {
       ItemStackExtensionsKt.setDisplayName(icon, getDisplayName() + " [" + actualPoints + "/" + statCap + "]");
     }
