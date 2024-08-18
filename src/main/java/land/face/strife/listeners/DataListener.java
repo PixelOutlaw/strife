@@ -16,8 +16,12 @@
  */
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import land.face.dinvy.events.InventoryLoadComplete;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -45,6 +49,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -72,10 +77,13 @@ import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.vehicle.VehicleEnterEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public record DataListener(StrifePlugin plugin) implements Listener {
+
+  private static Set<UUID> faceMessages = new HashSet<>();
 
   @EventHandler
   public void onAbilityChange(final AbilityChangeEvent event) {
@@ -168,7 +176,10 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       if (ItemUtil.getCustomData(event.getItem().getItemStack()) == 42069) {
         event.setCancelled(true);
         event.getItem().remove();
-        MessageUtils.sendMessage(event.getEntity(), "&a&oThe power of &f&l&oFaceguy &a&oflows through you..!");
+        if (!faceMessages.contains(event.getEntity().getUniqueId())) {
+          MessageUtils.sendMessage(event.getEntity(), "&a&oThe power of &f&l&oFaceguy &a&oflows through you..!");
+          faceMessages.add(event.getEntity().getUniqueId());
+        }
         ((Player) event.getEntity()).playSound(event.getEntity().getLocation(), Sound.BLOCK_BEACON_POWER_SELECT, 1, 1);
         event.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 240, 1, false));
         StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getEntity());
@@ -268,6 +279,20 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     }
     final LivingEntity entity = (LivingEntity) event.getRightClicked();
     plugin.getStrifeMobManager().getStatMob(entity);
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onStinkyInteract(final PlayerInteractEntityEvent event) {
+    if (!(event.getRightClicked() instanceof ItemFrame)) {
+      return;
+    }
+    ItemStack stack = ((ItemFrame) event.getRightClicked()).getItem();
+    if (stack == null || stack.getType() != Material.STONE_BUTTON) {
+      return;
+    }
+    if (ItemUtils.getModelData(stack) == 1975) {
+      event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.BAD_OMEN, -1, 0, false));
+    }
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

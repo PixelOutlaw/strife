@@ -103,10 +103,10 @@ public class AttackSpeedManager {
     if (!lastAttackMap.containsKey(attacker.getEntity().getUniqueId())) {
       attackTracker = new AttackTracker(finalAttackTime, 0L);
       lastAttackMap.put(attacker.getEntity().getUniqueId(), attackTracker);
-      attackMult = 1f;
+      attackMult = attacker.hasTrait(StrifeTrait.OVERDRAW) ? 1.35f : 1.0f;
     } else {
       attackTracker = lastAttackMap.get(attacker.getEntity().getUniqueId());
-      attackMult = attackTracker.getRechargePercent();
+      attackMult = attackTracker.getRechargePercent(attacker.hasTrait(StrifeTrait.OVERDRAW));
     }
 
     attackTracker.reset(finalAttackTime, 0L, false);
@@ -129,9 +129,9 @@ public class AttackSpeedManager {
     return attackMult * energyMult;
   }
 
-  public float getRawMultiplier(UUID uuid) {
+  public float getRawMultiplier(UUID uuid, boolean allowOverdraw) {
     if (lastAttackMap.containsKey(uuid)) {
-      return lastAttackMap.get(uuid).getRechargePercent();
+      return lastAttackMap.get(uuid).getRechargePercent(allowOverdraw);
     }
     return 1f;
   }

@@ -21,15 +21,21 @@ public class AttackTracker {
     }
   }
 
-  public float getRechargePercent() {
+  public float getRechargePercent(boolean allowOverdraw) {
     long timeDiff = attackRechargedStamp - System.currentTimeMillis();
     if (timeDiff > attackDuration) {
       // This occurs only when the attack is still in the delay period
       return 0;
     }
     if (timeDiff <= 0) {
-      // This occurs only when the attack is fully recharged
-      return 1f;
+      if (allowOverdraw) {
+        long msIntoRecharge = attackDuration - timeDiff;
+        float percent = ((float) msIntoRecharge + 500) / (attackDuration + 500);
+        return Math.min(1.35f, 1 + (percent - 1) / 3);
+      } else {
+        // This occurs only when the attack is fully recharged
+        return 1f;
+      }
     }
     long msIntoRecharge = attackDuration - timeDiff;
     // Don't need to care about below 0 or above 1, since they're covered

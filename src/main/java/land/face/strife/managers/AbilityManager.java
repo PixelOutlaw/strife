@@ -103,8 +103,7 @@ public class AbilityManager {
       }
     }
     TargetResponse response = getTargets(caster, target, ability);
-    if (response.getLocation() == null && (response.getEntities() == null ||
-        response.getEntities().isEmpty())) {
+    if (response.getLocation() == null && (response.getEntities() == null || response.getEntities().isEmpty())) {
       doTargetNotFoundPrompt(caster, ability);
       return false;
     }
@@ -153,7 +152,7 @@ public class AbilityManager {
       return;
     }
     CooldownTracker tracker = getCooldownTracker(livingEntity, abilityId);
-    if (tracker == null) {
+    if (tracker == null || tracker.isToggleState()) {
       return;
     }
     tracker.reduce(msReduction);
@@ -164,7 +163,7 @@ public class AbilityManager {
       return;
     }
     CooldownTracker tracker = getCooldownTracker(livingEntity, abilityId);
-    if (tracker == null) {
+    if (tracker == null || tracker.isToggleState()) {
       return;
     }
     tracker.reduce(percent);
@@ -639,6 +638,7 @@ public class AbilityManager {
     float range = (float) cs.getDouble("range", 0);
     float cost = (float) cs.getDouble("cost", 0);
     float sneakCost = (float) cs.getDouble("sneak-cost", cost);
+    float weightScaling = (float) cs.getDouble("weight-scaling", 0);
     boolean showMessages = cs.getBoolean("show-messages", false);
     boolean requireTarget = cs.getBoolean("require-target", false);
     List<String> conditionStrings = cs.getStringList("conditions");
@@ -672,7 +672,7 @@ public class AbilityManager {
     Ability ability = new Ability(key, name, effects, sneakEffects, toggleOffEffects, abilityType, targetType,
         sneakSelfTarget, range, cost, sneakCost, cooldown, sneakCooldown, maxCharges, globalCooldownTicks, showMessages,
         requireTarget, raycastsHitEntities, conditions, sneakConditions, passivesOnCooldown, friendly, abilityIconData,
-        cancelStealth, deathUntoggle, minCooldown);
+        cancelStealth, deathUntoggle, minCooldown, weightScaling);
 
     ability.getPassiveStats().putAll(StatUtil.getStatMapFromSection(
         cs.getConfigurationSection("passive-stats")));

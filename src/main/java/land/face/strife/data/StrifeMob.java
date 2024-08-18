@@ -252,6 +252,14 @@ public class StrifeMob {
     setBlock(Math.min(block, maxBlock));
   }
 
+  public void changeBarrier(float amount) {
+    if (amount > 0) {
+      restoreBarrier(amount);
+    } else {
+      damageBarrier(-amount);
+    }
+  }
+
   public void restoreBarrier(float amount) {
     if (amount < 0.01) {
       return;
@@ -364,6 +372,9 @@ public class StrifeMob {
   }
 
   public void trackDamage(StrifeMob attacker, float amount) {
+    if (attacker == null) {
+      return;
+    }
     trackDamage(attacker.getEntity().getUniqueId(), amount);
   }
 

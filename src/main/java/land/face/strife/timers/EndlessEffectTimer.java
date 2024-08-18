@@ -8,17 +8,24 @@ import land.face.strife.data.TargetResponse;
 import land.face.strife.data.effects.EndlessEffect;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
+import lombok.Getter;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class EndlessEffectTimer extends BukkitRunnable {
 
   private final StrifePlugin plugin = StrifePlugin.getInstance();
+
+  @Getter
+  private final String id;
+  @Getter
   private final StrifeMob mob;
+  @Getter
   private final EndlessEffect endlessEffect;
   private int ticks;
 
   public EndlessEffectTimer(EndlessEffect effect, StrifeMob mob, int tickRate, int ticks) {
+    this.id = effect.getId();
     this.endlessEffect = effect;
     this.mob = mob;
     this.ticks = ticks;
@@ -59,6 +66,10 @@ public class EndlessEffectTimer extends BukkitRunnable {
     }
   }
 
+  public void bump(int ticks) {
+    this.ticks = ticks;
+  }
+
   public void runCancelEffects() {
     LogUtil.printDebug("Cancelled endless effect due to fail/stop conditions met");
 
@@ -84,15 +95,4 @@ public class EndlessEffectTimer extends BukkitRunnable {
     EndlessEffect.removeEffectOnTarget(mob, endlessEffect);
   }
 
-  public StrifeMob getMob() {
-    return mob;
-  }
-
-  public String getId() {
-    return endlessEffect.getId();
-  }
-
-  public EndlessEffect getEndlessEffect() {
-    return endlessEffect;
-  }
 }

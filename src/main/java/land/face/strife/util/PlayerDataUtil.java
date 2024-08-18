@@ -29,7 +29,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.potion.PotionEffectType;
 
 public class PlayerDataUtil {
 
@@ -186,6 +185,7 @@ public class PlayerDataUtil {
         }
       }
       if (condition.isMet(caster, target) == condition.isInverted()) {
+        condition.sendMessage(caster);
         LogUtil.printDebug("-- Skipping, condition " + condition + " not met!");
         return false;
       }
@@ -200,7 +200,7 @@ public class PlayerDataUtil {
 
   public static void playExpSound(Player player) {
     player.playSound(player.getEyeLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.2f,
-        0.8f + (float) StrifePlugin.RNG.nextFloat() * 0.4f);
+        0.8f + StrifePlugin.RNG.nextFloat() * 0.4f);
   }
 
   // TODO: Something less stupid, this shouldn't be in this Util

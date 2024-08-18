@@ -157,7 +157,7 @@ public class GodCommand extends BaseCommand {
     SelectedGod selectedGod = mob.getChampion().getSaveData().getSelectedGod();
     switch (selectedGod) {
       case FACEGUY, AURORA, ZEXIR, ANYA ->
-          Bukkit.getServer().dispatchCommand(sender, "bs open tribute-gui " + target.getPlayer().getName());
+          Bukkit.getServer().dispatchCommand(sender, "genesis open tribute-gui " + target.getPlayer().getName());
       default -> // TODO: Not use bossshop for this UI
           PaletteUtil.sendMessage(target.getPlayer(),
               FaceColor.YELLOW + "You must choose a God before you can tribute! Select one of the nearby heads!");

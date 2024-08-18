@@ -104,6 +104,7 @@ import land.face.strife.listeners.MoneyDropListener;
 import land.face.strife.listeners.MountListener;
 import land.face.strife.listeners.PlayerInputListener;
 import land.face.strife.listeners.PotionListener;
+import land.face.strife.listeners.ProjectileHitListener;
 import land.face.strife.listeners.RuneChangeListener;
 import land.face.strife.listeners.ShootListener;
 import land.face.strife.listeners.SkillLevelUpListener;
@@ -207,7 +208,9 @@ public class StrifePlugin extends FacePlugin {
   private static boolean glowEnabled;
 
   private PluginLogger debugPrinter;
+  @Getter
   private LogLevel logLevel;
+  @Getter
   private MasterConfiguration settings;
   @Getter
   private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
@@ -298,11 +301,14 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private CitizenModelListener citizenModelListener;
 
+  @Getter
   private DataStorage storage;
 
   private final List<BukkitTask> taskList = new ArrayList<>();
+  @Getter
   private ParticleTask particleTask;
 
+  @Getter
   private LevelingRate levelingRate;
 
   private AbilityMenu abilitySubcategoryMenu;
@@ -320,8 +326,10 @@ public class StrifePlugin extends FacePlugin {
 
   private PaperCommandManager commandManager;
 
+  @Getter
   private int maxSkillLevel;
 
+  @Getter
   public SnazzyPartiesHook snazzyPartiesHook;
   @Getter
   private DeluxeInvyPlugin deluxeInvyPlugin;
@@ -573,6 +581,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new DOTListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EndermanListener(), this);
     Bukkit.getPluginManager().registerEvents(new SwingListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new ProjectileHitListener(this), this);
     Bukkit.getPluginManager().registerEvents(new ShootListener(this), this);
     Bukkit.getPluginManager().registerEvents(new ChatListener(), this);
     Bukkit.getPluginManager().registerEvents(new DataListener(this), this);
@@ -730,9 +739,15 @@ public class StrifePlugin extends FacePlugin {
       boostManager.updateGlobalBoostStatus(player);
       abilityManager.loadPlayerCooldowns(player);
       guiManager.setupGui(player);
-      attackSpeedManager.getAttackMultiplier(strifeMobManager.getStatMob(player), 1);
+
       bossBarManager.createBars(player);
       playerMountManager.updateSelectedMount(player);
+
+      guiManager.updateLevelDisplay(strifeMobManager.getStatMob(player));
+      prayerManager.sendPrayerUpdate(player, false);
+      CurrencyChangeListener.updateAll(this, player);
+      attackSpeedManager.getAttackMultiplier(strifeMobManager.getStatMob(player), 1);
+
       Bukkit.getScheduler().runTaskLater(this,
           () -> abilityIconManager.setAllAbilityIcons(player), 10L);
       LogUtil.printInfo("[Strife] Refreshed player " + player.getName());
@@ -1069,22 +1084,6 @@ public class StrifePlugin extends FacePlugin {
     spawnerYAML.save();
   }
 
-  public SnazzyPartiesHook getSnazzyPartiesHook() {
-    return snazzyPartiesHook;
-  }
-
-  public DataStorage getStorage() {
-    return storage;
-  }
-
-  public ParticleTask getParticleTask() {
-    return particleTask;
-  }
-
-  public MasterConfiguration getSettings() {
-    return settings;
-  }
-
   public AbilityMenu getAbilityPicker() {
     return abilitySubcategoryMenu;
   }
@@ -1095,18 +1094,6 @@ public class StrifePlugin extends FacePlugin {
 
   public PathMenu getPathMenu(Path path) {
     return pathMenus.get(path);
-  }
-
-  public LevelingRate getLevelingRate() {
-    return levelingRate;
-  }
-
-  public int getMaxSkillLevel() {
-    return maxSkillLevel;
-  }
-
-  public LogLevel getLogLevel() {
-    return logLevel;
   }
 
   public void debug(Level level, String... messages) {

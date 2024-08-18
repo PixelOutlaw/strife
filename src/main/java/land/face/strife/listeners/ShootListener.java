@@ -267,48 +267,4 @@ public class ShootListener implements Listener {
     event.getEntity().remove();
     ProjectileUtil.removeDespawnOnContact(event.getEntity());
   }
-
-  @EventHandler(priority = EventPriority.HIGH)
-  public void onEffectProjectileHit(final ProjectileHitEvent event) {
-    if (event.isCancelled() || ProjectileUtil.getHitEffects(event.getEntity()) == null) {
-      return;
-    }
-    TargetResponse response;
-    if (!ProjectileUtil.isContactTrigger(event.getEntity())) {
-      if ((!(event.getHitEntity() instanceof LivingEntity)
-          || event.getHitEntity().isInvulnerable()
-          || event.getHitEntity().hasMetadata("NPC"))) {
-        return;
-      }
-      response = new TargetResponse(Collections.singleton((LivingEntity) event.getHitEntity()));
-    } else {
-      Location effectLocation = null;
-      if (event.getHitBlock() != null) {
-        effectLocation = event.getHitBlock().getLocation().clone().add(0.5, 0.5, 0.5);
-        if (event.getHitBlockFace() != null) {
-          effectLocation.add(event.getHitBlockFace().getDirection());
-        } else {
-          effectLocation.add(event.getEntity().getLocation().getDirection().clone().multiply(-1.1));
-        }
-      } else if (event.getHitEntity() != null) {
-        effectLocation = event.getEntity().getLocation().clone();
-      }
-      response = new TargetResponse(effectLocation);
-    }
-
-    StrifeMob caster = plugin.getStrifeMobManager()
-        .getStatMob((LivingEntity) Objects.requireNonNull(event.getEntity().getShooter()));
-
-    List<Effect> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
-    if (hitEffects.isEmpty()) {
-      LogUtil.printWarning(
-          "A handled effectProjectile was missing effect meta... something's wrong");
-      return;
-    }
-
-    plugin.getEffectManager().processEffectList(caster, response, hitEffects, ProjectileUtil.getShotId(event.getEntity()));
-    if (event.getHitEntity() != null && event.getHitEntity() instanceof LivingEntity) {
-      ProjectileUtil.disableCollision(event.getEntity(), (LivingEntity) event.getHitEntity());
-    }
-  }
 }

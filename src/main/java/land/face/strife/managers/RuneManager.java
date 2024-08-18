@@ -31,7 +31,6 @@ import land.face.strife.timers.RuneTimer;
 import land.face.strife.util.LogUtil;
 import lombok.Getter;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 

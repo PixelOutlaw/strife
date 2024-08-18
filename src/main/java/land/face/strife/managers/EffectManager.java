@@ -3,6 +3,7 @@ package land.face.strife.managers;
 import static land.face.strife.util.PlayerDataUtil.getName;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -370,7 +371,7 @@ public class EffectManager {
         effect = new DisplaySpawn();
         ((DisplaySpawn) effect).setDisplayId(cs.getString("display-id"));
         ((DisplaySpawn) effect).setEntityLock(cs.getBoolean("entity-lock", false));
-        ((DisplaySpawn) effect).setFaceColor(FaceColor.valueOf(cs.getString("color", "NONE")));
+        ((DisplaySpawn) effect).setFaceColor(FaceColor.valueOf(cs.getString("color", "TRUE_WHITE")));
       }
       case BURST_ITEM -> {
         effect = new BurstItem();
@@ -683,8 +684,7 @@ public class EffectManager {
         Effect finalEffect = effect;
         String buffId = cs.getString("buff-id");
         Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-            ((BuffEffect) finalEffect).setLoadedBuff(plugin.getBuffManager()
-                .getBuffFromId(buffId)), 10L);
+            ((BuffEffect) finalEffect).setLoadedBuff(plugin.getBuffManager().getBuffFromId(buffId)), 10L);
         ((BuffEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
         ((BuffEffect) effect).setUniversal(cs.getBoolean("global", false));
       }
@@ -714,8 +714,7 @@ public class EffectManager {
       }
       case SPEAK -> {
         effect = new Speak();
-        ((Speak) effect).setMessages(
-            ListExtensionsKt.chatColorize(cs.getStringList("messages")));
+        ((Speak) effect).setMessages(ListExtensionsKt.chatColorize(cs.getStringList("messages")));
       }
       case RANDOM_AROUND -> {
         effect = new RandomAround();
@@ -733,10 +732,10 @@ public class EffectManager {
         ((Push) effect).setHeight(cs.getDouble("height", 10));
         ((Push) effect).setZeroFall(cs.getBoolean("zero-fall", false));
         ((Push) effect).setCancelHorizontal(cs.getBoolean("cancel-horizontal", false));
+        ((Push) effect).setApplyToCaster(cs.getBoolean("apply-to-caster", false));
         ((Push) effect).setHorizontalClamp(cs.getBoolean("horizontal-clamp", true));
         ((Push) effect).setVerticalClamp(cs.getBoolean("vertical-clamp", true));
-        ((Push) effect).setPushType(
-            PushType.valueOf(cs.getString("push-type", "AWAY_FROM_CASTER")));
+        ((Push) effect).setPushType(PushType.valueOf(cs.getString("push-type", "AWAY_FROM_CASTER")));
       }
       case SUMMON -> {
         effect = new MinionSummon();
@@ -1103,6 +1102,18 @@ public class EffectManager {
         float chance = (float) cs.getDouble("chance", 0.5);
         condition = new ChanceCondition(chance);
         break;
+      case COMPARE:
+        condition = new CompareDamageScaleCondition();
+        DamageScale scale1 = DamageScale.valueOf(cs.getString("scale-one", "FLAT"));
+        DamageScale scale2 = DamageScale.valueOf(cs.getString("scale-two", scale1.toString()));
+        float amount1 = (float) cs.getDouble("amount-one", 1);
+        float amount2 = (float) cs.getDouble("amount-two", amount1);
+
+        ((CompareDamageScaleCondition) condition).setDamageScaleOne(scale1);
+        ((CompareDamageScaleCondition) condition).setDamageScaleTwo(scale2);
+        ((CompareDamageScaleCondition) condition).setAmountOne(amount1);
+        ((CompareDamageScaleCondition) condition).setAmountTwo(amount2);
+        break;
       case LIGHT_LEVEL:
         condition = new LightCondition();
         break;
@@ -1279,6 +1290,9 @@ public class EffectManager {
       LogUtil.printWarning("No/invalid condition user found for " + key + " defaulting to ANY");
       conditionUser = ConditionUser.ANY;
     }
+
+    condition.setPlayFailMessage(cs.getBoolean("play-fail-message", false));
+    condition.setFailMessage(PaletteUtil.color(cs.getString("fail-message", "Condition failed!")));
 
     condition.setInverted(cs.getBoolean("inverted", false));
     condition.setCompareTarget(compareTarget);

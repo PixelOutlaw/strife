@@ -8,10 +8,14 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
+import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 
+@Getter
+@Setter
 public class CreateWorldSpaceEntity extends LocationEffect {
 
   private final Map<Integer, List<Effect>> cachedEffectSchedule = new HashMap<>();
@@ -25,15 +29,10 @@ public class CreateWorldSpaceEntity extends LocationEffect {
   private float maxDisplacement;
   private boolean strictDuration;
   private boolean zeroVerticalAxis;
-  @Setter
   private String modelEffect;
-  @Setter
   private Color color;
-  @Setter
   private double modelSize;
-  @Setter
   private int maxFallTicks;
-  @Setter
   private boolean destroyOnContact;
 
   @Override
@@ -51,46 +50,6 @@ public class CreateWorldSpaceEntity extends LocationEffect {
     getPlugin().getWseManager().createAtTarget(caster, location, lifespan, gravity, friction,
         maxTicks, velocity, maxDisplacement, cachedEffectSchedule, strictDuration,
         zeroVerticalAxis, modelEffect, color, modelSize, maxFallTicks, destroyOnContact);
-  }
-
-  public void setEffectSchedule(Map<Integer, List<String>> effectSchedule) {
-    this.effectSchedule = effectSchedule;
-  }
-
-  public void setMaxTicks(int maxTicks) {
-    this.maxTicks = maxTicks;
-  }
-
-  public void setVelocity(double velocity) {
-    this.velocity = velocity;
-  }
-
-  public void setLifespan(int lifespan) {
-    this.lifespan = lifespan;
-  }
-
-  public void setOriginLocation(OriginLocation originLocation) {
-    this.originLocation = originLocation;
-  }
-
-  public void setGravity(float gravity) {
-    this.gravity = gravity;
-  }
-
-  public void setFriction(float friction) {
-    this.friction = friction;
-  }
-
-  public void setMaxDisplacement(float maxDisplacement) {
-    this.maxDisplacement = maxDisplacement;
-  }
-
-  public void setStrictDuration(boolean strictDuration) {
-    this.strictDuration = strictDuration;
-  }
-
-  public void setZeroVerticalAxis(boolean zeroVerticalAxis) {
-    this.zeroVerticalAxis = zeroVerticalAxis;
   }
 
   private void cacheEffects() {

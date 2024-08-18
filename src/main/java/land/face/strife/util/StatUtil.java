@@ -156,8 +156,12 @@ public class StatUtil {
             (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.SEVEN) ? 2 : 0);
       }
       case CRITICAL_RATE -> {
-        return stats.getOrDefault(StrifeStat.CRITICAL_RATE, 0F) +
+        float amount = stats.getOrDefault(StrifeStat.CRITICAL_RATE, 0F) +
             (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.SEVEN) ? 2 : 0);
+        if (mob.hasTrait(StrifeTrait.COIN_FLIP) && amount > 50) {
+          amount = 50;
+        }
+        return amount;
       }
       case HP_ON_KILL -> {
         return stats.getOrDefault(StrifeStat.HP_ON_KILL, 0F) +

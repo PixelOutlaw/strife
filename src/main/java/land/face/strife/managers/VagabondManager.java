@@ -124,12 +124,10 @@ public class VagabondManager {
       }
       StrifeAttribute realAttr = plugin.getAttributeManager().getAttribute(attr);
       if (realAttr == null) {
-        Bukkit.getLogger().warning("Invalid attribute " + attr +
-            " for vagabond class " + mobClass.getId());
+        Bukkit.getLogger().warning("Invalid attribute " + attr + " for vagabond class " + mobClass.getId());
         continue;
       }
-      vagabondAttributes.put(realAttr, (level - minValue) /
-          mobClass.getLevelsPerAttribute().get(attr));
+      vagabondAttributes.put(realAttr, (level - minValue) / mobClass.getLevelsPerAttribute().get(attr));
     }
     Map<StrifeStat, Float> attributeStats = StatUtil.buildStatsFromAttributes(vagabondAttributes);
 
@@ -142,8 +140,7 @@ public class VagabondManager {
           if (stack.getType() == Material.AIR) {
             continue;
           }
-          Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager()
-              .getItemStats(stack, dualWield ? 0.8f : 1.0f);
+          Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(stack, dualWield ? 0.8f : 1.0f);
           equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);
         }
         default -> {

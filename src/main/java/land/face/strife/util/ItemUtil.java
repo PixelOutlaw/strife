@@ -6,6 +6,8 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.destroystokyo.paper.Namespaced;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
+import info.faceland.loot.data.pdc.EquipmentData;
+import info.faceland.loot.utils.PersistHelper;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -259,13 +261,15 @@ public class ItemUtil {
       if (!items.containsKey(slot)) {
         continue;
       }
-      if (!overwrite) {
-        ItemStack currentItem = entity.getEquipment().getItem(slot);
-        if (currentItem.getType() != Material.AIR) {
-          continue;
-        }
+      ItemStack currentItem = entity.getEquipment().getItem(slot);
+      ItemStack newItem = items.get(slot);
+      if (currentItem.getType() == Material.PLAYER_HEAD && newItem.getType() != Material.PLAYER_HEAD) {
+        continue;
       }
-      entity.getEquipment().setItem(slot, items.get(slot));
+      if (!overwrite && currentItem.getType() != Material.AIR) {
+        continue;
+      }
+      entity.getEquipment().setItem(slot, newItem);
     }
   }
 
@@ -274,18 +278,26 @@ public class ItemUtil {
     return ItemUtils.getModelData(stack);
   }
 
-  public static int hashItem(ItemStack itemStack) {
+  public static boolean doesHashMatch(ItemStack itemStack, EquipmentCache cache, String slotId) {
+    int previousHash = cache.getSlotHash(slotId);
     if (itemStack == null || itemStack.getType() == Material.AIR) {
-      return -1;
+      cache.setSlotHash(slotId, -1);
+      return previousHash == -1;
     }
-    return itemStack.hashCode();
-  }
-
-  public static boolean doesHashMatch(ItemStack itemStack, int hash) {
-    if (itemStack == null || itemStack.getType() == Material.AIR) {
-      return hash == -1;
+    EquipmentData data = PersistHelper.getEquipmentData(itemStack);
+    if (data != null) {
+      int newHash = data.rebuild(previousHash);
+      cache.setSlotHash(slotId, newHash);
+      if (newHash != previousHash) {
+        PersistHelper.setEquipmentData(itemStack, data, false);
+        return false;
+      }
+      return true;
+    } else {
+      int newHash = itemStack.hashCode();
+      cache.setSlotHash(slotId, newHash);
+      return newHash == previousHash;
     }
-    return itemStack.hashCode() == hash;
   }
 
   public static boolean meetsRequirements(ItemStack stack, StrifeMob mob) {
@@ -293,9 +305,33 @@ public class ItemUtil {
       return true;
     }
     List<String> lore = TextUtils.getLore(stack);
-    if (lore.size() < 1) {
+    if (lore.isEmpty()) {
       return true;
     }
+    EquipmentData data = PersistHelper.getEquipmentData(stack);
+    if (data != null) {
+      if (data.getTier() != null) {
+        int itemLevel = data.getLevel();
+        if (data.getTier().isSkillRequirement()) {
+          String mat = stack.getType().toString();
+          if (stack.getType() == Material.FISHING_ROD) {
+            return mob.getChampion().getLifeSkillLevel(LifeSkillType.FISHING) >= itemLevel;
+          } else if (mat.endsWith("_HOE")) {
+            return mob.getChampion().getLifeSkillLevel(LifeSkillType.FARMING) >= itemLevel;
+          } else if (mat.endsWith("_PICKAXE")) {
+            return mob.getChampion().getLifeSkillLevel(LifeSkillType.MINING) >= itemLevel;
+          } else if (mat.endsWith("_AXE")) {
+            return mob.getChampion().getLifeSkillLevel(LifeSkillType.FARMING) >= itemLevel;
+          }
+          return true;
+        } else {
+          return mob.getLevel() >= itemLevel;
+        }
+      } else {
+        return true;
+      }
+    }
+    // TODO: DELETE BELOW
     String strippedLine = ChatColor.stripColor(lore.get(0));
     if (strippedLine.startsWith("Level Requirement: ")) {
       int itemLevel = Integer.parseInt(strippedLine.replace("Level Requirement: ", ""));

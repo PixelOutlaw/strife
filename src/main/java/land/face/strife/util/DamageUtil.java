@@ -22,12 +22,16 @@ import com.soujah.poggersguilds.data.Guild;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import land.face.dinvy.DeluxeInvyPlugin;
+import land.face.dinvy.entity.PlayerData;
+import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.learnin.LearninBooksPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BonusDamage;
@@ -231,21 +235,6 @@ public class DamageUtil {
     DamageUtil.applyDamageReductions(attacker, defender, damageMap, mods.getAbilityMods());
   }
 
-  public static String buildDamageString(int i) {
-    String str = Integer.toString(i);
-    return str
-        .replaceAll("0", "０\uF801")
-        .replaceAll("1", "１\uF801")
-        .replaceAll("2", "２\uF801")
-        .replaceAll("3", "３\uF801")
-        .replaceAll("4", "４\uF801")
-        .replaceAll("5", "５\uF801")
-        .replaceAll("6", "６\uF801")
-        .replaceAll("7", "７\uF801")
-        .replaceAll("8", "８\uF801")
-        .replaceAll("9", "９\uF801");
-  }
-
   public static float calculateFinalDamage(StrifeMob attacker, StrifeMob defender, AttackType attackType,
       Map<DamageType, Float> damageMap, DamageModifiers mods) {
 
@@ -366,10 +355,18 @@ public class DamageUtil {
     }
 
     if (plugin.getPrayerManager().isPrayerActive(attacker.getEntity(), Prayer.TWO)) {
-      rawDamage *= 1.05F;
+      if (attacker.hasTrait(StrifeTrait.FAITH_DAMAGE)) {
+        rawDamage *= 1.05f + getMissingArmorItems((Player) attacker.getEntity()) * 0.05f;
+      } else {
+        rawDamage *= 1.05F;
+      }
     }
     if (plugin.getPrayerManager().isPrayerActive(defender.getEntity(), Prayer.ONE)) {
-      rawDamage *= 0.9F;
+      if (defender.hasTrait(StrifeTrait.FAITH_DEFENSE)) {
+        rawDamage *= 0.9f - getMissingArmorItems((Player) defender.getEntity()) * 0.1f;
+      } else {
+        rawDamage *= 0.9F;
+      }
     }
 
     String damageString;
@@ -496,8 +493,7 @@ public class DamageUtil {
     };
   }
 
-  public static float applyDamageScale(StrifeMob caster, StrifeMob target,
-      BonusDamage bonusDamage) {
+  public static float applyDamageScale(StrifeMob caster, StrifeMob target, BonusDamage bonusDamage) {
     float amount = bonusDamage.getAmount();
     return (float) switch (bonusDamage.getDamageScale()) {
       case FLAT -> amount;
@@ -565,10 +561,10 @@ public class DamageUtil {
 
   public static void applyDamageReductions(StrifeMob attacker, StrifeMob defender,
       Map<DamageType, Float> damageMap, Map<AbilityMod, Float> abilityMods) {
-    damageMap.replaceAll((t, v) -> damageMap.get(t)
-        * getDamageReduction(t, attacker, defender, abilityMods)
-        * resistTraitMult(defender, t)
-    );
+    if (attacker.hasTrait(StrifeTrait.WEAK_LINK)) {
+      abilityMods.put(AbilityMod.CAPPED_RESIST, calcWeakLinkResist(defender));
+    }
+    damageMap.replaceAll((t, v) -> damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods) * resistTraitMult(defender, t));
   }
 
   public static float resistTraitMult(StrifeMob mob, DamageType type) {
@@ -582,6 +578,18 @@ public class DamageUtil {
       case LIGHT -> mob.hasTrait(StrifeTrait.RESIST_LIGHT) ? 0.5f : 1f;
       default -> 1f;
     };
+  }
+
+  private static float calcWeakLinkResist(StrifeMob target) {
+    Float[] values = new Float[6];
+    values[0] = target.getStat(StrifeStat.FIRE_RESIST);
+    values[1] = target.getStat(StrifeStat.ICE_RESIST);
+    values[2] = target.getStat(StrifeStat.LIGHTNING_RESIST);
+    values[3] = target.getStat(StrifeStat.LIGHT_RESIST);
+    values[4] = target.getStat(StrifeStat.EARTH_RESIST);
+    values[5] = target.getStat(StrifeStat.DARK_RESIST);
+    Arrays.sort(values);
+    return values[1];
   }
 
   public static void applyAttackTypeMods(StrifeMob attacker, AttackType attackType,
@@ -742,18 +750,22 @@ public class DamageUtil {
         return getArmorMult(armor);
       }
       case FIRE -> {
-        float fireResist = defend.getStat(StrifeStat.FIRE_RESIST) / 100;
+        float amount = defend.getStat(StrifeStat.FIRE_RESIST);
+        amount = Math.min(amount, modDoubleMap.getOrDefault(AbilityMod.CAPPED_RESIST, 300f));
+        float fireResist = amount / 100;
         if (attack.hasTrait(StrifeTrait.SOUL_FLAME) && fireResist > 0) {
           fireResist /= 2;
         }
         if (defend.getEntity().getLocation().getBlock().getType() == Material.WATER) {
-          fireResist += 0.5f;
+          fireResist += 0.3f;
         }
         fireResist = Math.min(fireResist, 0.85f);
         return fireResist >= 0 ? (1 - fireResist) : 1 + Math.abs(fireResist);
       }
       case ICE -> {
-        float iceResist = defend.getStat(StrifeStat.ICE_RESIST) / 100;
+        float amount = defend.getStat(StrifeStat.ICE_RESIST);
+        amount = Math.min(amount, modDoubleMap.getOrDefault(AbilityMod.CAPPED_RESIST, 300f));
+        float iceResist = amount / 100;
         if (defend.getEntity().getLocation().getBlock().getType() == Material.WATER) {
           iceResist -= 0.3f;
         }
@@ -761,7 +773,9 @@ public class DamageUtil {
         return iceResist >= 0 ? (1 - iceResist) : 1 + Math.abs(iceResist);
       }
       case LIGHTNING -> {
-        float lightningResist = defend.getStat(StrifeStat.LIGHTNING_RESIST) / 100;
+        float amount = defend.getStat(StrifeStat.LIGHT_RESIST);
+        amount = Math.min(amount, modDoubleMap.getOrDefault(AbilityMod.CAPPED_RESIST, 300f));
+        float lightningResist = amount / 100;
         if (defend.getEntity().getLocation().getBlock().getType() == Material.WATER) {
           lightningResist -= 0.3f;
         }
@@ -769,17 +783,23 @@ public class DamageUtil {
         return lightningResist >= 0 ? (1 - lightningResist) : 1 + Math.abs(lightningResist);
       }
       case DARK -> {
-        float darkResist = defend.getStat(StrifeStat.DARK_RESIST) / 100;
+        float amount = defend.getStat(StrifeStat.DARK_RESIST);
+        amount = Math.min(amount, modDoubleMap.getOrDefault(AbilityMod.CAPPED_RESIST, 300f));
+        float darkResist = amount / 100;
         darkResist = Math.min(darkResist, 0.85f);
         return darkResist >= 0 ? (1 - darkResist) : 1 + Math.abs(darkResist);
       }
       case EARTH -> {
-        float earthResist = defend.getStat(StrifeStat.EARTH_RESIST) / 100;
+        float amount = defend.getStat(StrifeStat.EARTH_RESIST);
+        amount = Math.min(amount, modDoubleMap.getOrDefault(AbilityMod.CAPPED_RESIST, 300f));
+        float earthResist = amount / 100;
         earthResist = Math.min(earthResist, 0.85f);
         return earthResist >= 0 ? (1 - earthResist) : 1 + Math.abs(earthResist);
       }
       case LIGHT -> {
-        float lightResist = defend.getStat(StrifeStat.LIGHT_RESIST) / 100;
+        float amount = defend.getStat(StrifeStat.LIGHT_RESIST);
+        amount = Math.min(amount, modDoubleMap.getOrDefault(AbilityMod.CAPPED_RESIST, 300f));
+        float lightResist = amount / 100;
         lightResist = Math.min(lightResist, 0.85f);
         return lightResist >= 0 ? (1 - lightResist) : 1 + Math.abs(lightResist);
       }
@@ -1239,6 +1259,28 @@ public class DamageUtil {
     }
   }
 
+  private static int getMissingArmorItems(Player player) {
+    PlayerData data = DeluxeInvyPlugin.getInstance().getPlayerManager().getPlayerData(player);
+    int amount = 0;
+    if (data.getEquipmentItem(DeluxeSlot.HELMET) == null ||
+        data.getEquipmentItem(DeluxeSlot.HELMET).getType() == Material.AIR) {
+      amount++;
+    }
+    if (data.getEquipmentItem(DeluxeSlot.BODY) == null ||
+        data.getEquipmentItem(DeluxeSlot.BODY).getType() == Material.AIR) {
+      amount++;
+    }
+    if (data.getEquipmentItem(DeluxeSlot.LEGS) == null ||
+        data.getEquipmentItem(DeluxeSlot.LEGS).getType() == Material.AIR) {
+      amount++;
+    }
+    if (data.getEquipmentItem(DeluxeSlot.BOOTS) == null ||
+        data.getEquipmentItem(DeluxeSlot.BOOTS).getType() == Material.AIR) {
+      amount++;
+    }
+    return amount;
+  }
+
   public static double rollDouble(boolean lucky) {
     return lucky ? Math.max(rollDouble(), rollDouble()) : rollDouble();
   }
@@ -1253,6 +1295,21 @@ public class DamageUtil {
 
   public static boolean rollBool(float chance) {
     return StrifePlugin.RNG.nextFloat() <= chance;
+  }
+
+  public static String buildDamageString(int i) {
+    String str = Integer.toString(i);
+    return str
+        .replaceAll("0", "０\uF801")
+        .replaceAll("1", "１\uF801")
+        .replaceAll("2", "２\uF801")
+        .replaceAll("3", "３\uF801")
+        .replaceAll("4", "４\uF801")
+        .replaceAll("5", "５\uF801")
+        .replaceAll("6", "６\uF801")
+        .replaceAll("7", "７\uF801")
+        .replaceAll("8", "８\uF801")
+        .replaceAll("9", "９\uF801");
   }
 
   public enum DamageScale {
@@ -1330,7 +1387,8 @@ public class DamageUtil {
     POISON_DURATION,
     STATUS_CHANCE,
     BACK_ATTACK,
-    MAX_DAMAGE
+    MAX_DAMAGE,
+    CAPPED_RESIST
   }
 
   public enum AttackType {

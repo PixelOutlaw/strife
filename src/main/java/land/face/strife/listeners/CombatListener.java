@@ -16,19 +16,17 @@
  */
 package land.face.strife.listeners;
 
-import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.ARMOR;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BASE;
-import static org.bukkit.event.entity.EntityDamageEvent.DamageModifier.BLOCKING;
 
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.events.ProjectileDamageEvent;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.events.StrifePreDamageEvent;
 import land.face.strife.stats.StrifeStat;
@@ -37,8 +35,9 @@ import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
+import land.face.strife.util.DirectionUtil;
+import land.face.strife.util.DirectionUtil.HitDirection;
 import land.face.strife.util.FangUtil;
-import land.face.strife.util.ItemUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
@@ -48,7 +47,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Bee;
 import org.bukkit.entity.EvokerFangs;
-import org.bukkit.entity.FishHook;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -62,10 +60,12 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 public class CombatListener implements Listener {
 
   private final StrifePlugin plugin;
+
   private static final Set<Player> FRIENDLY_PLAYER_CHECKER = new HashSet<>();
   private static final Map<LivingEntity, Long> MONSTER_HIT_COOLDOWN = new WeakHashMap<>();
 
@@ -73,44 +73,120 @@ public class CombatListener implements Listener {
     this.plugin = plugin;
   }
 
-  public static void addPlayer(Player player) {
-    FRIENDLY_PLAYER_CHECKER.add(player);
-  }
+  @EventHandler
+  public void projectileDamageHandler(ProjectileDamageEvent event) {
+    boolean abilityProjectile = ProjectileUtil.isAbilityProjectile(event.getProjectile());
 
-  public static void removePlayer(Player player) {
-    FRIENDLY_PLAYER_CHECKER.remove(player);
-  }
+    StrifeMob attacker = event.getAttacker();
+    StrifeMob defender = event.getDefender();
 
-  public static boolean hasFriendlyPlayer(Player player) {
-    return FRIENDLY_PLAYER_CHECKER.contains(player);
-  }
-
-  @EventHandler(priority = EventPriority.HIGHEST)
-  public void handleTNT(EntityDamageByEntityEvent event) {
-    if (event.isCancelled()) {
+    if (attacker == null) {
+      DamageUtil.dealRawDamage(defender, 2f + (float) StatUtil.getMobLevel(defender.getEntity()) / 5);
+      event.setAlwaysRemove(true);
       return;
     }
-    if (event.getEntity() instanceof LivingEntity && event.getDamager() instanceof TNTPrimed) {
-      double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
-      double multiplier = Math.max(0.3, 4 / (distance + 3));
-      DamageUtil.removeDamageModifiers(event);
-      event.setDamage(multiplier * (10 + ((LivingEntity) event.getEntity()).getMaxHealth() * 0.4));
-    }
-  }
 
-  @EventHandler(priority = EventPriority.LOWEST)
-  public void handleNpcHits(EntityDamageByEntityEvent event) {
-    if (event.isCancelled() || event.getEntity().isInvulnerable() ||
-        event.getEntity().hasMetadata("NPC")) {
-      if (event.getDamager() instanceof Projectile) {
-        event.getDamager().remove();
+    if (!abilityProjectile) {
+      boolean mobAbility = plugin.getAbilityManager()
+          .abilityCast(event.getAttacker(), event.getDefender(), TriggerAbilityType.ON_HIT);
+      if (mobAbility) {
+        return;
       }
-      event.setCancelled(true);
+    }
+
+    Projectile projectile = event.getProjectile();
+
+    float attackMultiplier = ProjectileUtil.getAttackMult(projectile);
+    boolean onHitProjectile = ProjectileUtil.getApplyOnHit(projectile);
+    float onHitChance = onHitProjectile ? 1.0f : attackMultiplier;
+    assert projectile != null;
+    if (attackMultiplier < 0.05) {
+      event.setAlwaysRemove(true);
+      return;
+    }
+
+    float multishotRatio = event.getDefender().getMultishotRatio(ProjectileUtil.getShotId(projectile));
+    if (multishotRatio < 0.05) {
+      event.setAlwaysRemove(true);
+      return;
+    }
+    attackMultiplier *= multishotRatio;
+    onHitChance *= multishotRatio;
+    //double angle = projectile.getVelocity().angle(defendEntity.getEyeLocation().getDirection());
+    //backAttack = angle < 1;
+
+    if (event.getAttacker() != null && event.getAttacker().getEntity() instanceof Player) {
+      plugin.getStealthManager().unstealthPlayer((Player) event.getAttacker().getEntity());
+    }
+
+    boolean blocked = false;
+    HitDirection hitDirection = DirectionUtil.getDirection(defender.getEntity(), projectile.getVelocity().clone().normalize());
+    if (DirectionUtil.isBlocking(defender.getEntity())) {
+      if (defender.getEntity() instanceof Shulker) {
+        blocked = true;
+      } else {
+        blocked = hitDirection == HitDirection.FRONT;
+      }
+    }
+
+    boolean isSneakAttack = hitDirection != HitDirection.FRONT && attacker.getEntity() instanceof Player &&
+        plugin.getStealthManager().canSneakAttack((Player) attacker.getEntity());
+
+    DamageModifiers mods = new DamageModifiers();
+    mods.setAttackType(AttackType.PROJECTILE);
+    mods.setAttackMultiplier(attackMultiplier);
+    mods.setHealMultiplier(Math.min(1.0f, attackMultiplier));
+    mods.setDamageReductionRatio(0.5f + attackMultiplier / 2f);
+    mods.setScaleChancesWithAttack(true);
+    mods.setApplyOnHitEffects(StrifePlugin.RNG.nextFloat() < onHitChance);
+    mods.setSneakAttack(isSneakAttack);
+    mods.setBlocking(blocked);
+
+    /*
+    if (backAttack) {
+      mods.getAbilityMods().put(AbilityMod.BACK_ATTACK, 1f);
+    }
+    */
+
+    boolean attackSuccess = DamageUtil.preDamage(event.getAttacker(), event.getDefender(), mods);
+
+    if (!attackSuccess) {
+      return;
+    }
+
+    Map<DamageType, Float> damage = DamageUtil.buildDamageMap(attacker, defender, mods);
+    DamageUtil.applyAttackTypeMods(attacker, mods.getAttackType(), damage);
+    DamageUtil.applyElementalEffects(attacker, defender, damage, mods);
+    DamageUtil.reduceDamage(attacker, defender, damage, mods);
+    float finalDamage = DamageUtil.calculateFinalDamage(attacker, defender, AttackType.PROJECTILE, damage, mods);
+
+    StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, mods);
+    strifeDamageEvent.setFinalDamage(finalDamage);
+
+    Bukkit.getPluginManager().callEvent(strifeDamageEvent);
+
+    if (strifeDamageEvent.isCancelled()) {
+      return;
+    }
+
+    event.getDefender().trackDamage(event.getAttacker(), (float) strifeDamageEvent.getFinalDamage());
+
+    StrifePlugin.getInstance().getDamageManager().dealDamage(attacker, defender,
+        (float) strifeDamageEvent.getFinalDamage(), mods);
+
+    if (damage.containsKey(DamageType.PHYSICAL) && mods.isApplyOnHitEffects()) {
+      DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL), mods, true,false);
+    }
+
+    if (mods.isApplyOnHitEffects()) {
+      DamageUtil.attemptPoison(attacker, defender, mods);
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
+          DamageUtil.postDamage(attacker, defender, mods, false), 0L);
     }
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
-  public void strifeDamageHandler(EntityDamageByEntityEvent event) {
+  public void meleeDamageHandler(EntityDamageByEntityEvent event) {
     if (event.isCancelled()) {
       return;
     }
@@ -123,12 +199,10 @@ public class CombatListener implements Listener {
       event.setDamage(BASE, plugin.getDamageManager().getHandledDamage(event.getDamager()));
       return;
     }
-    if (!(event.getEntity() instanceof LivingEntity defendEntity)
-        || event.getEntity() instanceof ArmorStand) {
+    if (!(event.getEntity() instanceof LivingEntity defendEntity) || event.getEntity() instanceof ArmorStand) {
       return;
     }
-    if (event.getDamager() instanceof EvokerFangs && FangUtil
-        .isNoDamageFang((EvokerFangs) event.getDamager())) {
+    if (event.getDamager() instanceof EvokerFangs && FangUtil.isNoDamageFang((EvokerFangs) event.getDamager())) {
       event.setCancelled(true);
       return;
     }
@@ -145,8 +219,16 @@ public class CombatListener implements Listener {
       return;
     }
 
-    boolean blocked = (event.isApplicable(BLOCKING) && event.getDamage(BLOCKING) != 0) ||
-        (defendEntity instanceof Shulker && event.isApplicable(ARMOR) && event.getDamage(ARMOR) != 0);
+    boolean blocked = false;
+    if (DirectionUtil.isBlocking(defendEntity)) {
+      if (defendEntity instanceof Shulker) {
+        blocked = true;
+      } else {
+        Vector locationDiff = defendEntity.getEyeLocation().clone().subtract(attackEntity.getEyeLocation()).toVector();
+        HitDirection hitDirection = DirectionUtil.getDirection(defendEntity, locationDiff);
+        blocked = hitDirection == HitDirection.FRONT;
+      }
+    }
 
     DamageUtil.removeDamageModifiers(event);
 
@@ -159,48 +241,30 @@ public class CombatListener implements Listener {
       }
     }
 
+    if (!canMonsterHit(attackEntity)) {
+      event.setCancelled(true);
+      return;
+    }
+
     if (event.getCause() == DamageCause.MAGIC) {
       event.setDamage(BASE, event.getDamage(BASE));
       return;
     }
 
-    Projectile projectile = null;
-    boolean isAbilityProjectile = false;
-
     if (event.getDamager() instanceof Projectile) {
-      projectile = (Projectile) event.getDamager();
-      if (ProjectileUtil.isAbilityProjectile(projectile)) {
-        isAbilityProjectile = true;
-      }
-    }
-
-    if (projectile == null && !canMonsterHit(attackEntity)) {
+      Bukkit.getLogger().info("[Strife] Normal projectile dmg detected... ignoring");
       event.setCancelled(true);
       return;
     }
+
     putMonsterHit(attackEntity);
 
     StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
-
-    if (!isAbilityProjectile && !attacker.canAttack()) {
-      event.setCancelled(true);
-      return;
-    }
-
     StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
 
     if (defender.isInvincible()) {
       event.setCancelled(true);
       return;
-    }
-
-    if (!isAbilityProjectile) {
-      boolean mobAbility = plugin.getAbilityManager().abilityCast(attacker,
-          defender, TriggerAbilityType.ON_HIT);
-      if (mobAbility) {
-        event.setCancelled(true);
-        return;
-      }
     }
 
     if (TargetingUtil.isFriendly(attacker, defender)) {
@@ -211,9 +275,7 @@ public class CombatListener implements Listener {
     float onHitChance = 1.0f;
     float attackMultiplier = 1.0f;
     float healMultiplier = 1f;
-    float multishotRatio = 1f;
     boolean backAttack = false;
-    boolean onHitProjectile = false;
 
     AttackType attackType = DamageUtil.getAttackType(event);
     if (attackType == AttackType.MELEE) {
@@ -226,26 +288,6 @@ public class CombatListener implements Listener {
       //double angle = attackEntity.getEyeLocation().getDirection()
       //    .angle(defendEntity.getEyeLocation().getDirection());
       //backAttack = angle < 1;
-    } else if (attackType == AttackType.PROJECTILE) {
-      attackMultiplier = ProjectileUtil.getAttackMult(projectile);
-      onHitProjectile = ProjectileUtil.getApplyOnHit(projectile);
-      onHitChance = onHitProjectile ? 1.0f : attackMultiplier;
-      assert projectile != null;
-      if (attackMultiplier < 0.05) {
-        event.setCancelled(true);
-        removeIfExisting(projectile);
-        return;
-      }
-      multishotRatio = defender.getMultishotRatio(ProjectileUtil.getShotId(projectile));
-      if (multishotRatio < 0.05) {
-        event.setCancelled(true);
-        removeIfExisting(projectile);
-        return;
-      }
-      attackMultiplier *= multishotRatio;
-      onHitChance *= multishotRatio;
-      //double angle = projectile.getVelocity().angle(defendEntity.getEyeLocation().getDirection());
-      //backAttack = angle < 1;
     } else if (attackType == AttackType.AREA) {
       double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
       attackMultiplier *= (float) Math.max(0.3, 4 / (distance + 3));
@@ -255,7 +297,6 @@ public class CombatListener implements Listener {
 
     if (attackMultiplier < 0.05) {
       event.setCancelled(true);
-      removeIfExisting(projectile);
       return;
     }
 
@@ -267,21 +308,14 @@ public class CombatListener implements Listener {
     }
 
     DamageModifiers mods = new DamageModifiers();
-    mods.setBasicAttack(true);
     mods.setAttackType(attackType);
     mods.setAttackMultiplier(attackMultiplier);
     mods.setHealMultiplier(healMultiplier);
     mods.setDamageReductionRatio(0.5f + attackMultiplier / 2f);
-    // TODO: actually handle on hit projectiles better
-    if (onHitProjectile && multishotRatio == 1f) {
-      mods.setScaleChancesWithAttack(false);
-    } else {
-      mods.setScaleChancesWithAttack(true);
-    }
+    mods.setScaleChancesWithAttack(true);
     mods.setApplyOnHitEffects(StrifePlugin.RNG.nextFloat() < onHitChance);
     mods.setSneakAttack(isSneakAttack);
     mods.setBlocking(blocked);
-    mods.setGuardBreak(false);
 
     if (backAttack) {
       mods.getAbilityMods().put(AbilityMod.BACK_ATTACK, 1f);
@@ -290,7 +324,6 @@ public class CombatListener implements Listener {
     boolean attackSuccess = DamageUtil.preDamage(attacker, defender, mods);
 
     if (!attackSuccess) {
-      removeIfExisting(projectile);
       event.setCancelled(true);
       return;
     }
@@ -310,8 +343,6 @@ public class CombatListener implements Listener {
     StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, mods);
     strifeDamageEvent.setFinalDamage(finalDamage);
     Bukkit.getPluginManager().callEvent(strifeDamageEvent);
-
-
 
     if (strifeDamageEvent.isCancelled()) {
       event.setCancelled(true);
@@ -378,7 +409,8 @@ public class CombatListener implements Listener {
     if (killer.getStat(StrifeStat.HP_ON_KILL) > 0.1) {
       if (!killer.getEntity().hasPotionEffect(PotionEffectType.WITHER) || killer.hasTrait(StrifeTrait.CORPSE_EATER)) {
         float healRatio = 1 + killer.getStat(StrifeStat.HEALING_POWER) / 300;
-        DamageUtil.restoreHealth(event.getEntity().getKiller(), killer.getStat(StrifeStat.HP_ON_KILL) * healRatio, true, true);
+        DamageUtil.restoreHealth(event.getEntity().getKiller(), killer.getStat(StrifeStat.HP_ON_KILL) * healRatio, true,
+            true);
       }
     }
     if (killer.getStat(StrifeStat.ENERGY_ON_KILL) > 0.1) {
@@ -386,6 +418,30 @@ public class CombatListener implements Listener {
     }
     if (killer.getStat(StrifeStat.RAGE_ON_KILL) > 0.1) {
       killer.changeRage(killer.getStat(StrifeStat.RAGE_ON_KILL));
+    }
+  }
+
+  @EventHandler(priority = EventPriority.HIGHEST)
+  public void handleTNT(EntityDamageByEntityEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
+    if (event.getEntity() instanceof LivingEntity && event.getDamager() instanceof TNTPrimed) {
+      double distance = event.getDamager().getLocation().distance(event.getEntity().getLocation());
+      double multiplier = Math.max(0.3, 4 / (distance + 3));
+      DamageUtil.removeDamageModifiers(event);
+      event.setDamage(multiplier * (10 + ((LivingEntity) event.getEntity()).getMaxHealth() * 0.4));
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void handleNpcHits(EntityDamageByEntityEvent event) {
+    if (event.isCancelled() || event.getEntity().isInvulnerable() ||
+        event.getEntity().hasMetadata("NPC")) {
+      if (event.getDamager() instanceof Projectile) {
+        event.getDamager().remove();
+      }
+      event.setCancelled(true);
     }
   }
 
@@ -397,12 +453,5 @@ public class CombatListener implements Listener {
     if (!(livingEntity instanceof Player)) {
       MONSTER_HIT_COOLDOWN.put(livingEntity, System.currentTimeMillis() + 500);
     }
-  }
-
-  private void removeIfExisting(Projectile projectile) {
-    if (projectile == null) {
-      return;
-    }
-    projectile.remove();
   }
 }

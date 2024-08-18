@@ -7,16 +7,10 @@ import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
-import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
 import com.ticxo.modelengine.api.model.bone.ModelBone;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -25,7 +19,6 @@ import java.util.stream.Collectors;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.Union;
-import land.face.strife.data.effects.AreaEffect;
 import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.TargetingComparators.DistanceComparator;
 import land.face.strife.data.effects.TargetingComparators.FlatHealthComparator;
@@ -45,7 +38,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
-import org.bukkit.util.BoundingBox;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
@@ -194,7 +186,8 @@ public class TargetingUtil {
       return true;
     }
     direction.normalize();
-    RayTraceResult result = start.getWorld().rayTrace(start, direction, 40, FluidCollisionMode.NEVER, true, 0.3, e -> e == entity);
+    RayTraceResult result = start.getWorld().rayTrace(start, direction, 40,
+        FluidCollisionMode.NEVER, true, 0.04, e -> e == entity);
     if (result == null) {
       return false;
     }

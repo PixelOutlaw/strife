@@ -4,6 +4,11 @@ import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.send
 import static org.bukkit.inventory.EquipmentSlot.HAND;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import info.faceland.loot.data.pdc.EquipmentData;
+import info.faceland.loot.data.pdc.ItemDetails;
+import info.faceland.loot.items.NewCustomItem;
+import info.faceland.loot.items.SoulGem;
+import info.faceland.loot.utils.PersistHelper;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,6 +38,7 @@ public class StrifeMobManager {
   private final WeakHashMap<LivingEntity, StrifeMob> trackedEntities = new WeakHashMap<>();
   private final String levelReqGeneric;
   private final float dualWieldAttackSpeed;
+  private final float dualWieldRatio;
   private final float dualWieldExtraProjectiles;
   private final Map<String, String> levelReqMap = new HashMap<>();
 
@@ -43,6 +49,8 @@ public class StrifeMobManager {
     this.plugin = plugin;
     dualWieldAttackSpeed =
         (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-attack-speed", 0) / 2;
+    dualWieldRatio =
+        (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-stat-mult", 0.625);
     dualWieldExtraProjectiles =
         (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-extra-projectiles", 1) / 2;
     levelReqGeneric = PaletteUtil.color(plugin.getSettings()
@@ -143,7 +151,7 @@ public class StrifeMobManager {
     Map<String, ItemStack> updateItems = new HashMap<>();
 
     ItemStack handItem = ItemUtil.getItem(equipment, HAND);
-    if (!ItemUtil.doesHashMatch(handItem, equipmentCache.getSlotHash("HAND"))) {
+    if (!ItemUtil.doesHashMatch(handItem, equipmentCache, "HAND")) {
       updateItems.put("HAND", handItem);
     }
     boolean isPlayer = false;
@@ -153,7 +161,7 @@ public class StrifeMobManager {
       if (invyData != null) {
         for (DeluxeSlot slot : EquipmentCache.DELUXE_SLOTS) {
           ItemStack item = ItemUtil.getItem(invyData, slot);
-          if (!ItemUtil.doesHashMatch(item, equipmentCache.getSlotHash(slot.toString()))) {
+          if (!ItemUtil.doesHashMatch(item, equipmentCache, slot.toString())) {
             updateItems.put(slot.toString(), item);
           }
         }
@@ -172,7 +180,6 @@ public class StrifeMobManager {
     }
     for (String slot : updateItems.keySet()) {
       ItemStack item = updateItems.get(slot);
-      equipmentCache.setSlotHash(slot, ItemUtil.hashItem(item));
       ItemDataBundle dataBundle = getItemInfo(slot, equipment, invyData);
       if (isPlayer && !ItemUtil.meetsRequirements(item, mob)) {
         sendMessage(mob.getEntity(), levelReqMap.get(slot));
@@ -191,51 +198,96 @@ public class StrifeMobManager {
         applyDualWieldStatChanges(equipmentCache, "OFF_HAND");
       }
     }
+    addWeaponMods(handItem, updateItems.get("OFF_HAND"), equipmentCache);
+
     equipmentCache.recombine(plugin, mob);
   }
 
-  private ItemDataBundle getItemInfo(String slot, EntityEquipment equipment,
-      PlayerData invyData) {
+  private static void addWeaponMods(ItemStack hand, ItemStack offhand, EquipmentCache equipmentCache) {
+    EquipmentData d1 = PersistHelper.getEquipmentData(hand);
+    EquipmentData d2 = PersistHelper.getEquipmentData(offhand);
+    Map<StrifeStat, Float> addStats = new HashMap<>();
+
+    if (d1 != null && d1.getTier() != null && !d1.getTier().getWeaponMods().isEmpty()) {
+      addStats.putAll(d1.getTier().getWeaponMods());
+    }
+    if (d2 != null && d2.getTier() != null && !d2.getTier().getWeaponMods().isEmpty()) {
+      for (var entry : d2.getTier().getWeaponMods().entrySet()) {
+        addStats.put(entry.getKey(), Math.min(addStats.getOrDefault(entry.getKey(), 0f), entry.getValue()));
+      }
+    }
+    for (var entry : addStats.entrySet()) {
+      equipmentCache.getSlotStats("HAND").put(entry.getKey(),
+          equipmentCache.getSlotStats("HAND").getOrDefault(entry.getKey(), 0F) + entry.getValue());
+    }
+  }
+
+  private ItemDataBundle getItemInfo(String slot, EntityEquipment equipment, PlayerData invyData) {
     ItemDataBundle dataBundle = new ItemDataBundle();
+
+    dataBundle.setStats(new HashMap<>());
+    dataBundle.setTraits(new HashSet<>());
+    dataBundle.setAbilities(new HashSet<>());
+
+    if (invyData == null) {
+
+      return dataBundle;
+    }
+
+    ItemStack stack = getItemStack(slot, equipment, invyData);
+
+    switch (slot) {
+      case "SOUL_GEM_1", "SOUL_GEM_2", "SOUL_GEM_3", "SOUL_GEM_4" -> {
+        SoulGem gemb = SoulGem.get(stack);
+        if (gemb != null) {
+          dataBundle.getStats().putAll(StatUpdateManager.combineMaps(gemb.getStats(), gemb.getPercentStats()));
+          dataBundle.getAbilities().addAll(gemb.getLoreAbilities());
+          dataBundle.getTraits().addAll(gemb.getTraits());
+          return dataBundle;
+        }
+      }
+    }
+
+    // CustomOverride
+    NewCustomItem nci = PersistHelper.getNonEquipmentUniqueItem(stack);
+    if (nci != null && !nci.getOverrideStats().isEmpty()) {
+      dataBundle.setStats(nci.getOverrideStats());
+      return dataBundle;
+    }
+
+    // NEW METHOD
+    EquipmentData data = PersistHelper.getEquipmentData(stack);
+    if (data != null) {
+      ItemDetails details = data.buildItemDetails();
+      dataBundle.setStats(details.getStats());
+      dataBundle.setTraits(details.getTraits());
+      dataBundle.setAbilities(details.getLoreAbilities());
+      return dataBundle;
+    }
+
+    // TODO: remove old method
     switch (slot) {
       case "HAND" -> {
         if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
-          dataBundle.setStats(new HashMap<>());
-          dataBundle.setTraits(new HashSet<>());
-          dataBundle.setAbilities(new HashSet<>());
           return dataBundle;
         }
-        dataBundle.setStats(plugin.getStatUpdateManager()
-            .getItemStats(equipment.getItemInMainHand()));
-        dataBundle.setAbilities(plugin.getLoreAbilityManager()
-            .getAbilities(equipment.getItemInMainHand()));
+        dataBundle.setStats(plugin.getStatUpdateManager().getItemStats(equipment.getItemInMainHand()));
+        dataBundle.setAbilities(plugin.getLoreAbilityManager().getAbilities(equipment.getItemInMainHand()));
         dataBundle.setTraits(ItemUtil.getTraits(equipment.getItemInMainHand()));
         return dataBundle;
       }
       case "OFF_HAND" -> {
         if (invyData == null) {
-          dataBundle.setStats(new HashMap<>());
-          dataBundle.setTraits(new HashSet<>());
-          dataBundle.setAbilities(new HashSet<>());
           return dataBundle;
         }
         ItemStack offhandItem = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
         if (offhandItem == null) {
-          dataBundle.setStats(new HashMap<>());
-          dataBundle.setTraits(new HashSet<>());
-          dataBundle.setAbilities(new HashSet<>());
           return dataBundle;
         }
         if (ItemUtil.isArmor(offhandItem.getType())) {
-          dataBundle.setStats(new HashMap<>());
-          dataBundle.setTraits(new HashSet<>());
-          dataBundle.setAbilities(new HashSet<>());
           return dataBundle;
         }
         if (!ItemUtil.isValidOffhand(equipment.getItemInMainHand(), offhandItem)) {
-          dataBundle.setStats(new HashMap<>());
-          dataBundle.setTraits(new HashSet<>());
-          dataBundle.setAbilities(new HashSet<>());
           return dataBundle;
         }
         dataBundle.setStats(plugin.getStatUpdateManager().getItemStats(offhandItem));
@@ -245,18 +297,23 @@ public class StrifeMobManager {
       }
       default -> {
         if (invyData == null) {
-          dataBundle.setStats(new HashMap<>());
-          dataBundle.setTraits(new HashSet<>());
-          dataBundle.setAbilities(new HashSet<>());
           return dataBundle;
         }
-        ItemStack stack = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
-        dataBundle.setStats(plugin.getStatUpdateManager().getItemStats(stack));
-        dataBundle.setAbilities(plugin.getLoreAbilityManager().getAbilities(stack));
-        dataBundle.setTraits(ItemUtil.getTraits(stack));
+        ItemStack stack2 = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
+        dataBundle.setStats(plugin.getStatUpdateManager().getItemStats(stack2));
+        dataBundle.setAbilities(plugin.getLoreAbilityManager().getAbilities(stack2));
+        dataBundle.setTraits(ItemUtil.getTraits(stack2));
         return dataBundle;
       }
     }
+  }
+
+  private ItemStack getItemStack(String slot, EntityEquipment equipment, PlayerData invyData) {
+    //noinspection SwitchStatementWithTooFewBranches
+    return switch (slot) {
+      case "HAND" -> equipment.getItemInMainHand();
+      default -> invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
+    };
   }
 
   public void updateEquipmentStats(LivingEntity le) {
@@ -272,7 +329,7 @@ public class StrifeMobManager {
 
   private void applyDualWieldStatChanges(EquipmentCache cache, String slot) {
     for (StrifeStat attribute : cache.getSlotStats(slot).keySet()) {
-      cache.getSlotStats(slot).put(attribute, cache.getSlotStats(slot).get(attribute) * 0.7f);
+      cache.getSlotStats(slot).put(attribute, cache.getSlotStats(slot).get(attribute) * dualWieldRatio);
     }
     cache.getSlotStats(slot).put(StrifeStat.ATTACK_SPEED,
         cache.getSlotStats(slot).getOrDefault(StrifeStat.ATTACK_SPEED, 0f) + dualWieldAttackSpeed);

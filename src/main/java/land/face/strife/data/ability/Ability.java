@@ -37,6 +37,7 @@ public class Ability {
   private final float cooldown;
   private final float sneakCooldown;
   private final float minCooldown;
+  private final float weightScaling;
   private final int maxCharges;
   private final int globalCooldownTicks;
   private final boolean showMessages;
@@ -56,7 +57,7 @@ public class Ability {
       float cooldown, float sneakCooldown, int maxCharges, int globalCooldownTicks, boolean showMsgs,
       boolean requireTarget, boolean raycastsTargetEntities, Set<Condition> conditions, Set<Condition> sneakConditions,
       boolean passiveStatsOnCooldown, boolean friendly, AbilityIconData abilityIconData, boolean cancelStealth,
-      boolean deathUntoggle, float minCooldown) {
+      boolean deathUntoggle, float minCooldown, float weightScaling) {
     this.id = id;
     this.name = name;
     this.cooldown = cooldown;
@@ -83,6 +84,7 @@ public class Ability {
     this.cancelStealth = cancelStealth;
     this.deathUntoggle = deathUntoggle;
     this.minCooldown = minCooldown;
+    this.weightScaling = weightScaling;
   }
 
   @NotNull
@@ -93,11 +95,29 @@ public class Ability {
   public float calcRealEnergyCost(StrifeMob mob) {
     float cost = mob.getEntity().isSneaking() ? sneakCost : this.cost;
     if (cost >= 0) {
-      return cost;
+      // nothin
     } else {
-      float percentCost = -cost % 1;
-      return (cost - percentCost) + (mob.getMaxEnergy() * percentCost);
+      cost *= -1; // changes it to positive, because negative denotes percent
+      float percentCost = cost % 1; // decimal remainder, for percent
+      float flatCost = cost - percentCost;
+      cost = mob.getMaxEnergy() * percentCost + flatCost;
     }
+    if (weightScaling != 0) {
+      float weightDiff = mob.getStat(StrifeStat.WEIGHT) - 30;
+      //mob.getEntity().sendMessage("og cost: " + cost);
+      //mob.getEntity().sendMessage("weight: " + weightDiff);
+      if (weightDiff > 0) {
+        float ratio = weightDiff / 30;
+        cost *= 1f + (weightScaling * ratio);
+        //mob.getEntity().sendMessage("ratio: " + ratio);
+        //mob.getEntity().sendMessage("heavy scaling: " + cost);
+      } else {
+        float ratio = -weightDiff / 30;
+        cost *= 1f - Math.min(0.75f, (weightScaling * ratio));
+        //mob.getEntity().sendMessage("light scaling: " + cost);
+      }
+    }
+    return cost;
   }
 
   public enum TargetType {

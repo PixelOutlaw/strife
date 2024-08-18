@@ -68,7 +68,7 @@ public class BarrierTask extends BukkitRunnable {
         entity.getLocation().clone().add(0, entity.getEyeHeight() / 2, 0),
         particleAmount,
         0.0, 0.0, 0.0,
-        0.85,
+        1.3,
         BLOCK_DATA
     );
   }

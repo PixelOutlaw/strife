@@ -29,6 +29,8 @@ public class Push extends Effect {
   private Vector tempDirection;
   @Setter
   private boolean cancelHorizontal;
+  @Setter
+  private boolean applyToCaster;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -89,7 +91,11 @@ public class Push extends Effect {
       newVelocity.add(horizontalPush);
     }
 
-    target.getEntity().setVelocity(newVelocity);
+    if (applyToCaster) {
+      caster.getEntity().setVelocity(newVelocity);
+    } else {
+      target.getEntity().setVelocity(newVelocity);
+    }
   }
 
   private Vector getLocationDiff(Vector originLocation, Entity to) {

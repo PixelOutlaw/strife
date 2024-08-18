@@ -7,6 +7,7 @@ import de.oliver.fancyholograms.api.HologramType;
 import de.oliver.fancyholograms.api.data.DisplayHologramData;
 import de.oliver.fancyholograms.api.data.HologramData;
 import de.oliver.fancyholograms.api.data.TextHologramData;
+import java.util.List;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DisplayFrame;
@@ -66,8 +67,9 @@ public class DisplayRunner {
     displayData.setScale(new Vector3f(1));
     displayData.setBrightness(new Brightness(9, 9));
 
-    TextHologramData textData = TextHologramData.getDefault("");
+    TextHologramData textData = TextHologramData.getDefault(" ");
     textData.setBackground(Hologram.TRANSPARENT);
+    textData.setText(List.of(" "));
     textData.setTextShadow(false);
 
     HologramData data = new HologramData(UUID.randomUUID().toString(), displayData, HologramType.TEXT, textData);

@@ -27,6 +27,7 @@ import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.GuiManager;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.JumpUtil;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -60,7 +61,24 @@ public class EveryTickTask extends BukkitRunnable {
       new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("养")), 45, 0, Alignment.CENTER),
       new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兼")), 45, 0, Alignment.CENTER)
   );
+  private final List<GUIComponent> overdrawIndicator = List.of(
+      // Skip phase1 to show the bar is not empty?
+      // new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("夞")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("够")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峂")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峃")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峅")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峆")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峇")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峈")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峉")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峊")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峋")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峌")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峍")), 45, 0, Alignment.CENTER)
+  );
   private final int arrLen = attackIndication.size();
+  private final int arrLen2 = overdrawIndicator.size();
   private final GUIComponent emptyAttack = new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER);
 
   public EveryTickTask(StrifePlugin plugin) {
@@ -77,13 +95,27 @@ public class EveryTickTask extends BukkitRunnable {
         StrifeMob mob = plugin.getStrifeMobManager().getStatMob(p);
 
         if (mob.isInCombat()) {
-          int attackProgress = (int) (plugin.getAttackSpeedManager().getRawMultiplier(p.getUniqueId()) * arrLen);
-          if (lastAttackProgress.getOrDefault(p, arrLen) != attackProgress) {
-            lastAttackProgress.put(p, attackProgress);
-            if (attackProgress != arrLen) {
-              gui.update(attackIndication.get(attackProgress));
-            } else {
-              gui.update(emptyAttack);
+          float chargePercent = plugin.getAttackSpeedManager()
+              .getRawMultiplier(p.getUniqueId(), mob.hasTrait(StrifeTrait.OVERDRAW));
+          if (chargePercent > 1) {
+            int attackProgress = (int) (((chargePercent - 1f) / 0.35f) * arrLen2);
+            if (lastAttackProgress.getOrDefault(p, arrLen2) != attackProgress) {
+              lastAttackProgress.put(p, attackProgress);
+              if (attackProgress != arrLen2) {
+                gui.update(overdrawIndicator.get(attackProgress));
+              } else {
+                gui.update(emptyAttack);
+              }
+            }
+          } else {
+            int attackProgress = (int) (chargePercent * arrLen);
+            if (lastAttackProgress.getOrDefault(p, arrLen) != attackProgress) {
+              lastAttackProgress.put(p, attackProgress);
+              if (attackProgress != arrLen) {
+                gui.update(attackIndication.get(attackProgress));
+              } else {
+                gui.update(emptyAttack);
+              }
             }
           }
         }

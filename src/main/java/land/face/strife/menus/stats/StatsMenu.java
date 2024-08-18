@@ -45,27 +45,38 @@ public class StatsMenu extends ItemMenu {
 */
 
   public StatsMenu(StrifePlugin plugin) {
-    super(StringExtensionsKt.chatColorize("&f\uF808砙\uF80C\uF80A\uF808\uF804&0Stats"), Size.fit(45), plugin);
+    super(StringExtensionsKt.chatColorize("&f\uF809\uF801砙"), Size.fit(54), plugin);
 
+    setItem(1, new StatsOffenseMenuItem(this));
+    setItem(2, new StatsOffenseMenuItem(this));
+    setItem(3, new StatsOffenseMenuItem(this));
     setItem(10, new StatsOffenseMenuItem(this));
     setItem(11, new StatsOffenseMenuItem(this));
     setItem(12, new StatsOffenseMenuItem(this));
 
+    setItem(5, new StatsDefenseMenuItem(this));
+    setItem(6, new StatsDefenseMenuItem(this));
+    setItem(7, new StatsDefenseMenuItem(this));
     setItem(14, new StatsDefenseMenuItem(this));
     setItem(15, new StatsDefenseMenuItem(this));
     setItem(16, new StatsDefenseMenuItem(this));
 
-    setItem(19, new StatsMiscMenuItem(this));
-    setItem(20, new StatsMiscMenuItem(this));
-    setItem(21, new StatsMiscMenuItem(this));
+    setItem(28, new StatsMiscMenuItem(this));
+    setItem(29, new StatsMiscMenuItem(this));
+    setItem(30, new StatsMiscMenuItem(this));
+    setItem(31, new StatsMiscMenuItem(this));
+    setItem(32, new StatsMiscMenuItem(this));
 
-    setItem(23, new StatsEffectMenuItem(this));
-    setItem(24, new StatsEffectMenuItem(this));
-    setItem(25, new StatsEffectMenuItem(this));
+    setItem(37, new StatsEffectMenuItem(this));
+    setItem(38, new StatsEffectMenuItem(this));
+    setItem(39, new StatsEffectMenuItem(this));
+    setItem(40, new StatsEffectMenuItem(this));
+    setItem(41, new StatsEffectMenuItem(this));
 
-    setItem(30, new StatsBonusMenuItem(this));
-    setItem(31, new StatsBonusMenuItem(this));
-    setItem(32, new StatsBonusMenuItem(this));
+    setItem(33, new StatsBonusMenuItem(this));
+    setItem(34, new StatsBonusMenuItem(this));
+    setItem(42, new StatsBonusMenuItem(this));
+    setItem(43, new StatsBonusMenuItem(this));
   }
 
   public Map<Player, Player> getInspectionTargetMap() {

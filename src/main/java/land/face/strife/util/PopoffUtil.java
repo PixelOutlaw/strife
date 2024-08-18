@@ -38,7 +38,7 @@ public class PopoffUtil {
     displayData.setScale(new Vector3f(startScale));
     displayData.setBrightness(new Brightness(10, 10));
 
-    TextHologramData textData = TextHologramData.getDefault("");
+    TextHologramData textData = TextHologramData.getDefault(" ");
     textData.setBackground(Hologram.TRANSPARENT);
     textData.setText(List.of(text));
     textData.setTextShadow(false);

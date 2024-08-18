@@ -43,7 +43,7 @@ public class HitDetectionUtil {
         .getNearbyEntities(origin, length, length, length);
     targetList.removeIf(TargetingUtil::isInvalidTarget);
     Set<LivingEntity> validTargets = new HashSet<>();
-    for (float incRange = 0; incRange < length; incRange += 0.4) {
+    for (float incRange = 0; incRange < length; incRange += 0.4F) {
       Location loc = origin.clone().add(direction.clone().multiply(incRange));
       for (Entity entity : targetList) {
         if (collides(loc.toVector(), 0.2f + (maxConeRadius * (incRange / length)), entity)) {
@@ -114,6 +114,9 @@ public class HitDetectionUtil {
 
   public static boolean collides(Vector centerpoint, float radius, BoundingBox box) {
     Vector vec = centerpoint.clone().subtract(box.getCenter());
+    if (vec.getX() == 0 && vec.getY() == 0 && vec.getZ() == 0) {
+      return true;
+    }
     return box.rayTrace(centerpoint, vec.normalize().multiply(-1), radius) != null;
   }
 

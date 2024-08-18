@@ -6,12 +6,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import land.face.strife.StrifePlugin;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.entity.Projectile;
+import org.bukkit.util.Vector;
 
 @Getter @Setter
 public class DamageModifiers {

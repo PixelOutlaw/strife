@@ -253,6 +253,6 @@ public class ExperienceListener implements Listener {
   }
 
   private boolean isSoulShard(ItemStack itemStack) {
-    return itemStack.getType() == Material.QUARTZ && ItemUtil.getCustomData(itemStack) == 100;
+    return itemStack.getType() == Material.ECHO_SHARD; // && ItemUtil.getCustomData(itemStack) == 100;
   }
 }

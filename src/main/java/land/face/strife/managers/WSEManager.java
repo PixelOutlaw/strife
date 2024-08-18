@@ -33,10 +33,11 @@ public class WSEManager {
     }
     Vector direction = caster.getEntity().getEyeLocation().getDirection().clone();
     if (zeroVertical) {
-      direction.setY(0.00001);
+      direction.setY(0.00005);
       direction.normalize();
     }
     direction.multiply(speed);
+
     WorldSpaceEffect entity = new WorldSpaceEffect(
         caster,
         effects,

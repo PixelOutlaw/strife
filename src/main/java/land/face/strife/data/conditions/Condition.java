@@ -1,12 +1,15 @@
 package land.face.strife.data.conditions;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.Map;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.entity.Player;
 
+@Getter @Setter
 public abstract class Condition {
 
   private CompareTarget compareTarget;
@@ -14,14 +17,21 @@ public abstract class Condition {
   private ConditionType type;
   private ConditionUser conditionUser;
   private float value;
-  @Getter @Setter
   private boolean checkMaster = false;
   private boolean inverted;
+  private String failMessage;
+  private boolean playFailMessage;
 
   private final Map<StrifeStat, Float> statMults = new HashMap<>();
 
   public boolean isMet(StrifeMob attacker, StrifeMob target) {
     return true;
+  }
+
+  public void sendMessage(StrifeMob caster) {
+    if (playFailMessage && caster.getEntity() instanceof Player) {
+      PaletteUtil.sendMessage(caster.getEntity(), failMessage);
+    }
   }
 
   public CompareTarget getCompareTarget() {
@@ -36,50 +46,6 @@ public abstract class Condition {
     } else {
       return null;
     }
-  }
-
-  public void setCompareTarget(CompareTarget compareTarget) {
-    this.compareTarget = compareTarget;
-  }
-
-  public Comparison getComparison() {
-    return comparison;
-  }
-
-  public void setComparison(Comparison comparison) {
-    this.comparison = comparison;
-  }
-
-  public ConditionType getType() {
-    return type;
-  }
-
-  public void setType(ConditionType type) {
-    this.type = type;
-  }
-
-  public ConditionUser getConditionUser() {
-    return conditionUser;
-  }
-
-  public void setConditionUser(ConditionUser conditionUser) {
-    this.conditionUser = conditionUser;
-  }
-
-  public float getValue() {
-    return value;
-  }
-
-  public void setValue(float value) {
-    this.value = value;
-  }
-
-  public boolean isInverted() {
-    return inverted;
-  }
-
-  public void setInverted(boolean inverted) {
-    this.inverted = inverted;
   }
 
   public Map<StrifeStat, Float> getStatMults() {
@@ -123,6 +89,7 @@ public abstract class Condition {
     UNION,
     IN_COMBAT,
     CHANCE,
+    COMPARE,
     STAT,
     LIGHT_LEVEL,
     HEALTH,

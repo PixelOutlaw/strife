@@ -66,26 +66,29 @@ public class CitizenModelListener implements Listener {
 
   private void applyModel(NPC npc, NpcModelData npcModelData) {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      if (npc.getEntity() != null && npc.getEntity().isValid()) {
-        if (!ModelEngineAPI.isModeledEntity(npc.getEntity().getUniqueId())) {
-          ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(npc.getEntity());
-          if (modeledEntity != null) {
-            ActiveModel activeModel = ModelEngineAPI.createActiveModel(npcModelData.getModel());
-            activeModel.setShadowVisible(true);
-            modeledEntity.addModel(activeModel, true);
-            modeledEntity.setBaseEntityVisible(npcModelData.isShowBaseEntity());
-            activeModel.setScale(npcModelData.getScale());
-            modeledEntity.getBase().setRenderRadius((int) npcModelData.getViewRange());
-            if (npcModelData.isNameTag()) {
-              activeModel.getBone("name").ifPresent(modelBone -> {
-                modelBone.getBoneBehavior(BoneBehaviorTypes.NAMETAG).ifPresent(head -> {
-                  head.setVisible(true);
-                  head.setString(npc.getFullName());
-                });
-              });
-            }
-          }
-        }
+      if (npc.getEntity() == null || !npc.getEntity().isValid()) {
+        return;
+      }
+      if (ModelEngineAPI.isModeledEntity(npc.getEntity().getUniqueId())) {
+        return;
+      }
+      ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(npc.getEntity());
+      if (modeledEntity == null) {
+        return;
+      }
+      ActiveModel activeModel = ModelEngineAPI.createActiveModel(npcModelData.getModel());
+      activeModel.setShadowVisible(true);
+      modeledEntity.addModel(activeModel, true);
+      modeledEntity.setBaseEntityVisible(npcModelData.isShowBaseEntity());
+      activeModel.setScale(npcModelData.getScale());
+      modeledEntity.getBase().setRenderRadius((int) npcModelData.getViewRange());
+      if (npcModelData.isNameTag()) {
+        activeModel.getBone("name").ifPresent(modelBone -> {
+          modelBone.getBoneBehavior(BoneBehaviorTypes.NAMETAG).ifPresent(head -> {
+            head.setVisible(true);
+            head.setString(npc.getFullName());
+          });
+        });
       }
     }, 10L);
   }

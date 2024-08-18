@@ -81,7 +81,6 @@ public class WorldSpaceEffect {
           modeledEntity.addModel(model, true);
           //modeledEntity.detectPlayers();
           modeledEntity.setBaseEntityVisible(false);
-
         }
       }
     }
@@ -117,41 +116,43 @@ public class WorldSpaceEffect {
       }
     }
 
-    velocity.multiply(friction);
-    this.velocity = velocity;
-    newLocation.add(velocity);
-    newLocation.setDirection(velocity);
-
-    Block block = newLocation.getBlock();
-
-    // Make one attempt to move along the ground on collide, only
-    // if the angle isn't too steep
-    if (velocity.getY() < 0 &&
-        newLocation.getPitch() > 0 && newLocation.getPitch() <= 22.5 && block.getType().isSolid()) {
-      newLocation.subtract(velocity);
-      double power = velocity.length();
-      velocity.setY(0.0001);
-      velocity.normalize();
-      velocity.multiply(power);
+    if (Math.abs(velocity.getX()) > 0.0001 || Math.abs(velocity.getY()) > 0.0001 || Math.abs(velocity.getZ()) > 0.0001) {
+      velocity.multiply(friction);
       this.velocity = velocity;
       newLocation.add(velocity);
       newLocation.setDirection(velocity);
-    }
 
-    if (maxDisplacement > 0) {
-      float displacement = 0;
-      while (block.getType().isSolid()) {
-        displacement += 0.4F;
-        if (displacement >= maxDisplacement) {
-          LogUtil.printDebug("WSE effect has hit a wall! Removing...");
-          return false;
-        }
-        newLocation.setY(newLocation.getY() + 0.4);
-        block = newLocation.getBlock();
+      Block block = newLocation.getBlock();
+
+      // Make one attempt to move along the ground on collide, only
+      // if the angle isn't too steep
+      if (velocity.getY() < 0 && newLocation.getPitch() > 0 && newLocation.getPitch() <= 22.5 && block.getType()
+          .isSolid()) {
+        newLocation.subtract(velocity);
+        double power = velocity.length();
+        velocity.setY(0.0001);
+        velocity.normalize();
+        velocity.multiply(power);
+        this.velocity = velocity;
+        newLocation.add(velocity);
+        newLocation.setDirection(velocity);
       }
-    } else if (block.getType().isSolid()) {
-      LogUtil.printDebug("WSE effect has hit a wall! Removing...");
-      return false;
+
+      if (maxDisplacement > 0) {
+        float displacement = 0;
+        while (block.getType().isSolid()) {
+          displacement += 0.4F;
+          if (displacement >= maxDisplacement) {
+            LogUtil.printDebug("WSE effect has hit a wall! Removing...");
+            return false;
+          }
+          newLocation.setY(newLocation.getY() + 0.4);
+          block = newLocation.getBlock();
+        }
+      } else if (block.getType().isSolid()) {
+        LogUtil.printDebug("WSE effect has hit a wall! Removing...");
+        return false;
+      }
     }
 
     nextLocation = newLocation;

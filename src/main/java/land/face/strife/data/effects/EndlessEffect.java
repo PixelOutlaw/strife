@@ -38,6 +38,16 @@ public class EndlessEffect extends Effect {
       newDuration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
     newDuration = (newDuration * 20) / newTickRate;
+
+    /*
+    for (var effect : runningEndlessEffects) {
+      if (effect.getEndlessEffect().getId().equals(getId()) && effect.getMob() == target) {
+        effect.bump((int) newDuration);
+        return;
+      }
+    }
+    */
+
     EndlessEffectTimer timer = new EndlessEffectTimer(this, target, newTickRate, (int) newDuration);
     runningEndlessEffects.add(timer);
   }

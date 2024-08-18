@@ -23,13 +23,21 @@ import static org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.effects.Effect;
 import land.face.strife.data.pojo.SkillLevelData;
+import land.face.strife.events.ProjectileDamageEvent;
 import land.face.strife.util.DamageUtil;
+import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.SpecialStatusUtil;
@@ -37,7 +45,6 @@ import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FishHook;
 import org.bukkit.entity.LivingEntity;
@@ -87,27 +94,6 @@ public class TargetingListener implements Listener {
         .getDouble("config.mechanics.sneak.maximum-sneak-exp-range-squared");
     SNEAK_EFFECTIVENESS = plugin.getSettings()
         .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
-  }
-
-  @EventHandler(priority = EventPriority.LOW)
-  public void onProjectileHitFriendly(ProjectileHitEvent event) {
-    if (event.isCancelled() || event.getHitEntity() == null) {
-      return;
-    }
-    if (!(event.getHitEntity() instanceof LivingEntity)) {
-      return;
-    }
-    if (event.getHitEntity() == event.getEntity().getShooter()) {
-      return;
-    }
-    if (event.getHitEntity() instanceof ArmorStand && event.getHitEntity().isInvulnerable()) {
-      event.setCancelled(true);
-      return;
-    }
-    if (TargetingUtil.isFriendly((LivingEntity) event.getEntity().getShooter(), (LivingEntity) event.getHitEntity())) {
-      event.setCancelled(true);
-      ProjectileUtil.disableCollision(event.getEntity(), (LivingEntity) event.getHitEntity());
-    }
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

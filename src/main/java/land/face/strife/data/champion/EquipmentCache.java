@@ -30,7 +30,9 @@ public class EquipmentCache {
   private final Map<String, List<StrifeTrait>> slotTraitMap = new HashMap<>();
 
   private final Set<LoreAbility> loreAbilities = new HashSet<>();
+  @Getter
   private final Map<StrifeStat, Float> combinedStats = new HashMap<>();
+  @Getter
   private final Set<StrifeTrait> combinedTraits = new HashSet<>();
 
   public final static Set<String> ITEM_SLOTS = buildSlots();
@@ -98,16 +100,8 @@ public class EquipmentCache {
     this.slotTraitMap.get(slot).clear();
   }
 
-  public Map<StrifeStat, Float> getCombinedStats() {
-    return combinedStats;
-  }
-
   public Set<LoreAbility> getCombinedAbilities() {
     return loreAbilities;
-  }
-
-  public Set<StrifeTrait> getCombinedTraits() {
-    return combinedTraits;
   }
 
   public void recombineStats() {

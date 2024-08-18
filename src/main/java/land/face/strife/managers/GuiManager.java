@@ -25,7 +25,6 @@ public class GuiManager {
   private final StrifePlugin plugin;
 
   // Must be static, to persist through reloads
-  private static final Map<Player, GUI> guiMap = new WeakHashMap<>();
   private final Map<Player, NoticeData> noticeMap = new WeakHashMap<>();
 
   private static final DecimalFormat XP_FORMAT = new DecimalFormat("0.0");
@@ -41,9 +40,6 @@ public class GuiManager {
   private final GUIComponent notifsBase = new GUIComponent("notifs-base",
       noShadow(new TextComponent("偀")) , 67, -181, Alignment.CENTER);
 
-  private final Map<Integer, String> hpStringNumbers = new HashMap<>();
-  private final Map<Integer, String> energyStringNumbers = new HashMap<>();
-  private final Map<Integer, String> middleStringNumbers = new HashMap<>();
   private final Map<Integer, TextComponent> levelStringNumbers = new HashMap<>();
   private final Map<Integer, TextComponent> moneyStringNumbers = new HashMap<>();
   private final Map<Integer, TextComponent> gemStringNumbers = new HashMap<>();
@@ -212,6 +208,7 @@ public class GuiManager {
     return values;
   }
 
+  @SuppressWarnings("unused")
   public static TextComponent shadow(TextComponent t) {
     t.setColor(ChatColor.RESET);
     return t;
@@ -233,7 +230,7 @@ public class GuiManager {
         guiComponent =  GuiManager.NOTICE_ENERGY_JEB;
       }
     }
-    noticeMap.put(player, new NoticeData (guiComponent, durationTicks));
+    noticeMap.put(player, new NoticeData(guiComponent, durationTicks));
     updateComponent(player, guiComponent);
   }
 
@@ -248,10 +245,7 @@ public class GuiManager {
     }
   }
 
-  public void setupGui(Player p) {
-    if (guiMap.containsKey(p)) {
-      return;
-    }
+  public GUI setupGui(Player p) {
     GUI gui = GUIAPI.getGUIManager().getGUI(p);
 
     gui.putUnderneath(healthBase);
@@ -302,24 +296,24 @@ public class GuiManager {
 
     gui.putOnTop(new GUIComponent("god-slot", EMPTY, 0, 0, Alignment.CENTER));
 
-    guiMap.put(p, gui);
+    return gui;
   }
 
   public GUI getGui(Player p) {
-    if (!guiMap.containsKey(p)) {
-      setupGui(p);
+    if (GUIAPI.getGUIManager().hasGUI(p)) {
+      return GUIAPI.getGUIManager().getGUI(p);
+    } else {
+      return setupGui(p);
     }
-    return guiMap.get(p);
   }
 
   public void updateComponent(Player player, GUIComponent component) {
-    GUI gui = guiMap.get(player);
-    gui.update(component);
+    getGui(player).update(component);
   }
 
   public void updateLevelDisplay(StrifeMob playerMob) {
     Player player = (Player) playerMob.getEntity();
-    GUI gui = guiMap.get(player);
+    GUI gui = getGui(player);
     String originalLevelString = Integer.toString(player.getLevel());
     TextComponent tc = plugin.getGuiManager().convertToLevelFont(player.getLevel());
     gui.update(new GUIComponent("level-display", tc, originalLevelString.length() * 12, -106,
@@ -369,7 +363,7 @@ public class GuiManager {
         lineSeparators--;
         size -= pixelDiff;
       }
-      String sepStrang = GUI.spacesOf(pixelDiff - 1) + "拾\uF803";
+      String sepStrang = GUI.spacesOf(pixelDiff - 1) + "\uF801拾\uF804";
       sepStrang = StringUtils.repeat(sepStrang, lineSeparators);
       GUIComponent component = new GUIComponent("life-segments",
           GuiManager.noShadow(new TextComponent(sepStrang)), size, -89, Alignment.LEFT);
@@ -388,13 +382,15 @@ public class GuiManager {
         lineSeparators--;
         size -= pixelDiff;
       }
-      String sepStrang = GUI.spacesOf(pixelDiff - 1) + "拿\uF803";
+      String sepStrang = GUI.spacesOf(pixelDiff - 1) + "\uF801拿\uF804";
       sepStrang = StringUtils.repeat(sepStrang, lineSeparators);
       GUIComponent component = new GUIComponent("energy-segments",
           GuiManager.noShadow(new TextComponent(sepStrang)), size, -89, Alignment.LEFT);
       energySeparators.put(i, component);
     }
   }
+
+  @SuppressWarnings("unused")
   public void updateMailNotif(Player player, boolean enabled) {
     if (!enabled) {
       getGui(player).update(NOTIF_EMPTY_MAIL);
@@ -403,6 +399,7 @@ public class GuiManager {
     getGui(player).update(NOTIF_MAIL);
   }
 
+  @SuppressWarnings("unused")
   public void updateFriendNotif(Player player, boolean enabled) {
     if (!enabled) {
       getGui(player).update(NOTIF_EMPTY_FRIEND);
@@ -411,6 +408,7 @@ public class GuiManager {
     getGui(player).update(NOTIF_FRIEND);
   }
 
+  @SuppressWarnings("unused")
   public void updateMarketNotif(Player player, boolean enabled) {
     if (!enabled) {
       getGui(player).update(NOTIF_EMPTY_MARKET);
@@ -419,6 +417,7 @@ public class GuiManager {
     getGui(player).update(NOTIF_MARKET);
   }
 
+  @SuppressWarnings("unused")
   public void updateVoteNotif(Player player, boolean enabled) {
     if (!enabled) {
       getGui(player).update(NOTIF_EMPTY_VOTE);
@@ -427,6 +426,7 @@ public class GuiManager {
     getGui(player).update(NOTIF_VOTE);
   }
 
+  @SuppressWarnings("unused")
   public void updateDailyNotif(Player player, boolean enabled) {
     if (!enabled) {
       getGui(player).update(NOTIF_EMPTY_DAILY);
@@ -443,7 +443,6 @@ public class GuiManager {
       StringBuilder prefix = new StringBuilder();
       StringBuilder hpBar = new StringBuilder();
       StringBuilder barrierBar = new StringBuilder();
-      boolean kickBack = false;
       while (remainder >= 138) {
         hpBar.append("Ũ\uF801");
         barrierBar.append("Ù\uF801");
@@ -552,71 +551,11 @@ public class GuiManager {
       BARRIER_BAR_1.put(i,
           new GUIComponent("barrier-bar", noShadow(new TextComponent(barrierBar1.toString())), i, -90, Alignment.LEFT));
       BARRIER_BAR_2.put(i,
-          new GUIComponent("barrier-bar", noShadow(new TextComponent(barrierBar1.toString())), i, -90, Alignment.LEFT));
+          new GUIComponent("barrier-bar", noShadow(new TextComponent(barrierBar2.toString())), i, -90, Alignment.LEFT));
       BARRIER_BAR_3.put(i,
-          new GUIComponent("barrier-bar", noShadow(new TextComponent(barrierBar1.toString())), i, -90, Alignment.LEFT));
+          new GUIComponent("barrier-bar", noShadow(new TextComponent(barrierBar3.toString())), i, -90, Alignment.LEFT));
     }
     Bukkit.getLogger().info("[Strife] Missing life/energy bars built!");
-  }
-
-  public String convertToHpDisplay(int i) {
-    if (hpStringNumbers.containsKey(i)) {
-      return hpStringNumbers.get(i);
-    }
-    String s = Integer.toString(i);
-    s = s
-        .replaceAll("0", "➉")
-        .replaceAll("1", "➀")
-        .replaceAll("2", "➁")
-        .replaceAll("3", "➂")
-        .replaceAll("4", "➃")
-        .replaceAll("5", "➄")
-        .replaceAll("6", "➅")
-        .replaceAll("7", "➆")
-        .replaceAll("8", "➇")
-        .replaceAll("9", "➈");
-    hpStringNumbers.put(i, s);
-    return s;
-  }
-
-  public String convertToEnergyDisplayFont(int i) {
-    if (energyStringNumbers.containsKey(i)) {
-      return energyStringNumbers.get(i);
-    }
-    String s = Integer.toString(i);
-    s = s
-        .replaceAll("0", "⓾")
-        .replaceAll("1", "⓵")
-        .replaceAll("2", "⓶")
-        .replaceAll("3", "⓷")
-        .replaceAll("4", "⓸")
-        .replaceAll("5", "⓹")
-        .replaceAll("6", "⓺")
-        .replaceAll("7", "⓻")
-        .replaceAll("8", "⓼")
-        .replaceAll("9", "⓽");
-    energyStringNumbers.put(i, s);
-    return s;
-  }
-
-  public String convertToMiddleString(int i) {
-    if (middleStringNumbers.containsKey(i)) {
-      return middleStringNumbers.get(i);
-    }
-    String s = Integer.toString(i);
-    s = s
-        .replaceAll("0", "➓")
-        .replaceAll("1", "➊")
-        .replaceAll("2", "➋")
-        .replaceAll("3", "➌")
-        .replaceAll("4", "➍")
-        .replaceAll("5", "➎")
-        .replaceAll("6", "➏")
-        .replaceAll("7", "➐")
-        .replaceAll("8", "➑")
-        .replaceAll("9", "➒");
-    middleStringNumbers.put(i, s);
-    return s;
   }
 
   public TextComponent convertToLevelFont(int i) {

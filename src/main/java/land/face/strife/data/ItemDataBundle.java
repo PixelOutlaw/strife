@@ -4,9 +4,11 @@ import java.util.Map;
 import java.util.Set;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class ItemDataBundle {
 
   private Set<StrifeTrait> traits;

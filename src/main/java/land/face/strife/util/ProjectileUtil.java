@@ -37,6 +37,7 @@ public class ProjectileUtil {
   private static final Map<Projectile, Boolean> APPLY_ON_HIT = new WeakHashMap<>();
   private static final Map<Projectile, List<Effect>> HIT_EFFECTS = new WeakHashMap<>();
   private static final Map<Projectile, Integer> SHOT_ID = new WeakHashMap<>();
+  private static final Map<Projectile, Integer> PEIRCE_LEVEL = new WeakHashMap<>();
   private static final Map<Projectile, Boolean> ABILITY_PROJECTILE = new WeakHashMap<>();
   private static final Map<Projectile, Boolean> DESPAWN_ON_CONTACT = new WeakHashMap<>();
 
@@ -85,11 +86,11 @@ public class ProjectileUtil {
     return DESPAWN_ON_CONTACT.remove(projectile);
   }
 
-  public static void setPierce(AbstractArrow arrow, float chance) {
-    setPierce(arrow, chance, 0);
+  public static void setPierce(Projectile projectile, float chance) {
+    setPierce(projectile, chance, 0);
   }
 
-  public static void setPierce(AbstractArrow arrow, float chance, int flatBonus) {
+  public static void setPierce(Projectile projectile, float chance, int flatBonus) {
     if (chance > 0) {
       int maxPuncture = 0;
       while (maxPuncture < 3) {
@@ -100,9 +101,23 @@ public class ProjectileUtil {
       }
       maxPuncture += flatBonus;
       if (maxPuncture > 0) {
-        arrow.setShotFromCrossbow(true);
-        arrow.setPierceLevel(maxPuncture);
+        PEIRCE_LEVEL.put(projectile, maxPuncture);
+        if (projectile instanceof Arrow a) {
+          a.setShotFromCrossbow(true);
+          a.setPierceLevel(100);
+        }
       }
+    }
+  }
+
+  public static int getPierce(Projectile projectile) {
+    return PEIRCE_LEVEL.getOrDefault(projectile, 0);
+  }
+
+  public static void reducePierce(Projectile projectile) {
+    int amount = PEIRCE_LEVEL.getOrDefault(projectile, 0);
+    if (amount > 0) {
+      PEIRCE_LEVEL.put(projectile, amount - 1);
     }
   }
 
@@ -147,7 +162,7 @@ public class ProjectileUtil {
   public static void disableCollision(Projectile projectile, LivingEntity entity) {
     entity.getCollidableExemptions().add(projectile.getUniqueId());
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-        entity.getCollidableExemptions().remove(projectile.getUniqueId()),200L);
+        entity.getCollidableExemptions().remove(projectile.getUniqueId()),400L);
   }
 
   public static int getTotalProjectiles(double initialProjectiles, float multiShot, float extraProjectiles) {

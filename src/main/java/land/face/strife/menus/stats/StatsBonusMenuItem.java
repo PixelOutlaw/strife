@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
@@ -39,7 +40,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class StatsBonusMenuItem extends MenuItem {
 
   private final StatsMenu statsMenu;
-  private Map<Player, ItemStack> cachedIcon = new HashMap<>();
+  private final Map<Player, ItemStack> cachedIcon = new WeakHashMap<>();
 
   StatsBonusMenuItem(StatsMenu statsMenu) {
     super(StringExtensionsKt.chatColorize("&a&lDrop Modifiers"), new ItemStack(Material.BARRIER));

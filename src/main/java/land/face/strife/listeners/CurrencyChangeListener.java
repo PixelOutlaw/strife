@@ -19,6 +19,7 @@ package land.face.strife.listeners;
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.bullion.MoneyChangeEvent;
+import info.faceland.loot.LootPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.managers.GuiManager;
 import org.black_ixx.playerpoints.event.PlayerPointsChangeEvent;
@@ -33,12 +34,16 @@ public record CurrencyChangeListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler
   public void onJoin(PlayerJoinEvent event) {
-    int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(event.getPlayer().getUniqueId());
-    plugin.getGuiManager().updateComponent(event.getPlayer(), new GUIComponent("money-display",
+    updateAll(plugin, event.getPlayer());
+  }
+
+  public static void updateAll(StrifePlugin plugin, Player player) {
+    int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(player.getUniqueId());
+    plugin.getGuiManager().updateComponent(player, new GUIComponent("money-display",
         plugin.getGuiManager().convertToMoneyFont(money), divideAndConquerLength(money) * 7, 189, Alignment.RIGHT));
 
-    int gems = plugin.getPlayerPointsPlugin().getAPI().look(event.getPlayer().getUniqueId());
-    plugin.getGuiManager().updateComponent(event.getPlayer(), new GUIComponent("gem-display",
+    int gems = plugin.getPlayerPointsPlugin().getAPI().look(player.getUniqueId());
+    plugin.getGuiManager().updateComponent(player, new GUIComponent("gem-display",
         plugin.getGuiManager().convertToGemFont(gems), divideAndConquerLength(gems) * 7, 189, Alignment.RIGHT));
   }
 

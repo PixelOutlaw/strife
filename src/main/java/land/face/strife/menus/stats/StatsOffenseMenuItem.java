@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
@@ -58,7 +59,7 @@ public class StatsOffenseMenuItem extends MenuItem {
 
   private final StatsMenu statsMenu;
 
-  private final Map<Player, ItemStack> cachedIcon = new HashMap<>();
+  private final Map<Player, ItemStack> cachedIcon = new WeakHashMap<>();
   private final float POISON_FLAT_DAMAGE;
   private final float POISON_LEVEL_DAMAGE;
 

@@ -125,7 +125,7 @@ public class ViolationManager {
       levelDiff = Math.max(lowestDiff, highestDiff);
       // Bukkit.getLogger().info("[XPDEBUG] level diff: " + levelDiff);
       if (mobLevel < highestPlayerLevel) {
-        maximumDifference = 8;
+        maximumDifference = 10;
       } else {
         maximumDifference = (int) Math.max(13, (float) lowestPlayerLevel / 4.5f);
       }
@@ -133,7 +133,7 @@ public class ViolationManager {
     }
 
     if (levelDiff > maximumDifference) {
-      baseXpMult *= (float) Math.pow(0.85f, levelDiff - maximumDifference);
+      baseXpMult *= (float) Math.pow(0.90f, levelDiff - maximumDifference);
       //Bukkit.getLogger().info("[XPDEBUG] PENALTY - FINAL RESULT: " + baseXpMult);
     }
     if (uniqueEntity == null) {

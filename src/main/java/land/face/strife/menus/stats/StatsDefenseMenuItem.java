@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
@@ -52,7 +53,7 @@ public class StatsDefenseMenuItem extends MenuItem {
 
   private final StatsMenu statsMenu;
   public static final String PER_TEN = ChatColor.GRAY + "/10s";
-  private final Map<Player, ItemStack> cachedIcon = new HashMap<>();
+  private final Map<Player, ItemStack> cachedIcon = new WeakHashMap<>();
 
   StatsDefenseMenuItem(StatsMenu statsMenu) {
     super(StringExtensionsKt.chatColorize("&e&lDefense Stats"), new ItemStack(Material.BARRIER));
