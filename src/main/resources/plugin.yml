@@ -1,9 +1,15 @@
 name: Strife
 version: ${project.version}
 main: land.face.strife.StrifePlugin
-api-version: 1.19
-depend: [Facecore, ProtocolLib, GUIAPI]
-softdepend: [WorldGuard, BlueMap, PoggersGuilds, Loot, Bullion, LibsDisguises, SnazzyParties, DiscordSRV, HeadDatabase, GlowAPI, FancyHolograms, LearninBooks]
+api-version: 1.20
+loadbefore:
+  - Loot
+depend:
+  - Facecore
+  - ProtocolLib
+  - GUIAPI
+softdepend:
+  - LearninBooks
 
 commands:
   cast:
