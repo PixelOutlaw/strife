@@ -42,16 +42,12 @@ public class AreaEffect extends LocationEffect {
   private AreaType areaType;
   private TargetingPriority priority;
   private LineOfSight lineOfSight;
-  private boolean excludeCaster;
   private float range;
   private float radius;
   private float area;
   private int maxTargets;
-  private boolean areaScaling;
-  private boolean multishotScaling;
-  private boolean canBeEvaded;
-  private boolean canBeBlocked;
-  private boolean canBeCountered;
+  private boolean areaScaling, multishotScaling, multishotRangeScaling, pierceScaling, canBeEvaded, canBeBlocked,
+      canBeCountered, excludeCaster;
   private long targetingCooldown;
 
   private long lastApplication = System.currentTimeMillis();
@@ -103,8 +99,9 @@ public class AreaEffect extends LocationEffect {
 
     float searchRadius = range;
     float rangeModifier = 0f;
-    if (multishotScaling) {
+    if (multishotRangeScaling) {
       rangeModifier += StatUtil.getStat(caster, StrifeStat.MULTISHOT) / 2;
+      rangeModifier += StatUtil.getStat(caster, StrifeStat.EXTRA_PROJECTILES) * 25f;
     }
     if (areaScaling) {
       rangeModifier += StatUtil.getStat(caster, StrifeStat.AREA_OF_EFFECT);
@@ -154,6 +151,14 @@ public class AreaEffect extends LocationEffect {
       if (multishotScaling) {
         float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(StrifePlugin.RNG.nextFloat(), 1.15);
         numTargets = ProjectileUtil.getTotalProjectiles(numTargets, mult, caster.getStat(StrifeStat.EXTRA_PROJECTILES));
+      }
+      if (pierceScaling) {
+        int bonusTargets = 0;
+        float chance = caster.getStat(StrifeStat.PIERCE_CHANCE) / 100;
+        while (StrifePlugin.RNG.nextFloat() < chance && bonusTargets < 3) {
+          bonusTargets++;
+        }
+        numTargets += bonusTargets;
       }
       TargetingUtil.filterByTargetPriority(areaTargets, getPriority(), caster, Math.min(numTargets, areaTargets.size()));
     }

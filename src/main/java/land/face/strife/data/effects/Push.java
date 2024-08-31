@@ -3,34 +3,25 @@ package land.face.strife.data.effects;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
+import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+@Getter
+@Setter
 public class Push extends Effect {
 
-  @Setter
   private PushType pushType;
-  @Setter
-  private double power;
-  @Setter
-  private double height;
-  @Setter
-  private boolean zeroFall;
-  @Setter
-  private boolean horizontalClamp;
-  @Setter
-  private boolean verticalClamp;
-  @Setter
-  private Location tempOrigin;
-  @Setter
-  private Vector tempDirection;
-  @Setter
-  private boolean cancelHorizontal;
-  @Setter
-  private boolean applyToCaster;
+  private double power, height, weightRatio;
+  private boolean zeroFall, horizontalClamp, verticalClamp, cancelHorizontal, applyToCaster, useTrueDirection;
+
+  public static Location TEMP_ORIGIN;
+  public static Vector TEMP_DIRECTION;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -46,55 +37,67 @@ public class Push extends Effect {
     switch (pushType) {
       case AWAY_FROM_CASTER ->
           direction = getLocationDiff(caster.getEntity().getLocation().toVector(), target.getEntity());
-      case TARGET_DIRECTION ->
-          direction = target.getEntity().getEyeLocation().getDirection();
-      case AWAY_FROM_CENTER ->
-          direction = getLocationDiff(tempOrigin.toVector(), target.getEntity());
-      case CASTER_DIRECTION ->
-          direction = caster.getEntity().getEyeLocation().getDirection();
-      case TEMP_DIRECTION ->
-          direction = getLocationDiff(tempDirection, target.getEntity());
-      default -> { return; }
+      case TARGET_DIRECTION -> direction = target.getEntity().getEyeLocation().getDirection();
+      case AWAY_FROM_CENTER -> direction = getLocationDiff(TEMP_ORIGIN.toVector(), target.getEntity());
+      case CASTER_DIRECTION -> direction = caster.getEntity().getEyeLocation().getDirection();
+      case TEMP_DIRECTION -> direction = TEMP_DIRECTION.clone();
+      default -> {
+        return;
+      }
     }
 
     Vector currentVelocity = MoveUtil.getVelocity(target.getEntity());
 
-    Vector horizontalPush = direction.clone();
-    horizontalPush.setY(0.0001);
-    horizontalPush.normalize().multiply(power / 10);
+    Vector push = direction.clone();
+    if (!useTrueDirection) {
+      push.setY(0.0001);
+    }
+    push.normalize().multiply(power / 10);
+    push.setY(push.getY() + height / 10);
+
+    if (weightRatio != 1) {
+      double weightDenominator = 30 / Math.max(0.2, weightRatio);
+      double weightMult;
+      if (applyToCaster) {
+        weightMult = 1 / (Math.max(0.5, caster.getStat(StrifeStat.WEIGHT) / weightDenominator));
+      } else {
+        weightMult = 1 / (Math.max(0.5, target.getStat(StrifeStat.WEIGHT) / weightDenominator));
+      }
+      push.multiply(weightMult);
+    }
 
     if (cancelHorizontal) {
       currentVelocity.setX(0);
       currentVelocity.setZ(0);
     }
 
-    if (zeroFall) {
-      if (currentVelocity.getY() < 0) {
-        currentVelocity.setY(0.0001);
-        currentVelocity.normalize();
-      }
+    if (zeroFall && currentVelocity.getY() < 0) {
+      currentVelocity.setY(0);
       target.getEntity().setFallDistance(0);
     }
 
     Vector newVelocity = currentVelocity.clone();
+    newVelocity.add(push);
 
     if (verticalClamp) {
-      newVelocity.setY(clampRay(currentVelocity.getY(), height / 10));
-    } else {
-      newVelocity.setY(newVelocity.getY() + height / 10);
+      newVelocity.setY(clampRay(currentVelocity.getY(), push.getY()));
     }
 
     if (horizontalClamp) {
-      newVelocity.setX(clampRay(currentVelocity.getX(), horizontalPush.getX()));
-      newVelocity.setZ(clampRay(currentVelocity.getZ(), horizontalPush.getZ()));
-    } else {
-      newVelocity.add(horizontalPush);
+      newVelocity.setX(clampRay(currentVelocity.getX(), push.getX()));
+      newVelocity.setZ(clampRay(currentVelocity.getZ(), push.getZ()));
     }
 
     if (applyToCaster) {
       caster.getEntity().setVelocity(newVelocity);
+      if (caster.isPlayer()) {
+        MoveUtil.setVelocity((Player) caster.getEntity());
+      }
     } else {
       target.getEntity().setVelocity(newVelocity);
+      if (target.isPlayer()) {
+        MoveUtil.setVelocity((Player) target.getEntity());
+      }
     }
   }
 

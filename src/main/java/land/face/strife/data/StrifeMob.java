@@ -82,42 +82,14 @@ public class StrifeMob {
   private final Set<Buff> runningBuffs = new HashSet<>();
   private final Map<UUID, Float> takenDamage = new HashMap<>();
   private final Set<UUID> reflectedTargets = new HashSet<>();
-
-  @Getter @Setter
-  private float threatLevel = 0;
   @Getter
   private final Map<UUID, Float> threatTargets = new HashMap<>();
 
   @Getter @Setter
-  private float maxPrayer;
-  @Getter
-  private float energy = 0;
-  @Getter
-  private float maxEnergy = 0;
+  private float maxPrayer, energy = 0, maxEnergy = 0, maxRage = 0, barrier = 0, maxLife = 1, maxBarrier = 0, block = 0,
+      maxBlock = 1000, frost, frostGraceTicks, corruption, bleed, threatLevel = 0;
   @Getter @Setter
-  private float maxRage = 0;
-  @Getter @Setter
-  private int maxEarthRunes = 3;
-  @Getter
-  private int earthRunes = 0;
-  @Getter
-  private float barrier = 0;
-  @Getter @Setter
-  private float maxLife = 1;
-  @Getter
-  private float maxBarrier = 0;
-  @Getter
-  private float block = 0;
-  @Getter
-  private float maxBlock = 1000;
-  @Getter
-  private float frost;
-  @Getter @Setter
-  private int frostGraceTicks;
-  @Getter
-  private float corruption;
-  @Getter @Setter
-  private float bleed;
+  private int maxEarthRunes = 3, earthRunes = 0, maxAirJumps = 0, airJumps = 0;
   @Getter
   private boolean useEquipment;
 

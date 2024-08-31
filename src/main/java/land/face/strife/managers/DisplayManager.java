@@ -58,13 +58,13 @@ public class DisplayManager {
     }
   }
 
-  public void create(String id, LivingEntity livingEntity, FaceColor color) {
+  public void create(String id, LivingEntity livingEntity, boolean hideFromTarget, FaceColor color) {
     DisplayContainer container = displaysMap.get(id);
     if (container == null) {
       Bukkit.getLogger().info("[Strife] Failed to create display holo named " + id);
       return;
     }
-    DisplayRunner runner = new DisplayRunner(container, livingEntity, 0, 0);
+    DisplayRunner runner = new DisplayRunner(container, livingEntity, hideFromTarget, 0, 0);
     runner.setColor(color);
   }
 

@@ -208,9 +208,8 @@ public class PotionListener implements Listener {
     effect.setEntityLock(true);
     effect.setAnimationType(AnimationType.RANDOM_ROTATION);
     effect.setRotationLock(false);
-    effect.setForceGrounded(false);
     effect.setStrictDuration(true);
-    effect.setOrigin(buff ? OriginLocation.GROUND : OriginLocation.HEAD);
+    effect.setOrigin(buff ? OriginLocation.GROUND : OriginLocation.ABOVE_HEAD);
     java.awt.Color c = java.awt.Color.decode(color);
     effect.setColor(org.bukkit.Color.fromRGB(c.getRed(), c.getGreen(), c.getBlue()));
 

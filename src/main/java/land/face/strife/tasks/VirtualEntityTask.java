@@ -26,7 +26,6 @@ public class VirtualEntityTask extends BukkitRunnable {
   @Override
   public void run() {
     StrifePlugin.getInstance().getWseManager().tickAllWorldSpaceEffects();
-    StrifePlugin.getInstance().getChaserManager().tickChasers();
   }
 
 }

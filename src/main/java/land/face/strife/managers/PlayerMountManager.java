@@ -127,6 +127,7 @@ public class PlayerMountManager {
 
   private void createMount(Player player, LoadedMount loadedMount) {
     player.setSprinting(false);
+    Bukkit.getScheduler().runTaskLater(plugin, () -> player.setSprinting(false), 1L);
     Cow mountEntity = player.getWorld().spawn(player.getLocation(), Cow.class);
 
     mountEntity.setAdult();

@@ -118,6 +118,7 @@ public abstract class Condition {
     STEALTHED,
     BURNING,
     EARTH_RUNES,
-    ALIVE
+    ALIVE,
+    AIR_JUMPS
   }
 }

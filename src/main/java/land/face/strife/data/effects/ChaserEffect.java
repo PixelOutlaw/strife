@@ -1,14 +1,18 @@
 package land.face.strife.data.effects;
 
-import land.face.strife.StrifePlugin;
+import land.face.strife.data.ChaserEntity;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
+@Getter
+@Setter
 public class ChaserEffect extends Effect {
 
   private LoadedChaser loadedChaser;
@@ -19,12 +23,6 @@ public class ChaserEffect extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    double startSpeed = loadedChaser.getStartSpeed();
-    Vector vector = new Vector(
-        2 * startSpeed * (0.5 - StrifePlugin.RNG.nextFloat()),
-        startSpeed * StrifePlugin.RNG.nextFloat(),
-        2 * startSpeed * (0.5 - StrifePlugin.RNG.nextFloat())
-    );
     Location location;
     if (overrideLocation == null) {
       if (canLocationOverride) {
@@ -36,36 +34,20 @@ public class ChaserEffect extends Effect {
       location = overrideLocation;
       overrideLocation = null;
     }
-
     float speedMult = 1 + caster.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
-    if (chaseCaster) {
-      getPlugin().getChaserManager().createChaser(caster, getId(), vector, location, caster.getEntity(), speedMult);
-    } else {
-      getPlugin().getChaserManager().createChaser(caster, getId(), vector, location, target.getEntity(), speedMult);
-    }
-  }
-
-  public boolean isCanLocationOverride() {
-    return canLocationOverride;
-  }
-
-  public void setCanLocationOverride(boolean canLocationOverride) {
-    this.canLocationOverride = canLocationOverride;
-  }
-
-  public void setChaseCaster(boolean chaseCaster) {
-    this.chaseCaster = chaseCaster;
-  }
-
-  public void setOverrideLocation(Location location) {
-    overrideLocation = location;
-  }
-
-  public void setLoadedChaser(LoadedChaser loadedChaser) {
-    this.loadedChaser = loadedChaser;
-  }
-
-  public void setOriginLocation(OriginLocation originLocation) {
-    this.originLocation = originLocation;
+    float durationMult = loadedChaser.isStrictDuration() ? 1 : 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
+    Vector direction = chaseCaster ?
+        caster.getEntity().getLocation().clone().subtract(target.getEntity().getLocation()).toVector().normalize() :
+        target.getEntity().getLocation().clone().subtract(caster.getEntity().getLocation()).toVector().normalize();
+    ChaserEntity.create(
+        loadedChaser,
+        location,
+        direction,
+        caster,
+        chaseCaster ? caster.getEntity() : target.getEntity(),
+        null,
+        durationMult,
+        speedMult
+    );
   }
 }

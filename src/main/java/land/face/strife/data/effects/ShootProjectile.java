@@ -1,18 +1,11 @@
 package land.face.strife.data.effects;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketContainer;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import com.ticxo.modelengine.api.ModelEngineAPI;
-import com.ticxo.modelengine.api.model.ActiveModel;
-import com.ticxo.modelengine.api.model.ModeledEntity;
-import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
-import com.ticxo.modelengine.api.model.bone.type.HeldItem;
 import java.util.ArrayList;
 import java.util.List;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ProjectileUtil;
@@ -24,10 +17,8 @@ import me.libraryaddict.disguise.disguisetypes.Disguise;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Fireball;
@@ -47,30 +38,17 @@ public class ShootProjectile extends Effect {
   private OriginLocation originType;
   private Color arrowColor;
   private String modelId;
-  private double attackMultiplier;
-  private boolean targeted;
-  private boolean seeking;
-  private int quantity;
-  private int pierceTargets;
-  private float speed;
-  private double spread;
-  private double radialAngle;
-  private double verticalBonus;
-  private boolean ignoreMultishot;
-  private boolean bounce;
-  private boolean ignite;
-  private boolean zeroPitch;
-  private boolean blockHitEffects;
-  private boolean silent;
-  private boolean gravity;
-  private float yield;
-  private int maxDuration;
+
+  private boolean ignoreMultishot, bounce, ignite, zeroPitch, blockHitEffects, silent, gravity, throwItem,
+      throwSpin, targeted, seeking, scaleModelWithMultishot;
+  private int quantity, pierceTargets, maxDuration;
+  private float attackMultiplier, yield, speed, spread, radialAngle, verticalBonus, minVerticalSpeed, modelScale;
+
   private Disguise disguise = null;
   private ItemStack thrownStack = null;
-  @Getter
+
+  private final List<Effect> trailEffects = new ArrayList<>();
   private final List<Effect> hitEffects = new ArrayList<>();
-  private boolean throwItem;
-  private boolean throwSpin;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -94,6 +72,9 @@ public class ShootProjectile extends Effect {
       Vector velocity = ProjectileUtil.getProjectileVelocity(direction, newSpeed, newSpread, verticalBonus, zeroPitch);
       if (radialAngle != 0) {
         applyRadialAngles(velocity, startAngle, projectiles, i);
+      }
+      if (minVerticalSpeed != -1) {
+        velocity.setY(Math.max(minVerticalSpeed, velocity.getY()));
       }
 
       Location location = originLocation.clone();
@@ -137,7 +118,7 @@ public class ShootProjectile extends Effect {
         ((ShulkerBullet) projectile).setTarget(target.getEntity());
       }
       projectile.setBounce(bounce);
-      ProjectileUtil.setAttackMult(projectile, (float) attackMultiplier);
+      ProjectileUtil.setAttackMult(projectile, attackMultiplier);
       ProjectileUtil.setApplyOnHit(projectile, true);
       ProjectileUtil.setAbilityProjectile(projectile);
       if (blockHitEffects) {
@@ -167,79 +148,27 @@ public class ShootProjectile extends Effect {
       }
 
       if (StringUtils.isNotBlank(modelId)) {
-        applyModelStuff(modelId, caster, projectile, location, direction);
+        float scale = modelScale;
+        if (scaleModelWithMultishot) {
+          scale += caster.getStat(StrifeStat.MULTISHOT) / 600;
+          scale += caster.getStat(StrifeStat.EXTRA_PROJECTILES) * 0.05f;
+        }
+        ProjectileUtil.setupModelledProjectile(modelId, caster, projectile, location, direction, null, scale, throwItem);
+      }
+
+      if (!trailEffects.isEmpty()) {
+        final Projectile proj = projectile;
+        Bukkit.getScheduler().runTaskTimer(getPlugin(), (task) -> {
+          if (!proj.isValid() || (proj instanceof AbstractArrow && ((AbstractArrow) proj).isInBlock())) {
+            task.cancel();
+            return;
+          }
+          getPlugin().getEffectManager()
+              .executeEffectList(caster, new TargetResponse(proj.getLocation()), trailEffects);
+        }, 1L, 1L);
       }
     }
     ProjectileUtil.bumpShotId();
-  }
-
-  private void applyModelStuff(String modelId, StrifeMob caster, Projectile proj, Location loc, Vector direction) {
-    ActiveModel model = ModelEngineAPI.createActiveModel(modelId);
-    if (model == null) {
-      Bukkit.getLogger().warning("[Strife] Failed to create model animation! No model!" + getId());
-    } else {
-      ArmorStand stand = loc.getWorld().spawn(loc, ArmorStand.class, e -> {
-        e.setInvisible(true);
-        e.setInvulnerable(true);
-        e.setCollidable(false);
-        e.setAI(false);
-        e.setGravity(false);
-        e.setSilent(true);
-        e.setMarker(true);
-        e.setCanTick(false);
-        e.setVelocity(loc.getDirection());
-        e.getLocation().setDirection(direction);
-        e.getEyeLocation().setDirection(direction);
-        ChunkUtil.setDespawnOnUnload(e);
-      });
-      stand.getEyeLocation().setDirection(loc.getDirection());
-      proj.addPassenger(stand);
-      ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(stand);
-      if (modeledEntity == null) {
-        stand.remove();
-        Bukkit.getLogger().warning("Failed to create modelled entity");
-      } else {
-        PacketContainer packet = new PacketContainer(PacketType.Play.Server.ENTITY_DESTROY);
-        ArrayList<Integer> list = new ArrayList<>();
-        list.add(proj.getEntityId());
-        packet.getIntLists().write(0, list);
-        ProtocolLibrary.getProtocolManager().broadcastServerPacket(packet);
-        modeledEntity.getBase().getBodyRotationController().setYBodyRot(stand.getEyeLocation().getYaw());
-        modeledEntity.getBase().getBodyRotationController().setYHeadRot(stand.getEyeLocation().getYaw());
-        modeledEntity.getBase().getBodyRotationController().setXHeadRot(stand.getEyeLocation().getPitch());
-        Bukkit.getScheduler().runTaskTimer(getPlugin(), (task) -> {
-          if (!proj.isValid()) {
-            stand.remove();
-            task.cancel();
-          } else {
-            stand.getLocation().setDirection(proj.getVelocity());
-            stand.getEyeLocation().setDirection(proj.getVelocity());
-            modeledEntity.getBase().getBodyRotationController().setYBodyRot(stand.getEyeLocation().getYaw());
-            modeledEntity.getBase().getBodyRotationController().setYHeadRot(stand.getEyeLocation().getYaw());
-            modeledEntity.getBase().getBodyRotationController().setXHeadRot(stand.getEyeLocation().getPitch());
-          }
-        }, 0L, 1L);
-        modeledEntity.addModel(model, false);
-        modeledEntity.setModelRotationLocked(false);
-        modeledEntity.setBaseEntityVisible(false);
-
-        if (throwItem) {
-          ItemStack stack = caster.getEntity().getEquipment().getItemInMainHand();
-          if (stack.getType() == Material.AIR) {
-            stack = caster.getEntity().getEquipment().getItemInOffHand();
-            if (stack.getType() == Material.AIR) {
-              stack = new ItemStack(Material.IRON_SWORD);
-            }
-          }
-          var provider = new HeldItem.StaticItemStackSupplier(stack);
-          model.getBones().forEach((s, modelBone) ->
-              modelBone.getBoneBehavior(BoneBehaviorTypes.ITEM).ifPresent(heldItem ->
-                  heldItem.setItemProvider(provider)
-              )
-          );
-        }
-      }
-    }
   }
 
   private Vector getCastDirection(LivingEntity caster, LivingEntity target) {

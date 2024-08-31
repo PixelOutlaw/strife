@@ -8,9 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.SkillRank;
 import land.face.strife.events.AirJumpEvent;
 import land.face.strife.managers.GuiManager;
@@ -107,7 +105,12 @@ public class DoubleJumpListener implements Listener {
 
   private void resetJumps(Player player) {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
-    JumpUtil.setJumps(mob, (int) mob.getStat(StrifeStat.AIR_JUMPS));
+    int before = mob.getAirJumps();
+    mob.setMaxAirJumps((int) mob.getStat(StrifeStat.AIR_JUMPS));
+    mob.setAirJumps(mob.getMaxAirJumps());
+    if (before != mob.getAirJumps()) {
+      plugin.getGuiManager().updateAirJumpDisplay(mob);
+    }
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -119,17 +122,25 @@ public class DoubleJumpListener implements Listener {
     if (MoveUtil.timeOffGround(event.getPlayer()) < 200) {
       return;
     }
-    int jumps = JumpUtil.getJumps(event.getPlayer());
-    if ((jumps < 1)) {
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    int jumps = mob.getAirJumps();
+    if (jumps < 1) {
       return;
     }
-    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     if (mob.getEnergy() < 20) {
       plugin.getGuiManager().postNotice(event.getPlayer(), GuiManager.NOTICE_ENERGY, 10);
       event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
       return;
     }
+
     doAirJump(mob, event.getPlayer(), jumps);
+
+    mob.setAirJumps(mob.getAirJumps() - 1);
+
+    AirJumpEvent airJumpEvent = new AirJumpEvent(mob);
+    Bukkit.getPluginManager().callEvent(airJumpEvent);
+
+    plugin.getGuiManager().updateAirJumpDisplay(mob);
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -213,9 +224,6 @@ public class DoubleJumpListener implements Listener {
       StatUtil.changeEnergy(mob, -20);
     }
 
-    AirJumpEvent airJumpEvent = new AirJumpEvent(mob);
-    Bukkit.getPluginManager().callEvent(airJumpEvent);
-
     player.setFallDistance(0);
 
     Vector velocity = player.getVelocity().clone();
@@ -237,41 +245,10 @@ public class DoubleJumpListener implements Listener {
 
     velocity.setY(0);
     player.setVelocity(velocity.add(bonusVelocity));
-
-    jumps--;
-    JumpUtil.setJumps(mob, jumps);
+    MoveUtil.setVelocity(player);
 
     flingParticle(player);
     player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
-  }
-
-  private void doWaterSkip(StrifeMob mob, Player player) {
-    if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
-      StatUtil.changeEnergy(mob, -8);
-    }
-
-    AirJumpEvent airJumpEvent = new AirJumpEvent(mob);
-    Bukkit.getPluginManager().callEvent(airJumpEvent);
-
-    player.setFallDistance(0);
-
-    Vector velocity = player.getVelocity().clone();
-
-    Vector bonusVelocity = player.getLocation().getDirection();
-    bonusVelocity.setY(Math.max(1, bonusVelocity.getY()));
-    bonusVelocity.normalize().multiply(0.65);
-
-    double bonusY = Math.max(bonusVelocity.getY(), velocity.getY());
-    bonusVelocity.setY(bonusY);
-    bonusVelocity.multiply((120 - mob.getStat(StrifeStat.WEIGHT)) / 100);
-
-    velocity.setY(0);
-    player.setVelocity(velocity.add(bonusVelocity));
-    player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
-  }
-
-  public static String insert(String str, String insert, int position) {
-    return str.substring(0, position) + insert + str.substring(position);
   }
 
   private void flingParticle(Player player) {

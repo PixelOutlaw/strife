@@ -14,6 +14,7 @@ import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -350,6 +351,30 @@ public class GuiManager {
       return;
     }
     gui.update(oxygenBar.get(oxygenState));
+  }
+
+  public void updateAirJumpDisplay(StrifeMob mob) {
+    if (mob.getMaxAirJumps() == 0) {
+      updateComponent((Player) mob.getEntity(),
+          new GUIComponent("jump-wings", GuiManager.EMPTY, 0, 0, Alignment.LEFT));
+    }
+    int amount = mob.getAirJumps();
+    amount = Math.min(5, amount);
+    int maxAmount = (int) Math.min(5, mob.getStat(StrifeStat.AIR_JUMPS));
+    int empty = maxAmount - amount;
+    int totalElements = amount + empty;
+    StringBuilder str = new StringBuilder();
+    while (amount > 0) {
+      str.append("䶰"); // Wing yes
+      amount--;
+    }
+    while (empty > 0) {
+      str.append("䎘"); // wing no
+      empty--;
+    }
+    TextComponent textComponent = GuiManager.noShadow(new TextComponent(str.toString()));
+    updateComponent((Player) mob.getEntity(),
+        new GUIComponent("jump-wings", textComponent, totalElements * 13, 86, Alignment.CENTER));
   }
 
   public void buildLifeSegments() {

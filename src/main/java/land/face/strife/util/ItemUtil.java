@@ -58,11 +58,18 @@ public class ItemUtil {
         name.endsWith("HEAD");
   }
 
+  public static boolean isAccessory(Material material) {
+    return switch (material) {
+      case DIAMOND_HORSE_ARMOR, IRON_HORSE_ARMOR, GOLDEN_HORSE_ARMOR -> true;
+      default -> false;
+    };
+  }
+
   public static boolean isMeleeWeapon(Material material) {
     return switch (material) {
       case WOODEN_HOE, WOODEN_SHOVEL, STONE_AXE, STONE_SWORD, STONE_HOE, STONE_SHOVEL, IRON_AXE,
-          IRON_SWORD, IRON_HOE, IRON_SHOVEL, GOLDEN_AXE, GOLDEN_SWORD, GOLDEN_HOE, GOLDEN_SHOVEL, DIAMOND_AXE,
-          DIAMOND_SWORD, DIAMOND_HOE, DIAMOND_SHOVEL -> true;
+           IRON_SWORD, IRON_HOE, IRON_SHOVEL, GOLDEN_AXE, GOLDEN_SWORD, GOLDEN_HOE, GOLDEN_SHOVEL, DIAMOND_AXE,
+           DIAMOND_SWORD, DIAMOND_HOE, DIAMOND_SHOVEL -> true;
       default -> false;
     };
   }
@@ -104,9 +111,13 @@ public class ItemUtil {
   }
 
   public static boolean isDualWield(EntityEquipment equipment) {
-    return (isMeleeWeapon(equipment.getItemInMainHand().getType()) && isMeleeWeapon(
-        equipment.getItemInOffHand().getType())) || (isWand(equipment.getItemInMainHand()) && isWand(
-        equipment.getItemInOffHand()));
+    if (isMeleeWeapon(equipment.getItemInMainHand().getType())) {
+      return isMeleeWeapon(equipment.getItemInOffHand().getType());
+    }
+    if (isWand(equipment.getItemInMainHand())) {
+      return isWand(equipment.getItemInOffHand());
+    }
+    return false;
   }
 
   public static boolean isValidOffhand(ItemStack mainItem, ItemStack offItem) {
@@ -116,6 +127,9 @@ public class ItemUtil {
     if (mainItem.getType() == Material.FISHING_ROD && offItem.getType() == Material.WHEAT_SEEDS) {
       return true;
     }
+    if (isAccessory(offItem.getType())) {
+      return false;
+    }
     if (mainItem.getType() == Material.SHIELD) {
       return offItem.getType() == Material.SHIELD;
     }
@@ -124,20 +138,20 @@ public class ItemUtil {
         mainItem.getType() == Material.ARROW) {
       return false;
     }
-    if (isTool(mainItem)) {
-      return false;
-    }
     if (isMeleeWeapon(mainItem.getType())) {
       if (isMeleeWeapon(offItem.getType())) {
         return true;
       }
-      return isValidMageOffhand(offItem);
+      return (offItem.getType() == Material.SHIELD || offItem.getType() == Material.BOOK);
+    }
+    if (isTool(mainItem)) {
+      return false;
     }
     if (isWand(mainItem) && isWand(offItem)) {
       return true;
     }
     if (isWandOrStaff(mainItem)) {
-      return isValidMageOffhand(offItem);
+      return (offItem.getType() == Material.SHIELD || offItem.getType() == Material.BOOK);
     }
     if (mainItem.getType() == Material.BOW) {
       if (isPistol(mainItem)) {

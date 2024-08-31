@@ -30,10 +30,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.DisplayFrame;
 import land.face.strife.data.GodPrayerDetails;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
+import land.face.strife.data.effects.DisplaySpawn;
+import land.face.strife.data.effects.Effect;
 import land.face.strife.events.EventConditionEvent;
 import land.face.strife.events.PrayerTickEvent;
 import land.face.strife.menus.prayer.PrayerMenu;
@@ -42,6 +45,7 @@ import lombok.Getter;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.sound.Sound.Emitter;
 import net.kyori.adventure.sound.Sound.Source;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -64,6 +68,7 @@ public class PrayerManager {
   private final Map<Prayer, Float> prayerCostPerTick = new HashMap<>();
   @Getter private final Map<Prayer, Integer> prayerLevelReq = new HashMap<>();
   @Getter private final Map<Prayer, Integer> prayerModelData = new HashMap<>();
+  @Getter private final Map<Prayer, String> displayVfx = new HashMap<>();
   @Getter private final Map<SelectedGod, GodPrayerDetails> godPassiveOne = new HashMap<>();
   @Getter private final Map<SelectedGod, GodPrayerDetails> godPassiveTwo = new HashMap<>();
   @Getter private final Map<SelectedGod, GodPrayerDetails> godPassiveThree = new HashMap<>();
@@ -102,6 +107,8 @@ public class PrayerManager {
             plugin.getPrayerYAML().getStringList("prayer." + p.toString().toLowerCase() + ".lore")));
         prayerActivationCost.put(p, (float)
             plugin.getPrayerYAML().getDouble("prayer." + p.toString().toLowerCase() + ".activation-cost", 5));
+        displayVfx.put(p,
+            plugin.getPrayerYAML().getString("prayer." + p.toString().toLowerCase() + ".vfx", "VFX_PRAYER_DEFAULT"));
         // Fuck paper, fuck kyori
         //noinspection ALL
         String soundFx = plugin.getPrayerYAML()
@@ -186,9 +193,13 @@ public class PrayerManager {
     }
     mob.setPrayer(mob.getPrayer() - cost);
     mob.setReCache(true);
-    Audience audience = Audience.audience(player);
+    Audience audience = Audience.audience(player.getWorld().getNearbyPlayers(player.getLocation(), 20));
     assert sound != null;
     audience.playSound(sound);
+    Effect e = plugin.getEffectManager().getEffect(displayVfx.get(prayer));
+    if (e instanceof DisplaySpawn ds) {
+      ds.applyAtLocation(mob, ds.getLoc(player));
+    }
     activePrayers.putIfAbsent(player, new HashSet<>());
     activePrayers.get(player).add(prayer);
     switch (prayer) {

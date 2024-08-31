@@ -121,7 +121,6 @@ import land.face.strife.managers.BoostManager;
 import land.face.strife.managers.BossBarManager;
 import land.face.strife.managers.BuffManager;
 import land.face.strife.managers.ChampionManager;
-import land.face.strife.managers.ChaserManager;
 import land.face.strife.managers.CorruptionManager;
 import land.face.strife.managers.CounterManager;
 import land.face.strife.managers.DamageManager;
@@ -264,8 +263,6 @@ public class StrifePlugin extends FacePlugin {
   private PlayerMountManager playerMountManager;
   @Getter
   private DamageManager damageManager;
-  @Getter
-  private ChaserManager chaserManager;
   @Getter
   private EntityEquipmentManager equipmentManager;
   @Getter
@@ -417,7 +414,6 @@ public class StrifePlugin extends FacePlugin {
     bossBarManager = new BossBarManager(this);
     playerMountManager = new PlayerMountManager(this);
     damageManager = new DamageManager(this);
-    chaserManager = new ChaserManager(this);
     experienceManager = new ExperienceManager(this);
     skillExperienceManager = new SkillExperienceManager(this);
     strifeMobManager = new StrifeMobManager(this);
@@ -606,7 +602,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new DoubleJumpListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FishingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
-    Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager), this);
+    Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager, guiManager), this);
     Bukkit.getPluginManager().registerEvents(new InventoryListener(this), this);
     citizenModelListener = new CitizenModelListener(this);
     Bukkit.getPluginManager().registerEvents(citizenModelListener, this);
@@ -780,9 +776,6 @@ public class StrifePlugin extends FacePlugin {
     LearninBooksPlugin.instance.getKnowledgeManager().purgeKnowledge("strife");
 
     Spawner.SPAWNER_OFFSET = 0;
-    for (Entity e : CreateModelAnimation.CURRENT_MODELS) {
-      e.remove();
-    }
 
     for (Player player : Bukkit.getOnlinePlayers()) {
       abilityIconManager.removeIconItem(player, AbilitySlot.SLOT_A);

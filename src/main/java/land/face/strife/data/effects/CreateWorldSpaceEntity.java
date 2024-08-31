@@ -10,7 +10,6 @@ import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.TargetingUtil;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 
@@ -19,21 +18,17 @@ import org.bukkit.Location;
 public class CreateWorldSpaceEntity extends LocationEffect {
 
   private final Map<Integer, List<Effect>> cachedEffectSchedule = new HashMap<>();
+
   private Map<Integer, List<String>> effectSchedule;
+  private List<Effect> expiryEffects = new ArrayList<>();
+  private List<Effect> contactEffects = new ArrayList<>();
+
   private OriginLocation originLocation;
-  private float gravity;
-  private float friction;
-  private int maxTicks;
-  private double velocity;
-  private int lifespan;
-  private float maxDisplacement;
-  private boolean strictDuration;
-  private boolean zeroVerticalAxis;
+  private int lifespan, maxTicks, maxFallTicks;
+  private float gravity, friction, velocity, maxDisplacement, modelSize, verticalOffset;
+  private boolean strictDuration, zeroVerticalAxis, destroyOnContact, restoreSpeedOnGroundContact, destroyOnSharpAngle;
   private String modelEffect;
   private Color color;
-  private double modelSize;
-  private int maxFallTicks;
-  private boolean destroyOnContact;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -47,9 +42,7 @@ public class CreateWorldSpaceEntity extends LocationEffect {
 
   public void apply(StrifeMob caster, Location location) {
     cacheEffects();
-    getPlugin().getWseManager().createAtTarget(caster, location, lifespan, gravity, friction,
-        maxTicks, velocity, maxDisplacement, cachedEffectSchedule, strictDuration,
-        zeroVerticalAxis, modelEffect, color, modelSize, maxFallTicks, destroyOnContact);
+    getPlugin().getWseManager().createAtTarget(caster, location, this);
   }
 
   private void cacheEffects() {

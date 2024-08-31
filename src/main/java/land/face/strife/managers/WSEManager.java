@@ -3,57 +3,54 @@ package land.face.strife.managers;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.WorldSpaceEffect;
-import land.face.strife.data.effects.Effect;
+import land.face.strife.data.effects.CreateWorldSpaceEntity;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
-import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
 public class WSEManager {
 
-  private final Set<WorldSpaceEffect> worldSpaceEffects;
+  private final Set<WorldSpaceEffect> worldSpaceEffects = new HashSet<>();
 
-  public WSEManager() {
-    this.worldSpaceEffects = new HashSet<>();
-  }
-
-  public void createAtTarget(StrifeMob caster, Location location, int lifespan, float gravity, float friction,
-      int maxTicks, double speed, float maxDisplacement, Map<Integer, List<Effect>> effects, boolean strictDuration,
-      boolean zeroVertical, String modelEffect, Color modelColor, double modelSize, int maxFallTicks,
-      boolean destroyOnContact) {
-    LogUtil.printDebug(" Creating world space entity with effects " + effects);
-    double newLifeSpan = lifespan;
-    if (!strictDuration) {
+  public void createAtTarget(StrifeMob caster, Location location, CreateWorldSpaceEntity cse) {
+    LogUtil.printDebug(" Creating world space entity with effects " + cse.getCachedEffectSchedule());
+    double newLifeSpan = cse.getLifespan();
+    if (!cse.isStrictDuration()) {
       newLifeSpan *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
     Vector direction = caster.getEntity().getEyeLocation().getDirection().clone();
-    if (zeroVertical) {
+    if (cse.isZeroVerticalAxis()) {
       direction.setY(0.00005);
       direction.normalize();
     }
-    direction.multiply(speed);
+    direction.multiply(cse.getVelocity());
 
-    WorldSpaceEffect entity = new WorldSpaceEffect(
-        caster,
-        effects,
-        location,
-        direction,
-        gravity,
-        friction,
-        maxDisplacement,
-        maxTicks,
-        (int) newLifeSpan,
-        modelEffect,
-        modelColor,
-        modelSize,
-        maxFallTicks,
-        destroyOnContact
-    );
+    var entity = WorldSpaceEffect.builder()
+        .caster(caster)
+        .effectSchedule(cse.getCachedEffectSchedule())
+        .contactEffects(cse.getContactEffects())
+        .expiryEffects(cse.getExpiryEffects())
+        .nextLocation(location)
+        .velocity(direction)
+        .originalSpeed((float) direction.length())
+        .gravity(cse.getGravity())
+        .friction(cse.getFriction())
+        .verticalOffset(cse.getVerticalOffset())
+        .maxDisplacement(cse.getMaxDisplacement())
+        .maxTicks(cse.getMaxTicks())
+        .lifespan((int) newLifeSpan)
+        .maxFallTicks(cse.getMaxFallTicks())
+        .destroyOnContact(cse.isDestroyOnContact())
+        .restoreSpeedOnGroundContact(cse.isRestoreSpeedOnGroundContact())
+        .destroyOnSharpAngle(cse.isDestroyOnSharpAngle())
+        .build();
+
+    entity.setupModel(cse.getModelEffect(), cse.getColor(), cse.getModelSize());
+
     addWorldSpaceEffectEntity(entity);
   }
 

@@ -1,17 +1,8 @@
 package land.face.strife.util;
 
-import com.sentropic.guiapi.gui.Alignment;
-import com.sentropic.guiapi.gui.GUIComponent;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import java.util.WeakHashMap;
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.HoverData;
-import land.face.strife.data.StrifeMob;
-import land.face.strife.managers.GuiManager;
-import land.face.strife.stats.StrifeStat;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -19,37 +10,7 @@ import org.bukkit.potion.PotionEffectType;
 
 public class JumpUtil {
 
-  private final static Map<UUID, Integer> JUMP_MAP = new HashMap<>();
   private final static Map<Player, HoverData> HOVER_MAP = new WeakHashMap<>();
-
-  public static void setJumps(StrifeMob mob, int amount) {
-    if (amount == 0) {
-      JUMP_MAP.remove(mob.getEntity().getUniqueId());
-      StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-          new GUIComponent("jump-wings", GuiManager.EMPTY, 0, 0, Alignment.LEFT));
-    }
-    JUMP_MAP.put(mob.getEntity().getUniqueId(), amount);
-    amount = Math.min(5, amount);
-    int maxAmount = (int) Math.min(5, mob.getStat(StrifeStat.AIR_JUMPS));
-    int empty = maxAmount - amount;
-    int totalElements = amount + empty;
-    StringBuilder str = new StringBuilder();
-    while (amount > 0) {
-      str.append("䶰"); // Wing yes
-      amount--;
-    }
-    while (empty > 0) {
-      str.append("䎘"); // wing no
-      empty--;
-    }
-    TextComponent textComponent = GuiManager.noShadow(new TextComponent(str.toString()));
-    StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("jump-wings", textComponent, totalElements * 13, 86, Alignment.CENTER));
-  }
-
-  public static int getJumps(Player player) {
-    return JUMP_MAP.getOrDefault(player.getUniqueId(), 0);
-  }
 
   public static double determineHoverPower(Player player) {
     if (!player.isGliding()) {

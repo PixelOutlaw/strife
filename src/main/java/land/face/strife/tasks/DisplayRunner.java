@@ -34,6 +34,8 @@ public class DisplayRunner {
   private int frame = 0;
   private int loop = 1;
 
+  private boolean hideFromTarget = false;
+
   @Setter
   private FaceColor color = null;
   private Hologram display;
@@ -45,11 +47,13 @@ public class DisplayRunner {
     setup();
   }
 
-  public DisplayRunner(DisplayContainer displayContainer, LivingEntity entity, float offset, float verticalOffset) {
+  public DisplayRunner(DisplayContainer displayContainer, LivingEntity entity,
+      boolean hideFromTarget, float offset, float verticalOffset) {
     this.displayContainer = displayContainer;
     this.offset = offset;
     this.verticalOffset = verticalOffset;
     this.livingEntity = entity;
+    this.hideFromTarget = hideFromTarget;
     setup();
   }
 
@@ -76,8 +80,14 @@ public class DisplayRunner {
 
     Hologram holo = FancyHologramsPlugin.get().getHologramManager().create(data);
     holo.createHologram();
-    Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () ->
-        holo.showHologram(Bukkit.getOnlinePlayers()));
+    Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () -> {
+          var players = Bukkit.getOnlinePlayers();
+          if (hideFromTarget && livingEntity != null) {
+            players.removeIf(p -> p.getUniqueId().equals(livingEntity.getUniqueId()));
+          }
+          holo.showHologram(players);
+        }
+    );
     display = holo;
     task = Bukkit.getScheduler().runTaskTimer(StrifePlugin.getInstance(), this::tick, 0L, 1L);
   }

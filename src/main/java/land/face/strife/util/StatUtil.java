@@ -211,6 +211,7 @@ public class StatUtil {
         if (mob.checkSkill(LifeSkillType.AGILITY, SkillRank.EXPERT)) {
           amount++;
         }
+        mob.setMaxAirJumps((int) amount);
         return amount;
       }
     }
@@ -244,8 +245,7 @@ public class StatUtil {
 
     float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
 
-    if (ae.getEntity().getEquipment().getItemInMainHand().getType() != Material.WOODEN_SWORD &&
-        ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {
+    if (ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {
       attackBonus += ae.getRage() * 0.5f;
     } else {
       attackBonus += ae.getRage() * 0.2f;

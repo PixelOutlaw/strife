@@ -84,7 +84,7 @@ public class HitDetectionUtil {
 
   public static LivingEntity getFirstEntityInLine(LivingEntity caster, double range, boolean friendly) {
     RayTraceResult result = caster.getWorld().rayTrace(caster.getEyeLocation(), caster.getEyeLocation().getDirection(),
-        range, FluidCollisionMode.NEVER, true, 0.35, entity -> isValidRaycastTarget(caster, entity)
+        range, FluidCollisionMode.NEVER, true, 0.55f, entity -> isValidRaycastTarget(caster, entity)
             && friendly == isFriendly(caster, (LivingEntity) entity));
     if (result == null || result.getHitEntity() == null) {
       return null;

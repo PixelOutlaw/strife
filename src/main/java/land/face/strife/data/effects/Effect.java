@@ -17,6 +17,7 @@ import lombok.Setter;
 @Getter @Setter
 public abstract class Effect {
 
+  @Getter
   private static StrifePlugin plugin;
 
   private String id;
@@ -26,34 +27,11 @@ public abstract class Effect {
   private final Map<StrifeStat, Float> statMults = new HashMap<>();
   private final Map<LifeSkillType, Float> skillMults = new HashMap<>();
   private final Map<StrifeAttribute, Float> attributeMults = new HashMap<>();
+  @Getter
   private final Set<Condition> conditions = new HashSet<>();
 
   public void apply(StrifeMob caster, StrifeMob target) {
 
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public boolean isForceTargetCaster() {
-    return forceTargetCaster;
-  }
-
-  public void setForceTargetCaster(boolean forceTargetCaster) {
-    this.forceTargetCaster = forceTargetCaster;
-  }
-
-  public boolean isFriendly() {
-    return friendly;
-  }
-
-  public void setFriendly(boolean friendly) {
-    this.friendly = friendly;
   }
 
   public void setStatMults(Map<StrifeStat, Float> statMults) {
@@ -90,14 +68,6 @@ public abstract class Effect {
 
   public void addCondition(Condition condition) {
     conditions.add(condition);
-  }
-
-  public Set<Condition> getConditions() {
-    return conditions;
-  }
-
-  public static StrifePlugin getPlugin() {
-    return plugin;
   }
 
   public static void setPlugin(StrifePlugin plugin) {
@@ -179,6 +149,7 @@ public abstract class Effect {
     STINGER,
     REMOVE_ENTITY,
     MINION_CAST,
-    REMOVE_BUFF
+    REMOVE_BUFF,
+    CHANGE_JUMPS
   }
 }

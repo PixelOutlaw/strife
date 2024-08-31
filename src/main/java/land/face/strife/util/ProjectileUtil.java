@@ -1,5 +1,13 @@
 package land.face.strife.util;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
+import com.ticxo.modelengine.api.ModelEngineAPI;
+import com.ticxo.modelengine.api.animation.property.IAnimationProperty;
+import com.ticxo.modelengine.api.entity.Dummy;
+import com.ticxo.modelengine.api.model.ActiveModel;
+import com.ticxo.modelengine.api.model.ModeledEntity;
+import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
+import com.ticxo.modelengine.api.model.bone.type.HeldItem;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import java.util.Map;
@@ -14,10 +22,13 @@ import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
 import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
 import me.libraryaddict.disguise.disguisetypes.watchers.SnowballWatcher;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -162,7 +173,7 @@ public class ProjectileUtil {
   public static void disableCollision(Projectile projectile, LivingEntity entity) {
     entity.getCollidableExemptions().add(projectile.getUniqueId());
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
-        entity.getCollidableExemptions().remove(projectile.getUniqueId()),400L);
+        entity.getCollidableExemptions().remove(projectile.getUniqueId()), 400L);
   }
 
   public static int getTotalProjectiles(double initialProjectiles, float multiShot, float extraProjectiles) {
@@ -184,14 +195,16 @@ public class ProjectileUtil {
     }
     // x / 117.647 = 0.85
     float projectileSpeed = 1.02f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100f;
-    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * attackMult, mob.getStat(StrifeStat.EXTRA_PROJECTILES));
+    int projectiles = ProjectileUtil.getTotalProjectiles(1, mob.getStat(StrifeStat.MULTISHOT) * attackMult,
+        mob.getStat(StrifeStat.EXTRA_PROJECTILES));
     float pierceChance = mob.getStat(StrifeStat.PIERCE_CHANCE) / 100;
 
     ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, pierceChance, 0.03);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
-      ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, pierceChance, randomWandOffset(projectiles));
+      ProjectileUtil.createMagicMissile(mob.getEntity(), attackMult, projectileSpeed, pierceChance,
+          randomWandOffset(projectiles));
     }
 
     mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_BLAZE_HURT, 1f, 2f);
@@ -335,7 +348,8 @@ public class ProjectileUtil {
 
   public static boolean isProjectile(EntityType entityType) {
     return switch (entityType) {
-      case ARROW, THROWN_EXP_BOTTLE, SPLASH_POTION, WITHER_SKULL, SHULKER_BULLET, PRIMED_TNT, SMALL_FIREBALL, LLAMA_SPIT, SPECTRAL_ARROW, TRIDENT, FIREBALL, DRAGON_FIREBALL, EGG, SNOWBALL -> true;
+      case ARROW, THROWN_EXP_BOTTLE, SPLASH_POTION, WITHER_SKULL, SHULKER_BULLET, PRIMED_TNT, SMALL_FIREBALL,
+           LLAMA_SPIT, SPECTRAL_ARROW, TRIDENT, FIREBALL, DRAGON_FIREBALL, EGG, SNOWBALL -> true;
       default -> false;
     };
   }
@@ -362,5 +376,78 @@ public class ProjectileUtil {
     ItemStack stack = new ItemStack(Material.POLISHED_BLACKSTONE_BUTTON);
     ItemStackExtensionsKt.setCustomModelData(stack, 100);
     return stack;
+  }
+
+  public static void setupModelledProjectile(String modelId, StrifeMob caster, Projectile proj,
+      Location loc, Vector direction, Color color, double size, boolean thrownItem) {
+    ActiveModel model = ModelEngineAPI.createActiveModel(modelId);
+    if (model == null) {
+      Bukkit.getLogger().warning("[Strife] Failed to create model animation! No model!" + modelId);
+    } else {
+      loc = loc.clone();
+      loc.setDirection(direction);
+      Dummy<?> dummy = new Dummy<>();
+      dummy.setLocation(loc);
+      ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(dummy);
+      if (modeledEntity == null) {
+        dummy.setRemoved(true);
+        Bukkit.getLogger().warning("Failed to create modelled entity");
+      } else {
+        if (color != null) {
+          model.setDefaultTint(color);
+        }
+        model.setScale(size);
+        modeledEntity.addModel(model, true);
+        //modeledEntity.detectPlayers();
+        dummy.getBodyRotationController().setRotationDuration(0);
+        dummy.getBodyRotationController().setRotationDelay(0);
+        dummy.setYBodyRot(loc.getYaw());
+        dummy.setXHeadRot(loc.getPitch());
+        dummy.setYHeadRot(loc.getYaw());
+        dummy.setWalking(true);
+
+        Bukkit.getOnlinePlayers().forEach(p -> p.hideEntity(StrifePlugin.getInstance(), proj));
+
+        boolean arrowBase = proj instanceof AbstractArrow;
+        Bukkit.getScheduler().runTaskTimer(StrifePlugin.getInstance(), (task) -> {
+          if (!proj.isValid()) {
+            dummy.setRemoved(true);
+            task.cancel();
+            return;
+          }
+          if (arrowBase && ((AbstractArrow) proj).isInBlock()) {
+            if (dummy.isWalking()) {
+              dummy.setWalking(false);
+              dummy.setLocation(proj.getLocation());
+            }
+            return;
+          }
+          dummy.setWalking(true);
+          Location projLoc = proj.getLocation().clone();
+          projLoc.setDirection(proj.getVelocity());
+          projLoc.add(proj.getVelocity());
+          dummy.setLocation(projLoc);
+          dummy.setYBodyRot(projLoc.getYaw());
+          dummy.setXHeadRot(projLoc.getPitch());
+          dummy.setYHeadRot(projLoc.getYaw());
+        }, 0L, 1L);
+      }
+
+      if (thrownItem) {
+        ItemStack stack = caster.getEntity().getEquipment().getItemInMainHand();
+        if (stack.getType() == Material.AIR) {
+          stack = caster.getEntity().getEquipment().getItemInOffHand();
+          if (stack.getType() == Material.AIR) {
+            stack = new ItemStack(Material.IRON_SWORD);
+          }
+        }
+        var provider = new HeldItem.StaticItemStackSupplier(stack);
+        model.getBones().forEach((s, modelBone) ->
+            modelBone.getBoneBehavior(BoneBehaviorTypes.ITEM).ifPresent(heldItem ->
+                heldItem.setItemProvider(provider)
+            )
+        );
+      }
+    }
   }
 }

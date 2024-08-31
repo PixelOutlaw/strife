@@ -96,6 +96,7 @@ public class MountCommand extends BaseCommand {
       PaletteUtil.sendMessage(sender, invalidLocation);
       return;
     }
+    sender.setSprinting(false);
     plugin.getPlayerMountManager().spawnMount(sender);
   }
 

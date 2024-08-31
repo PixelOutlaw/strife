@@ -17,8 +17,9 @@ public class DisplaySpawn extends LocationEffect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
+    boolean hideFromTarget = !this.isFriendly();
     if (entityLock) {
-      getPlugin().getDisplayManager().create(displayId, target.getEntity(), faceColor);
+      getPlugin().getDisplayManager().create(displayId, target.getEntity(), hideFromTarget, faceColor);
     } else {
       applyAtLocation(caster, getLoc(target.getEntity()));
     }

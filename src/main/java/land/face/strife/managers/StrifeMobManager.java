@@ -84,6 +84,7 @@ public class StrifeMobManager {
       StatUtil.getStat(mob, StrifeStat.HEALTH);
       StatUtil.getStat(mob, StrifeStat.ENERGY);
       StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
+      StatUtil.getStat(mob, StrifeStat.AIR_JUMPS);
       mob.restoreBarrier(200000);
       entity.lockFreezeTicks(true);
       trackedEntities.put(entity, mob);
@@ -230,11 +231,16 @@ public class StrifeMobManager {
     dataBundle.setAbilities(new HashSet<>());
 
     if (invyData == null) {
-
       return dataBundle;
     }
 
     ItemStack stack = getItemStack(slot, equipment, invyData);
+
+    if ("HAND".equals(slot) && (ItemUtil.isArmor(stack.getType()) || ItemUtil.isAccessory(stack.getType()))) {
+      return dataBundle;
+    } else if ("OFF_HAND".equals(slot) && !ItemUtil.isValidOffhand(equipment.getItemInMainHand(), stack)) {
+      return dataBundle;
+    }
 
     switch (slot) {
       case "SOUL_GEM_1", "SOUL_GEM_2", "SOUL_GEM_3", "SOUL_GEM_4" -> {
@@ -268,7 +274,8 @@ public class StrifeMobManager {
     // TODO: remove old method
     switch (slot) {
       case "HAND" -> {
-        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType())) {
+        if (ItemUtil.isArmor(equipment.getItemInMainHand().getType()) ||
+            ItemUtil.isAccessory(equipment.getItemInMainHand().getType())) {
           return dataBundle;
         }
         dataBundle.setStats(plugin.getStatUpdateManager().getItemStats(equipment.getItemInMainHand()));
@@ -277,9 +284,6 @@ public class StrifeMobManager {
         return dataBundle;
       }
       case "OFF_HAND" -> {
-        if (invyData == null) {
-          return dataBundle;
-        }
         ItemStack offhandItem = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
         if (offhandItem == null) {
           return dataBundle;

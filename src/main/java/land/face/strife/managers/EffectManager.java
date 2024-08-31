@@ -131,10 +131,49 @@ public class EffectManager {
       LogUtil.printDebug("- Executing effect " + effect.getId());
       execute(effect, caster, response);
     }
+    boolean bumpShotId = effectList.stream().anyMatch(e -> {
+      if (e instanceof ChaserEffect) {
+        return true;
+      }
+      if (e instanceof AreaEffect a) {
+        if (a.getEffects().stream().anyMatch(e2 -> e2 instanceof ChaserEffect)) {
+          return true;
+        }
+      }
+      return false;
+    });
+    if (bumpShotId) {
+      ProjectileUtil.bumpShotId();
+    }
     LogUtil.printDebug("- Completed effect task.");
   }
 
   public void execute(Effect effect, StrifeMob caster, TargetResponse response) {
+    if (!response.getEntities().isEmpty()) {
+      for (LivingEntity le : response.getEntities()) {
+        StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(le);
+        if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
+          continue;
+        }
+        if (effect instanceof LocationEffect locEffect) {
+          if (response.getLocation() != null) {
+            locEffect.applyAtLocation(caster, response.getLocation());
+          } else {
+            locEffect.applyAtLocation(caster,
+                TargetingUtil.getOriginLocation(targetMob.getEntity(), locEffect.getOrigin()));
+          }
+          continue;
+        }
+        if (!response.isForce()) {
+          if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
+            continue;
+          }
+        }
+        LogUtil.printDebug("-- Applying '" + effect.getId() + "' to " + getName(targetMob.getEntity()));
+        effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
+      }
+      return;
+    }
     if (response.getLocation() != null) {
       if (!(effect instanceof LocationEffect) && !effect.isForceTargetCaster()) {
         return;
@@ -151,37 +190,20 @@ public class EffectManager {
       if (locEffect instanceof AreaEffect) {
         for (Effect e : ((AreaEffect) effect).getEffects()) {
           if (e instanceof Push) {
-            ((Push) e).setTempOrigin(response.getLocation());
+            Push.TEMP_ORIGIN = response.getLocation();
           } else if (e instanceof Damage) {
             Set<Effect> allEffects = new HashSet<>(((Damage) e).getHitEffects());
             allEffects.addAll(((Damage) e).getKillEffects());
             for (Effect ef : allEffects) {
               if (ef instanceof Push) {
-                ((Push) ef).setTempOrigin(response.getLocation());
+                Push.TEMP_ORIGIN = response.getLocation();
+                break;
               }
             }
           }
         }
       }
       locEffect.applyAtLocation(caster, response.getLocation());
-      return;
-    }
-    for (LivingEntity le : response.getEntities()) {
-      StrifeMob targetMob = plugin.getStrifeMobManager().getStatMob(le);
-      if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
-        continue;
-      }
-      if (effect instanceof LocationEffect) {
-        effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
-        continue;
-      }
-      if (!response.isForce()) {
-        if (effect.isFriendly() != TargetingUtil.isFriendly(caster, targetMob)) {
-          continue;
-        }
-      }
-      LogUtil.printDebug("-- Applying '" + effect.getId() + "' to " + getName(targetMob.getEntity()));
-      effect.apply(caster, effect.isForceTargetCaster() ? caster : targetMob);
     }
   }
 
@@ -243,6 +265,10 @@ public class EffectManager {
         ((ChangeEnergy) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
         ((ChangeEnergy) effect).setTickDuration(cs.getInt("tick-duration", -1));
       }
+      case CHANGE_JUMPS -> {
+        effect = new ChangeJumps();
+        ((ChangeJumps) effect).setAmount(cs.getInt("amount", 1));
+      }
       case INCREASE_RAGE -> {
         effect = new ChangeRage();
         ((ChangeRage) effect).setAmount((float) cs.getDouble("amount", 1));
@@ -271,7 +297,8 @@ public class EffectManager {
         ((Damage) effect).setGuardBreak(cs.getBoolean("guard-break", false));
         ((Damage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", defaultOnHit));
         ((Damage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", defaultOnHit));
-        ((Damage) effect).setHealMultiplier((float) cs.getDouble("heal-multiplier", Math.min(1.0, damageReductionRatio)));
+        ((Damage) effect).setHealMultiplier(
+            (float) cs.getDouble("heal-multiplier", Math.min(1.0, damageReductionRatio)));
         ((Damage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
         List<String> hitEffects = cs.getStringList("hit-effects");
         delayedSetEffects(((Damage) effect).getHitEffects(), hitEffects, key, false);
@@ -312,28 +339,35 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setMaxTicks(cs.getInt("refresh-delay", 5));
         ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
         ((CreateWorldSpaceEntity) effect).setModelEffect(cs.getString("model-effect", null));
-        ((CreateWorldSpaceEntity) effect).setModelSize(cs.getDouble("model-size", 1));
+        ((CreateWorldSpaceEntity) effect).setModelSize((float) cs.getDouble("model-size", 1));
+        ((CreateWorldSpaceEntity) effect).setVerticalOffset((float) cs.getDouble("vertical-offset", 0));
         if (cs.getString("model-color") != null) {
           java.awt.Color c = java.awt.Color.decode(cs.getString("model-color"));
           ((CreateWorldSpaceEntity) effect).setColor(Color.fromRGB(c.getRed(), c.getGreen(), c.getBlue()));
         }
         ((CreateWorldSpaceEntity) effect).setMaxFallTicks(cs.getInt("max-fall-ticks", 3));
-        ((CreateWorldSpaceEntity) effect).setMaxDisplacement(
-            (float) cs.getDouble("max-displacement", 0));
+        ((CreateWorldSpaceEntity) effect).setMaxDisplacement((float) cs.getDouble("max-displacement", 0));
         ((CreateWorldSpaceEntity) effect).setOriginLocation(
             OriginLocation.valueOf(cs.getString("origin", "HEAD")));
-        ((CreateWorldSpaceEntity) effect).setVelocity(cs.getDouble("speed", 0));
+        ((CreateWorldSpaceEntity) effect).setVelocity((float) cs.getDouble("speed", 0));
         ((CreateWorldSpaceEntity) effect).setFriction((float) cs.getDouble("friction", 1));
         ((CreateWorldSpaceEntity) effect).setGravity((float) cs.getDouble("gravity", 0));
         ((CreateWorldSpaceEntity) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
         ((CreateWorldSpaceEntity) effect).setZeroVerticalAxis(cs.getBoolean("zero-y-axis", false));
         ((CreateWorldSpaceEntity) effect).setDestroyOnContact(cs.getBoolean("destroy-on-contact", false));
+        ((CreateWorldSpaceEntity) effect).setDestroyOnSharpAngle(cs.getBoolean("destroy-on-sharp-angle", false));
+        ((CreateWorldSpaceEntity) effect).setRestoreSpeedOnGroundContact(
+            cs.getBoolean("restore-speed-on-ground-contact", true));
+
+        List<String> contactEffects = cs.getStringList("contact-effects");
+        delayedSetEffects(((CreateWorldSpaceEntity) effect).getContactEffects(), contactEffects, key, false);
+        List<String> expiryEffects = cs.getStringList("expiry-effects");
+        delayedSetEffects(((CreateWorldSpaceEntity) effect).getExpiryEffects(), expiryEffects, key, false);
       }
       case CHASER -> {
         effect = new ChaserEffect();
-        LoadedChaser data = plugin.getChaserManager().loadChaser(key, cs);
-        ((ChaserEffect) effect).setOriginLocation(
-            OriginLocation.valueOf(cs.getString("origin", "HEAD")));
+        LoadedChaser data = LoadedChaser.loadChaser(plugin, key, cs);
+        ((ChaserEffect) effect).setOriginLocation(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
         ((ChaserEffect) effect).setLoadedChaser(data);
         ((ChaserEffect) effect).setCanLocationOverride(cs.getBoolean("location-override", false));
         ((ChaserEffect) effect).setChaseCaster(cs.getBoolean("chase-caster", false));
@@ -397,10 +431,10 @@ public class EffectManager {
         ((AreaEffect) effect).setExcludeCaster(cs.getBoolean("exclude-caster", false));
         ((AreaEffect) effect).setRange(cs.getDouble("range", 1));
         ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
-        ((AreaEffect) effect).setMultishotScaling(
-            cs.getBoolean("scale-targets-with-multishot", false));
-        ((AreaEffect) effect).setLineOfSight(
-            LineOfSight.valueOf(cs.getString("line-of-sight", "CASTER")));
+        ((AreaEffect) effect).setMultishotScaling(cs.getBoolean("scale-targets-with-multishot", false));
+        ((AreaEffect) effect).setMultishotRangeScaling(cs.getBoolean("scale-range-with-multishot", false));
+        ((AreaEffect) effect).setPierceScaling(cs.getBoolean("scale-targets-with-pierce", false));
+        ((AreaEffect) effect).setLineOfSight(LineOfSight.valueOf(cs.getString("line-of-sight", "CASTER")));
         ((AreaEffect) effect).setAreaType(AreaType.valueOf(cs.getString("area-type", "RADIUS")));
         boolean canBeBlocked = cs.getBoolean("can-be-blocked", false);
         ((AreaEffect) effect).setCanBeBlocked(canBeBlocked);
@@ -409,8 +443,7 @@ public class EffectManager {
         ((AreaEffect) effect).setTargetingCooldown(cs.getLong("target-cooldown", 4));
         ((AreaEffect) effect).setRadius((float) cs.getDouble("radius", 0.55));
         if (((AreaEffect) effect).getMaxTargets() != -1) {
-          ((AreaEffect) effect).setPriority(
-              TargetingPriority.valueOf(cs.getString("priority", "RANDOM")));
+          ((AreaEffect) effect).setPriority(TargetingPriority.valueOf(cs.getString("priority", "RANDOM")));
         }
       }
       case ENDLESS_EFFECT -> {
@@ -480,12 +513,16 @@ public class EffectManager {
           return;
         }
         ((ShootProjectile) effect).setProjectileEntity(projType);
-        ((ShootProjectile) effect).setOriginType(
-            OriginLocation.valueOf(cs.getString("origin", "HEAD")));
-        ((ShootProjectile) effect).setVerticalBonus(cs.getDouble("vertical-bonus", 0));
+        ((ShootProjectile) effect).setOriginType(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
+        ((ShootProjectile) effect).setVerticalBonus((float) cs.getDouble("vertical-bonus", 0));
+        ((ShootProjectile) effect).setMinVerticalSpeed((float) cs.getDouble("min-vertical-speed", -1));
+
         ((ShootProjectile) effect).setModelId(cs.getString("model-id", null));
-        ((ShootProjectile) effect).setSpread(cs.getDouble("spread", 0));
-        ((ShootProjectile) effect).setRadialAngle(cs.getDouble("radial-angle", 0));
+        ((ShootProjectile) effect).setScaleModelWithMultishot(cs.getBoolean("scale-model-with-multishot", false));
+        ((ShootProjectile) effect).setModelScale((float) cs.getDouble("model-scale", 1));
+
+        ((ShootProjectile) effect).setSpread((float) cs.getDouble("spread", 0));
+        ((ShootProjectile) effect).setRadialAngle((float) cs.getDouble("radial-angle", 0));
         ((ShootProjectile) effect).setSpeed((float) cs.getDouble("speed", 1));
         ((ShootProjectile) effect).setYield((float) cs.getDouble("yield", 0.0D));
         ((ShootProjectile) effect).setMaxDuration(cs.getInt("max-duration", -1));
@@ -499,7 +536,7 @@ public class EffectManager {
         ((ShootProjectile) effect).setThrowItem(cs.getBoolean("thrown-item", false));
         ((ShootProjectile) effect).setThrowSpin(cs.getBoolean("throw-spin", true));
         ((ShootProjectile) effect).setBlockHitEffects(cs.getBoolean("effects-on-block-hit", false));
-        ((ShootProjectile) effect).setAttackMultiplier(cs.getDouble("attack-multiplier", 0D));
+        ((ShootProjectile) effect).setAttackMultiplier((float) cs.getDouble("attack-multiplier", 0D));
         ((ShootProjectile) effect).setDisguise(DisguiseUtil.parseDisguise(
             cs.getConfigurationSection("disguise"), key, false));
         String thrownStackMaterial = cs.getString("thrown-stack-material");
@@ -517,6 +554,8 @@ public class EffectManager {
         }
         List<String> effects = cs.getStringList("hit-effects");
         delayedSetEffects(((ShootProjectile) effect).getHitEffects(), effects, key, false);
+        List<String> trailEffects = cs.getStringList("trail-effects");
+        delayedSetEffects(((ShootProjectile) effect).getTrailEffects(), trailEffects, key, true);
       }
       case EQUIPMENT_SWAP -> {
         effect = new EquipmentSwap();
@@ -730,8 +769,10 @@ public class EffectManager {
         effect = new Push();
         ((Push) effect).setPower(cs.getDouble("power", 10));
         ((Push) effect).setHeight(cs.getDouble("height", 10));
+        ((Push) effect).setWeightRatio(cs.getDouble("weight-ratio", 1));
         ((Push) effect).setZeroFall(cs.getBoolean("zero-fall", false));
         ((Push) effect).setCancelHorizontal(cs.getBoolean("cancel-horizontal", false));
+        ((Push) effect).setUseTrueDirection(cs.getBoolean("use-true-direction", false));
         ((Push) effect).setApplyToCaster(cs.getBoolean("apply-to-caster", false));
         ((Push) effect).setHorizontalClamp(cs.getBoolean("horizontal-clamp", true));
         ((Push) effect).setVerticalClamp(cs.getBoolean("vertical-clamp", true));
@@ -794,12 +835,15 @@ public class EffectManager {
         ((CreateModelAnimation) effect).setLerpOut((float) cs.getDouble("lerp-out", 0));
         ((CreateModelAnimation) effect).setSpeed((float) cs.getDouble("speed", 1));
         ((CreateModelAnimation) effect).setScale((float) cs.getDouble("scale", 1));
+        ((CreateModelAnimation) effect).setDirectionOffset((float) cs.getDouble("direction-offset", 0));
         ((CreateModelAnimation) effect).setLifespan(cs.getInt("lifespan", 50));
         ((CreateModelAnimation) effect).setEntityLock(cs.getBoolean("entity-lock", false));
         ((CreateModelAnimation) effect).setAnimationType(
             AnimationType.valueOf(cs.getString("rotation-type", "RANDOM_ROTATION")));
         ((CreateModelAnimation) effect).setRotationLock(cs.getBoolean("rotation-lock", false));
-        ((CreateModelAnimation) effect).setForceGrounded(cs.getBoolean("force-grounded", false));
+        boolean legacyForceGroundBlocks = cs.getBoolean("force-grounded", false);
+        ((CreateModelAnimation) effect).setForceGroundBlocks(
+            2 * cs.getInt("force-grounding-blocks", legacyForceGroundBlocks ? 4 : 0));
         ((CreateModelAnimation) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
         if (cs.getString("color") != null) {
           java.awt.Color c = java.awt.Color.decode(cs.getString("color"));
@@ -974,9 +1018,11 @@ public class EffectManager {
       effect.setFriendly(cs.getBoolean("friendly", false));
       Map<StrifeStat, Float> statMults = StatUtil.getStatMapFromSection(cs.getConfigurationSection("stat-mults"));
       effect.setStatMults(statMults);
-      Map<LifeSkillType, Float> skillMults = StatUtil.getSkillMapFromSection(cs.getConfigurationSection("skill-multipliers"));
+      Map<LifeSkillType, Float> skillMults = StatUtil.getSkillMapFromSection(
+          cs.getConfigurationSection("skill-multipliers"));
       effect.setSkillMults(skillMults);
-      Map<StrifeAttribute, Float> attributeMults = StatUtil.getAttributeMapFromSection(cs.getConfigurationSection("attribute-multipliers"));
+      Map<StrifeAttribute, Float> attributeMults = StatUtil.getAttributeMapFromSection(
+          cs.getConfigurationSection("attribute-multipliers"));
       effect.setAttributeMults(attributeMults);
     }
     effect.setId(key);
@@ -1013,7 +1059,7 @@ public class EffectManager {
             bonusDamage.getDamageScale() == DamageScale.TARGET_ATTRIBUTE) {
           bonusDamage.setAttribute(plugin.getAttributeManager().getAttribute(bonus.getString("attribute")));
         } else if (bonusDamage.getDamageScale() == DamageScale.CASTER_SKILL_LEVEL ||
-            bonusDamage.getDamageScale()  == DamageScale.TARGET_SKILL_LEVEL) {
+            bonusDamage.getDamageScale() == DamageScale.TARGET_SKILL_LEVEL) {
           bonusDamage.setLifeSkillType(LifeSkillType.valueOf(bonus.getString("life-skill")));
         }
       } catch (Exception e) {
@@ -1059,6 +1105,9 @@ public class EffectManager {
         break;
       case ALIVE:
         condition = new AliveCondition();
+        break;
+      case AIR_JUMPS:
+        condition = new AirJumpsCondition();
         break;
       case HEALTH:
         boolean percent3 = cs.getBoolean("percentage", false);

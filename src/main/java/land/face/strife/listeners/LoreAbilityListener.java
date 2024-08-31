@@ -38,6 +38,7 @@ import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.events.StrifeEarlyDamageEvent;
+import land.face.strife.managers.GuiManager;
 import land.face.strife.managers.LoreAbilityManager.TriggerType;
 import land.face.strife.managers.StrifeMobManager;
 import land.face.strife.util.DamageUtil.AttackType;
@@ -53,9 +54,11 @@ import org.bukkit.event.entity.EntityDeathEvent;
 public class LoreAbilityListener implements Listener {
 
   private final StrifeMobManager strifeMobManager;
+  private final GuiManager guiManager;
 
-  public LoreAbilityListener(StrifeMobManager strifeMobManager) {
+  public LoreAbilityListener(StrifeMobManager strifeMobManager, GuiManager guiManager) {
     this.strifeMobManager = strifeMobManager;
+    this.guiManager = guiManager;
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

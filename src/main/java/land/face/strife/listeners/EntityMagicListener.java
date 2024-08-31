@@ -1,6 +1,7 @@
 package land.face.strife.listeners;
 
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.ChaserEntity;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.Damage;
@@ -46,7 +47,7 @@ public class EntityMagicListener implements Listener {
     skeletonWand = SpawnListener.buildSkeletonWand();
     witchSpell = buildStandardDamage();
     chaserParticle = buildChaserParticle();
-    StrifePlugin.getInstance().getChaserManager().loadChaser(WITCH_SPELL_ID, buildLoadedChaser());
+    LoadedChaser.loadChaser(WITCH_SPELL_ID, buildLoadedChaser());
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
@@ -60,19 +61,26 @@ public class EntityMagicListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH)
   public void onWitchPotionThrow(ProjectileLaunchEvent e) {
-    if (e.isCancelled() || !(e.getEntity().getShooter() instanceof Witch)) {
+    if (e.isCancelled() || !(e.getEntity().getShooter() instanceof Witch witch)) {
       return;
     }
     if (!(e.getEntity() instanceof ThrownPotion)) {
       return;
     }
-    Witch witch = (Witch) e.getEntity().getShooter();
     e.setCancelled(true);
     witch.getWorld().playSound(witch.getLocation(), Sound.ENTITY_ALLAY_ITEM_TAKEN, 1f, 2f);
     StrifeMob witchMob = plugin.getStrifeMobManager().getStatMob(witch);
     float speedMult = 1 + witchMob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
-    plugin.getChaserManager().createChaser(witchMob, WITCH_SPELL_ID, new Vector(0,0,0),
-        TargetingUtil.getOriginLocation(witch, OriginLocation.BELOW_HEAD), witch.getTarget(), speedMult);
+    ChaserEntity.create(
+        LoadedChaser.LOADED_TEMPLATES.get(WITCH_SPELL_ID),
+        TargetingUtil.getOriginLocation(witch, OriginLocation.BELOW_HEAD),
+        witch.getLocation().getDirection(),
+        witchMob,
+        witch.getTarget(),
+        null,
+        1,
+        speedMult
+    );
   }
 
   @EventHandler
@@ -116,11 +124,17 @@ public class EntityMagicListener implements Listener {
   private LoadedChaser buildLoadedChaser() {
     LoadedChaser loadedChaser = new LoadedChaser();
     loadedChaser.setStrictDuration(true);
-    loadedChaser.setStartSpeed(1f);
-    loadedChaser.setRemoveAtSolids(true);
+    loadedChaser.setStartSpeed(0.8f);
+    loadedChaser.setStartHorizontalMin(0.1f);
+    loadedChaser.setStartHorizontalMax(0.2f);
+    loadedChaser.setStartVerticalMin(0.05f);
+    loadedChaser.setStartVerticalMax(0.1f);
+    loadedChaser.setPhysical(true);
+    loadedChaser.setModelId("projectile_leaf_spiral");
     loadedChaser.setSpeed(0.1f);
     loadedChaser.setMaxSpeed(1f);
-    loadedChaser.setLifespan(200);
+    loadedChaser.setLifespan(100);
+    loadedChaser.setGuideStopTicks(60);
     loadedChaser.getParticles().add(chaserParticle);
     loadedChaser.getEffectList().add(witchSpell);
     return loadedChaser;

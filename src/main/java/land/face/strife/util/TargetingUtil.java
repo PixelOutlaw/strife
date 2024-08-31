@@ -343,7 +343,7 @@ public class TargetingUtil {
     }
     switch (origin) {
       case HEAD -> {
-        return le.getEyeLocation();
+        return le.getEyeLocation().clone();
       }
       case BELOW_HEAD -> {
         return le.getEyeLocation().clone().add(0, -0.4, 0);
@@ -357,45 +357,45 @@ public class TargetingUtil {
       }
       case MODEL_BONE -> {
         if (StringUtils.isBlank(extra)) {
-          return le.getLocation();
+          return le.getLocation().clone();
         }
         ModeledEntity modeledEntity = ModelEngineAPI.getModeledEntity(le);
         if (modeledEntity == null) {
-          return le.getLocation();
+          return le.getLocation().clone();
         }
         Optional<ActiveModel> activeModel = modeledEntity.getModels().values().stream().findFirst();
         if (activeModel.isEmpty()) {
-          return le.getLocation();
+          return le.getLocation().clone();
         }
         Optional<ModelBone> bone = activeModel.get().getBone(extra);
         if (bone.isPresent()) {
-          return bone.get().getLocation();
+          return bone.get().getLocation().clone();
         } else {
           Bukkit.getLogger().info("[Strife] Bone ID " + extra + " not found for origin detection!");
-          return le.getLocation();
+          return le.getLocation().clone();
         }
       }
       case UNION_BONE -> {
         if (StringUtils.isBlank(extra)) {
           Bukkit.getLogger().info("[Strife] Bone ID " + extra + " not found for origin detection!");
-          return le.getLocation();
+          return le.getLocation().clone();
         }
         StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(le);
         Union union = StrifePlugin.getInstance().getUnionManager().getUnion(mob);
         if (union == null) {
-          return le.getLocation();
+          return le.getLocation().clone();
         }
         ActiveModel activeModel = union.getActiveModel();
         Optional<ModelBone> bone = activeModel.getBone(extra);
         if (bone.isPresent()) {
-          return bone.get().getLocation();
+          return bone.get().getLocation().clone();
         } else {
           Bukkit.getLogger().info("[Strife] Bone ID " + extra + " not found for origin detection!");
-          return le.getLocation();
+          return le.getLocation().clone();
         }
       }
       default -> {
-        return le.getLocation();
+        return le.getLocation().clone();
       }
     }
   }

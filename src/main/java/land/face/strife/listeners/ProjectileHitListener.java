@@ -17,7 +17,9 @@
 package land.face.strife.listeners;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -118,25 +120,33 @@ public record ProjectileHitListener(StrifePlugin plugin) implements Listener {
   }
 
   private TargetResponse buildFromEvent(ProjectileHitEvent event) {
-    if (event.getHitEntity() != null) {
-      if (event.getHitEntity() instanceof LivingEntity le) {
-        if (le.isInvulnerable() || le.hasMetadata("NPC")) {
-          ProjectileUtil.disableCollision(event.getEntity(), le);
-          event.setCancelled(true);
-          return null;
-        }
-        if (TargetingUtil.isFriendly((LivingEntity) event.getEntity().getShooter(), le)) {
-          ProjectileUtil.disableCollision(event.getEntity(), le);
-          event.setCancelled(true);
-          return null;
-        }
+    // any block hit
+    if (event.getHitBlock() != null) {
+      if (!ProjectileUtil.isContactTrigger(event.getEntity())) {
+        return null;
+      }
+      Location effectLocation = event.getHitBlock().getLocation().clone().add(0.5, 0.5, 0.5);
+      if (event.getHitBlockFace() != null) {
+        effectLocation.add(event.getHitBlockFace().getDirection());
       } else {
-        if (ProjectileUtil.isContactTrigger(event.getEntity())) {
-          Location loc = event.getEntity().getLocation().clone();
-          event.getEntity().remove();
-          return new TargetResponse(loc);
-        }
-        event.getEntity().remove();
+        effectLocation.add(event.getEntity().getLocation().getDirection().clone().multiply(-1.1));
+      }
+      event.getEntity().remove();
+      return new TargetResponse(effectLocation);
+    }
+    // not block, no entity at all
+    if (event.getHitEntity() == null) {
+      return null;
+    }
+    // not block, living entity
+    if (event.getHitEntity() instanceof LivingEntity le) {
+      if (le.isInvulnerable() || le.hasMetadata("NPC")) {
+        ProjectileUtil.disableCollision(event.getEntity(), le);
+        event.setCancelled(true);
+        return null;
+      }
+      if (TargetingUtil.isFriendly((LivingEntity) event.getEntity().getShooter(), le)) {
+        ProjectileUtil.disableCollision(event.getEntity(), le);
         event.setCancelled(true);
         return null;
       }
@@ -148,21 +158,16 @@ public record ProjectileHitListener(StrifePlugin plugin) implements Listener {
       } else {
         ProjectileUtil.reducePierce(event.getEntity());
       }
-      return new TargetResponse(Collections.singleton((LivingEntity) event.getHitEntity()));
-    } else if (event.getHitBlock() != null) {
-      if (!ProjectileUtil.isContactTrigger(event.getEntity())) {
-        event.getEntity().remove();
-        event.setCancelled(true);
-        return null;
-      }
-      Location effectLocation = event.getHitBlock().getLocation().clone().add(0.5, 0.5, 0.5);
-      if (event.getHitBlockFace() != null) {
-        effectLocation.add(event.getHitBlockFace().getDirection());
-      } else {
-        effectLocation.add(event.getEntity().getLocation().getDirection().clone().multiply(-1.1));
-      }
-      return new TargetResponse(effectLocation);
+      return new TargetResponse(Collections.singleton(le), event.getEntity().getLocation());
     }
+    // Not block, not living
+    if (ProjectileUtil.isContactTrigger(event.getEntity())) {
+      Location loc = event.getEntity().getLocation().clone();
+      event.getEntity().remove();
+      return new TargetResponse(loc);
+    }
+    event.getEntity().remove();
+    event.setCancelled(true);
     return null;
   }
 }
