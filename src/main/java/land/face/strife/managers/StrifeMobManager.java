@@ -6,6 +6,7 @@ import static org.bukkit.inventory.EquipmentSlot.HAND;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import info.faceland.loot.data.pdc.EquipmentData;
 import info.faceland.loot.data.pdc.ItemDetails;
+import info.faceland.loot.data.pdc.StoredStat;
 import info.faceland.loot.items.NewCustomItem;
 import info.faceland.loot.items.SoulGem;
 import info.faceland.loot.utils.PersistHelper;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.dinvy.entity.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
+import land.face.pet.data.pdc.PetData;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.ItemDataBundle;
 import land.face.strife.data.StrifeMob;
@@ -252,6 +254,19 @@ public class StrifeMobManager {
           return dataBundle;
         }
       }
+      /*
+      case "PET" -> {
+        PetData pet = PetData.getPetData(stack);
+        if (pet != null) {
+          Map<StrifeStat, Float> stats = new HashMap<>();
+          for (StoredStat ss : pet.getStats()) {
+            stats.put(ss.getStat().getStat(), stats.getOrDefault(ss.getStat().getStat(), 0f) + ss.getCachedValue());
+          }
+          dataBundle.getStats().putAll(stats);
+          return dataBundle;
+        }
+      }
+       */
     }
 
     // CustomOverride

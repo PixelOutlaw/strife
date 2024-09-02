@@ -121,7 +121,7 @@ public class ItemUtil {
   }
 
   public static boolean isValidOffhand(ItemStack mainItem, ItemStack offItem) {
-    if (mainItem.getType() == Material.AIR || offItem.getType() == Material.AIR) {
+    if (offItem == null || mainItem.getType() == Material.AIR || offItem.getType() == Material.AIR) {
       return true;
     }
     if (mainItem.getType() == Material.FISHING_ROD && offItem.getType() == Material.WHEAT_SEEDS) {

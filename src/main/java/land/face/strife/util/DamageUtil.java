@@ -55,6 +55,7 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -1245,7 +1246,14 @@ public class DamageUtil {
   }
 
   public static void dealRawDamage(StrifeMob mob, float damage) {
-    if (mob.isInvincible()) {
+    dealRawDamage(mob, damage, false);
+  }
+
+  public static void dealRawDamage(StrifeMob mob, float damage, boolean bypassInvulnerability) {
+    if (mob.isPlayer() && ((Player) mob.getEntity()).getGameMode() == GameMode.CREATIVE) {
+      return;
+    }
+    if (!bypassInvulnerability && mob.isInvincible()) {
       return;
     }
     LivingEntity le = mob.getEntity();

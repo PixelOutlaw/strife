@@ -235,10 +235,6 @@ public class StrifeParticle extends LocationEffect {
     }
   }
 
-  public int getTickDuration() {
-    return tickDuration;
-  }
-
   public enum ParticleStyle {
     NORMAL,
     CIRCLE,

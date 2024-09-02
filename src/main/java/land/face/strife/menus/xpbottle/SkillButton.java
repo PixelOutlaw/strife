@@ -73,14 +73,13 @@ public class SkillButton extends MenuItem {
   @Override
   public void onItemClick(ItemClickEvent event) {
     super.onItemClick(event);
-    boolean success = getAndRemoveMatch(event.getPlayer(), bowlId);
     if (PlayerDataUtil.getSkillLevels(event.getPlayer(), lifeSkillType, false).getLevel() >= 99) {
       event.getPlayer().sendMessage(FaceColor.YELLOW + "You're already max level in this skill!");
       return;
     }
+    boolean success = getAndRemoveMatch(event.getPlayer(), bowlId);
     if (success) {
-      plugin.getSkillExperienceManager()
-          .addExperience(event.getPlayer(), lifeSkillType, amount, true, true);
+      plugin.getSkillExperienceManager().addExperience(event.getPlayer(), lifeSkillType, amount, true, true);
     } else {
       event.getPlayer().sendMessage(FaceColor.YELLOW + "You don't have any more of this bottle!");
       event.getPlayer().closeInventory(Reason.PLUGIN);
@@ -88,8 +87,7 @@ public class SkillButton extends MenuItem {
   }
   private static boolean getAndRemoveMatch(Player player, int bowlId) {
     for (ItemStack item : player.getInventory().getContents()) {
-      if (item == null || item.getType() != Material.BOWL || !item.hasItemMeta()
-          || item.getAmount() < 1) {
+      if (item == null || item.getType() != Material.BOWL || !item.hasItemMeta() || item.getAmount() < 1) {
         continue;
       }
       if (ItemUtils.getModelData(item) == bowlId) {

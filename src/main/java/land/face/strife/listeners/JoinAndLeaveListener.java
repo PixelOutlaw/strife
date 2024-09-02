@@ -13,9 +13,7 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
-import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.AbilitySlot;
-import land.face.strife.tasks.EveryTickTask;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.attribute.Attribute;
@@ -92,7 +90,6 @@ public class JoinAndLeaveListener implements Listener {
     }, 15L);
 
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      plugin.getPlayerMountManager().updateSelectedMount(event.getPlayer());
       if (mounted.contains(event.getPlayer().getUniqueId())) {
         plugin.getPlayerMountManager().spawnMount(event.getPlayer());
         mounted.remove(event.getPlayer().getUniqueId());

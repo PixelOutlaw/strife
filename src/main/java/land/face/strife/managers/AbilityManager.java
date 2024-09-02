@@ -37,6 +37,7 @@ import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.timers.EntityAbilityTimer;
 import land.face.strife.timers.SoulTimer;
+import land.face.strife.util.DamageUtil;
 import land.face.strife.util.HitDetectionUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
@@ -93,7 +94,7 @@ public class AbilityManager {
         doOnCooldownPrompt(caster, ability);
         return false;
       }
-      if (!hasEnergy(caster, ability)) {
+      if (!hasEnoughResource(caster, ability)) {
         doNoEnergyPrompt(caster, ability);
         return false;
       }
@@ -123,7 +124,11 @@ public class AbilityManager {
     }
     if (caster.getEntity() instanceof Player) {
       if (((Player) caster.getEntity()).getGameMode() != GameMode.CREATIVE) {
-        caster.setEnergy(caster.getEnergy() - ability.calcRealEnergyCost(caster));
+        if (ability.isHealthCost()) {
+          DamageUtil.dealRawDamage(caster, ability.calcRealCost(caster), true);
+        } else {
+          caster.setEnergy(caster.getEnergy() - ability.calcRealCost(caster));
+        }
       }
     }
 
@@ -174,7 +179,8 @@ public class AbilityManager {
       return;
     }
     for (CooldownTracker cooldownContainer : cdMap.get(livingEntity)) {
-      doToggleOff(cooldownContainer, plugin.getStrifeMobManager().getStatMob(livingEntity), cooldownContainer.getSlot());
+      doToggleOff(cooldownContainer, plugin.getStrifeMobManager().getStatMob(livingEntity),
+          cooldownContainer.getSlot());
     }
   }
 
@@ -247,12 +253,13 @@ public class AbilityManager {
     savedCooldowns.remove(player.getUniqueId());
   }
 
-  private boolean hasEnergy(StrifeMob caster, Ability ability) {
+  private boolean hasEnoughResource(StrifeMob caster, Ability ability) {
     if (caster.getEntity() instanceof Player) {
       if (((Player) caster.getEntity()).getGameMode() == GameMode.CREATIVE) {
         return true;
       }
-      return caster.getEnergy() >= ability.calcRealEnergyCost(caster);
+      float resource = ability.isHealthCost() ? (float) caster.getEntity().getHealth() : caster.getEnergy();
+      return resource >= ability.calcRealCost(caster);
     }
     return true;
   }
@@ -385,7 +392,7 @@ public class AbilityManager {
     player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player
         .getCooldown(Material.GOLDEN_CHESTPLATE), ticks));
     player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player
-          .getCooldown(Material.DIAMOND_CHESTPLATE), ticks));
+        .getCooldown(Material.DIAMOND_CHESTPLATE), ticks));
   }
 
   private void coolDownAbility(StrifeMob caster, Ability ability, AbilitySlot slot) {
@@ -663,16 +670,38 @@ public class AbilityManager {
     }
     AbilityIconData abilityIconData = buildIconData(key, abilityType,
         cs.getConfigurationSection("icon"));
-    boolean friendly = cs.getBoolean("friendly", false);
-    boolean passivesOnCooldown = cs.getBoolean("passive-stats-on-cooldown", false);
-    boolean cancelStealth = cs.getBoolean("cancel-stealth", true);
-    boolean sneakSelfTarget = cs.getBoolean("sneak-self-target", false);
-    boolean deathUntoggle = cs.getBoolean("untoggle-on-death", false);
 
-    Ability ability = new Ability(key, name, effects, sneakEffects, toggleOffEffects, abilityType, targetType,
-        sneakSelfTarget, range, cost, sneakCost, cooldown, sneakCooldown, maxCharges, globalCooldownTicks, showMessages,
-        requireTarget, raycastsHitEntities, conditions, sneakConditions, passivesOnCooldown, friendly, abilityIconData,
-        cancelStealth, deathUntoggle, minCooldown, weightScaling);
+    Ability ability = Ability.builder()
+        .id(key)
+        .name(name)
+        .friendly(cs.getBoolean("friendly", false))
+        .cooldown(cooldown)
+        .sneakCooldown(sneakCooldown)
+        .maxCharges(maxCharges)
+        .globalCooldownTicks(globalCooldownTicks)
+        .effects(effects)
+        .toggleOffEffects(toggleOffEffects)
+        .targetType(targetType)
+        .castType(abilityType)
+        .sneakEffects(sneakEffects)
+        .requireTarget(requireTarget)
+        .sneakSelfTarget(cs.getBoolean("sneak-self-target", false))
+        .raycastsTargetEntities(raycastsHitEntities)
+        .range(range)
+        .cost(cost)
+        .sneakCost(sneakCost)
+        .showMessages(showMessages)
+        .conditions(conditions)
+        .sneakConditions(sneakConditions)
+        .passiveStatsOnCooldown(cs.getBoolean("passive-stats-on-cooldown", false))
+        .abilityIconData(abilityIconData)
+        .cancelStealth(cs.getBoolean("cancel-stealth", true))
+        .deathUntoggle(cs.getBoolean("untoggle-on-death", false))
+        .minCooldown(minCooldown)
+        .weightScaling(weightScaling)
+        .maxTargets(cs.getInt("max-targets", 8))
+        .healthCost(cs.getBoolean("health-cost", false))
+        .build();
 
     ability.getPassiveStats().putAll(StatUtil.getStatMapFromSection(
         cs.getConfigurationSection("passive-stats")));
@@ -680,7 +709,6 @@ public class AbilityManager {
         cs.getConfigurationSection("passive-toggle-stats")));
     ability.setTargetingPriority(TargetingPriority.valueOf(
         cs.getString("target-priority", "RANDOM")));
-    ability.setMaxTargets(cs.getInt("max-targets", 10));
 
     List<String> filterConditions = cs.getStringList("filter-conditions");
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {

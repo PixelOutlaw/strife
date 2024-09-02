@@ -69,7 +69,6 @@ import land.face.strife.data.Spawner;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
-import land.face.strife.data.effects.CreateModelAnimation;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.Riptide;
 import land.face.strife.data.effects.TriggerLoreAbility;
@@ -213,8 +212,8 @@ public class StrifePlugin extends FacePlugin {
   private MasterConfiguration settings;
   @Getter
   private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
-          pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML, prayerYAML, displaysYaml,
-          herdYML;
+      pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML, prayerYAML, displaysYaml,
+      herdYML;
   private SmartYamlConfiguration spawnerYAML;
 
   @Getter
@@ -318,7 +317,8 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private ReviveMenu reviveMenu;
 
-  @Getter @Setter
+  @Getter
+  @Setter
   private XpBottleMenu smallBottleMenu, mediumBottleMenu, bigBottleMenu, giantBottleMenu;
 
   private PaperCommandManager commandManager;
@@ -608,7 +608,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(citizenModelListener, this);
 
     Bukkit.getScheduler().runTaskLater(this, () ->
-        citizenModelListener.reloadModels(configYAML.getConfigurationSection("npc-model-data-fuck-model-engine")),
+            citizenModelListener.reloadModels(configYAML.getConfigurationSection("npc-model-data-fuck-model-engine")),
         200L);
 
     if (Bukkit.getPluginManager().getPlugin("Bullion") != null) {
@@ -644,7 +644,7 @@ public class StrifePlugin extends FacePlugin {
         }
         abilityList.add(loopAbility);
       }
-      abilityList.forEach((a)-> a.setHidden(false));
+      abilityList.forEach((a) -> a.setHidden(false));
       AbilitySubmenu menu = new AbilitySubmenu(this, menuId, "&f扚&0" + title, abilityList, returnButton);
       abilitySubmenus.put(menuId, menu);
 
@@ -727,7 +727,6 @@ public class StrifePlugin extends FacePlugin {
     LogUtil.printInfo("[Strife] Loaded " + effectManager.getLoadedEffects().size() + " effects");
     LogUtil.printInfo("[Strife] Loaded " + abilityManager.getLoadedAbilities().size() + " abilities");
 
-
     for (Player player : Bukkit.getOnlinePlayers()) {
       topBarManager.setupPlayer(player);
       championManager.getChampion(player).recombineCache(this);
@@ -737,7 +736,6 @@ public class StrifePlugin extends FacePlugin {
       guiManager.setupGui(player);
 
       bossBarManager.createBars(player);
-      playerMountManager.updateSelectedMount(player);
 
       guiManager.updateLevelDisplay(strifeMobManager.getStatMob(player));
       prayerManager.sendPrayerUpdate(player, false);
@@ -795,7 +793,7 @@ public class StrifePlugin extends FacePlugin {
 
   private VersionedSmartYamlConfiguration defaultSettingsLoad(String name) {
     return new VersionedSmartYamlConfiguration(new File(getDataFolder(), name),
-            getResource(name), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
+        getResource(name), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
   }
 
   private List<SmartYamlConfiguration> uniqueFileLoad() {
@@ -1015,26 +1013,25 @@ public class StrifePlugin extends FacePlugin {
         ConfigurationSection mountSection = mountsYAML.getConfigurationSection("mounts." + key);
         Color color = Color.valueOf(mountSection.getString("color", "BROWN"));
         Style style = Style.valueOf(mountSection.getString("style", "NONE"));
-        int customModelData = mountSection.getInt("model-id", -1);
-        if (customModelData == -1) {
-          Bukkit.getLogger().warning("[Strife] (Mounts) Invalid model-id for " + key);
-          continue;
-        }
         String meModel = mountSection.getString("me-model", null);
-        String name = PaletteUtil.color(mountSection.getString("name", "No Name"));
-        List<String> lore = PaletteUtil.color(mountSection.getStringList("lore"));
         float speed = (float) mountSection.getDouble("speed");
         float walkAnimationSpeed = (float) mountSection.getDouble("walk-animation-speed", 1.0);
         boolean flying = mountSection.getBoolean("flying", false);
         String flyani = mountSection.getString("fly-animation", null);
         String launch = mountSection.getString("launch-animation", null);
         String land = mountSection.getString("land-animation", null);
-        playerMountManager.loadMount(
-            new LoadedMount(key, customModelData, name, lore, meModel, color, style, speed,
-                walkAnimationSpeed, flying, flyani, launch, land, true));
-        playerMountManager.loadMount(
-            new LoadedMount("untrad-" + key, 1000 + customModelData, name, lore, meModel,
-                color, style, speed, walkAnimationSpeed, flying, flyani, launch, land, false));
+        playerMountManager.loadMount(LoadedMount.builder()
+            .id(key)
+            .modelId(meModel)
+            .color(color)
+            .style(style)
+            .speed(speed)
+            .walkAnimationSpeed(walkAnimationSpeed)
+            .flying(flying)
+            .flyAnimation(flyani)
+            .launchAnimation(launch)
+            .landAnimation(land).build()
+        );
       }
     } catch (Exception e) {
       e.printStackTrace();

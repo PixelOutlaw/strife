@@ -17,12 +17,15 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
-import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import com.tealcube.minecraft.bukkit.shade.apache.commons.lang.StringUtils;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import com.ticxo.modelengine.api.model.bone.manager.MountManager;
+import info.faceland.loot.items.NewCustomItem;
+import info.faceland.loot.utils.PersistHelper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -41,7 +44,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Cow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
 
 public class PlayerMountManager {
@@ -49,7 +51,6 @@ public class PlayerMountManager {
   private final StrifePlugin plugin;
 
   private final Map<UUID, MountTask> ownerMap = new HashMap<>();
-  private final Map<UUID, String> selectedMount = new HashMap<>();
   private final Map<String, LoadedMount> loadedMounts = new HashMap<>();
 
   private String noMount;
@@ -65,24 +66,12 @@ public class PlayerMountManager {
     return ownerMap.containsKey(player.getUniqueId());
   }
 
-  public LoadedMount getMount(Player player) {
-    if (!selectedMount.containsKey(player.getUniqueId())) {
-      return null;
-    }
-    return loadedMounts.get(selectedMount.get(player.getUniqueId()));
-  }
-
   public boolean spawnMount(Player player) {
     UUID uuid = player.getUniqueId();
     if (ownerMap.containsKey(uuid)) {
       return false;
     }
-    String mountId = selectedMount.get(uuid);
-    if (mountId == null) {
-      player.sendMessage(noMount);
-      return false;
-    }
-    LoadedMount loadedMount = loadedMounts.get(mountId);
+    LoadedMount loadedMount = getMountFromPlayer(player);
     if (loadedMount == null) {
       player.sendMessage(invalidMount);
       return false;
@@ -91,38 +80,28 @@ public class PlayerMountManager {
     return true;
   }
 
-  public void updateSelectedMount(Player player) {
-    if (plugin.getDeluxeInvyPlugin() == null) {
-      return;
+  private LoadedMount getMountFromPlayer(Player player) {
+    var invyData = plugin.getDeluxeInvyPlugin().getPlayerManager().getPlayerData(player);
+    if (invyData == null) {
+      Bukkit.getLogger().warning("[Strife] Invy data missing for " + player.getName() + "! no mount!");
+      return null;
     }
-    ItemStack stack = DeluxeInvyPlugin.getInstance().getPlayerManager()
-        .getPlayerData(player).getEquipmentItem(DeluxeSlot.MOUNT);
+    ItemStack stack = invyData.getEquipmentItem(DeluxeSlot.MOUNT);
     if (stack == null || stack.getType() != Material.SADDLE) {
-      selectedMount.remove(player.getUniqueId());
-      if (ownerMap.containsKey(player.getUniqueId())) {
-        despawn(player);
-      }
-      return;
+      player.sendMessage(noMount);
+      return null;
     }
-    int mountData = ItemUtils.getModelData(stack);
-    LoadedMount mount = getLoadedMountFromData(mountData);
-    if (mount == null) {
-      selectedMount.remove(player.getUniqueId());
-      if (ownerMap.containsKey(player.getUniqueId())) {
-        despawn(player);
-      }
-      return;
+    NewCustomItem nci = PersistHelper.getNonEquipmentUniqueItem(stack);
+    if (nci == null) {
+      player.sendMessage(FaceColor.YELLOW + "Old format mount detected! Contact an administrator to get it fixed!");
+      return null;
     }
-    selectedMount.put(player.getUniqueId(), mount.getId());
-  }
-
-  public LoadedMount getLoadedMountFromData(int data) {
-    for (LoadedMount l : loadedMounts.values()) {
-      if (l.getCustomModelData() == data) {
-        return l;
-      }
+    String mountId = nci.getMountId();
+    if (StringUtils.isBlank(mountId)) {
+      player.sendMessage(noMount);
+      return null;
     }
-    return null;
+    return loadedMounts.getOrDefault(mountId, null);
   }
 
   private void createMount(Player player, LoadedMount loadedMount) {

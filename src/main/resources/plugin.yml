@@ -10,6 +10,7 @@ depend:
   - GUIAPI
 softdepend:
   - LearninBooks
+  - FacePet
 
 commands:
   cast:

@@ -155,12 +155,13 @@ public class EffectManager {
         if (!PlayerDataUtil.areConditionsMet(caster, targetMob, effect.getConditions())) {
           continue;
         }
-        if (effect instanceof LocationEffect locEffect) {
-          if (response.getLocation() != null) {
-            locEffect.applyAtLocation(caster, response.getLocation());
+        if (effect instanceof LocationEffect e) {
+          if (e.isPreferEntityLocation()) {
+            e.apply(caster, targetMob);
+          } else if (response.getLocation() != null) {
+            e.applyAtLocation(caster, response.getLocation());
           } else {
-            locEffect.applyAtLocation(caster,
-                TargetingUtil.getOriginLocation(targetMob.getEntity(), locEffect.getOrigin()));
+            e.applyAtLocation(caster, TargetingUtil.getOriginLocation(targetMob.getEntity(), e.getOrigin()));
           }
           continue;
         }
@@ -1012,6 +1013,7 @@ public class EffectManager {
     if (effect instanceof LocationEffect) {
       ((LocationEffect) effect).setOrigin(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
       ((LocationEffect) effect).setExtra(cs.getString("extra", ""));
+      ((LocationEffect) effect).setPreferEntityLocation(cs.getBoolean("prefer-entity-location", false));
     }
     if (effectType != Effect.EffectType.WAIT) {
       effect.setForceTargetCaster(cs.getBoolean("force-target-caster", false));

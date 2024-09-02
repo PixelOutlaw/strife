@@ -131,7 +131,10 @@ public enum StrifeTrait {
       "|yellow|that applies over time is",
       "|yellow|instead applied instantly"
   ),
-  SOUL_FLAME("|orange||ul|Passive Effect - Blue Flame");
+  SOUL_FLAME("|orange||ul|Passive Effect - Blue Flame",
+      "|none|丒", "|yellow|Ignore half of enemy",
+      "|yellow|Fire Resistance"
+  );
 
   // TODO: We map String to StrifeStat, why not let the user
   //  customize the string rather than declaring it in the enum?

@@ -11,6 +11,7 @@ import org.bukkit.Location;
 public abstract class LocationEffect extends Effect {
 
   private OriginLocation origin = OriginLocation.CENTER;
+  private boolean preferEntityLocation = false;
   private String extra = "";
 
   public void applyAtLocation(StrifeMob caster, Location location) {
