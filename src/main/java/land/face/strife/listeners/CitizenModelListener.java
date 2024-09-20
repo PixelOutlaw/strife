@@ -70,7 +70,8 @@ public class CitizenModelListener implements Listener {
         return;
       }
       if (ModelEngineAPI.isModeledEntity(npc.getEntity().getUniqueId())) {
-        return;
+        ModelEngineAPI.removeModeledEntity(npc.getEntity());
+        // TODO: MAYBE REVERT
       }
       ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(npc.getEntity());
       if (modeledEntity == null) {
@@ -78,9 +79,9 @@ public class CitizenModelListener implements Listener {
       }
       ActiveModel activeModel = ModelEngineAPI.createActiveModel(npcModelData.getModel());
       activeModel.setShadowVisible(true);
+      activeModel.setScale(npcModelData.getScale());
       modeledEntity.addModel(activeModel, true);
       modeledEntity.setBaseEntityVisible(npcModelData.isShowBaseEntity());
-      activeModel.setScale(npcModelData.getScale());
       modeledEntity.getBase().setRenderRadius((int) npcModelData.getViewRange());
       if (npcModelData.isNameTag()) {
         activeModel.getBone("name").ifPresent(modelBone -> {

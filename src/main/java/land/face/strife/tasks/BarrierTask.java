@@ -3,9 +3,7 @@ package land.face.strife.tasks;
 import java.lang.ref.WeakReference;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
@@ -13,8 +11,6 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class BarrierTask extends BukkitRunnable {

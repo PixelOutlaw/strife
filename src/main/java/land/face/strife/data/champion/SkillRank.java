@@ -21,10 +21,16 @@ public enum SkillRank {
   }
 
   public static boolean isRank(SkillRank currentRank, SkillRank checkRank) {
+    if (currentRank == null) {
+      return false;
+    }
     return currentRank.ordinal() >= checkRank.ordinal();
   }
 
   public static boolean isRank(int level, SkillRank rank) {
+    if (rank == null) {
+      return false;
+    }
     return switch (rank) {
       case NOVICE -> true;
       case APPRENTICE -> level >= 20;
@@ -33,6 +39,20 @@ public enum SkillRank {
       case MASTER -> level >= 80;
     };
   }
+
+  public static boolean check(SkillRank rank, int level) {
+    if (rank == null) {
+      return false;
+    }
+    return switch (rank) {
+      case NOVICE -> level < 20;
+      case APPRENTICE -> level < 40;
+      case JOURNEYMAN -> level < 60;
+      case EXPERT -> level < 80;
+      case MASTER -> true;
+    };
+  }
+
 
   public static SkillRank getRank(StrifeMob mob, LifeSkillType type) {
     return getRank(mob.getChampion(), type);

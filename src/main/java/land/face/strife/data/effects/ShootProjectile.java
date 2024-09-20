@@ -4,6 +4,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.stats.StrifeStat;
@@ -37,6 +38,7 @@ public class ShootProjectile extends Effect {
   private EntityType projectileEntity;
   private OriginLocation originType;
   private Color arrowColor;
+  private List<Color> modelColors;
   private String modelId;
 
   private boolean ignoreMultishot, bounce, ignite, zeroPitch, blockHitEffects, silent, gravity, throwItem,
@@ -153,7 +155,8 @@ public class ShootProjectile extends Effect {
           scale += caster.getStat(StrifeStat.MULTISHOT) / 600;
           scale += caster.getStat(StrifeStat.EXTRA_PROJECTILES) * 0.05f;
         }
-        ProjectileUtil.setupModelledProjectile(modelId, caster, projectile, location, direction, null, scale, throwItem);
+        var c = modelColors.isEmpty() ? null : modelColors.get(StrifePlugin.RNG.nextInt(modelColors.size()));
+        ProjectileUtil.setupModelledProjectile(modelId, caster, projectile, location, direction, c, scale, throwItem);
       }
 
       if (!trailEffects.isEmpty()) {

@@ -6,7 +6,6 @@ import static org.bukkit.inventory.EquipmentSlot.HAND;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import info.faceland.loot.data.pdc.EquipmentData;
 import info.faceland.loot.data.pdc.ItemDetails;
-import info.faceland.loot.data.pdc.StoredStat;
 import info.faceland.loot.items.NewCustomItem;
 import info.faceland.loot.items.SoulGem;
 import info.faceland.loot.utils.PersistHelper;
@@ -183,6 +182,12 @@ public class StrifeMobManager {
     }
     for (String slot : updateItems.keySet()) {
       ItemStack item = updateItems.get(slot);
+      if ("PET".equals(slot)) {
+        equipmentCache.setSlotStats(slot, PetData.getPetStats(item));
+        equipmentCache.setSlotAbilities(slot, new HashSet<>());
+        equipmentCache.setSlotTraits(slot, new HashSet<>());
+        continue;
+      }
       ItemDataBundle dataBundle = getItemInfo(slot, equipment, invyData);
       if (isPlayer && !ItemUtil.meetsRequirements(item, mob)) {
         sendMessage(mob.getEntity(), levelReqMap.get(slot));
@@ -201,16 +206,16 @@ public class StrifeMobManager {
         applyDualWieldStatChanges(equipmentCache, "OFF_HAND");
       }
     }
-    addWeaponMods(handItem, updateItems.get("OFF_HAND"), equipmentCache);
-
+    applyWeaponMods(handItem, updateItems.get("OFF_HAND"), equipmentCache);
     equipmentCache.recombine(plugin, mob);
   }
 
-  private static void addWeaponMods(ItemStack hand, ItemStack offhand, EquipmentCache equipmentCache) {
+  private static void applyWeaponMods(ItemStack hand, ItemStack offhand, EquipmentCache equipmentCache) {
     EquipmentData d1 = PersistHelper.getEquipmentData(hand);
     EquipmentData d2 = PersistHelper.getEquipmentData(offhand);
     Map<StrifeStat, Float> addStats = new HashMap<>();
 
+    equipmentCache.getWeaponMods().clear();
     if (d1 != null && d1.getTier() != null && !d1.getTier().getWeaponMods().isEmpty()) {
       addStats.putAll(d1.getTier().getWeaponMods());
     }
@@ -219,10 +224,7 @@ public class StrifeMobManager {
         addStats.put(entry.getKey(), Math.min(addStats.getOrDefault(entry.getKey(), 0f), entry.getValue()));
       }
     }
-    for (var entry : addStats.entrySet()) {
-      equipmentCache.getSlotStats("HAND").put(entry.getKey(),
-          equipmentCache.getSlotStats("HAND").getOrDefault(entry.getKey(), 0F) + entry.getValue());
-    }
+    equipmentCache.getWeaponMods().putAll(addStats);
   }
 
   private ItemDataBundle getItemInfo(String slot, EntityEquipment equipment, PlayerData invyData) {

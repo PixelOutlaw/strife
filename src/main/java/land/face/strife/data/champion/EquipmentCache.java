@@ -17,10 +17,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.inventory.EquipmentSlot;
 
+@Getter
+@Setter
 public class EquipmentCache {
 
-  @Getter
-  @Setter
   private long lastUpdate;
 
   private final Map<String, Integer> slotHashCodeMap = new HashMap<>();
@@ -28,11 +28,10 @@ public class EquipmentCache {
   private final Map<String, Map<StrifeStat, Float>> slotStatMap = new HashMap<>();
   private final Map<String, List<LoreAbility>> slotAbilityMap = new HashMap<>();
   private final Map<String, List<StrifeTrait>> slotTraitMap = new HashMap<>();
+  private final Map<StrifeStat, Float> weaponMods = new HashMap<>();
 
   private final Set<LoreAbility> loreAbilities = new HashSet<>();
-  @Getter
   private final Map<StrifeStat, Float> combinedStats = new HashMap<>();
-  @Getter
   private final Set<StrifeTrait> combinedTraits = new HashSet<>();
 
   public final static Set<String> ITEM_SLOTS = buildSlots();
@@ -107,6 +106,7 @@ public class EquipmentCache {
   public void recombineStats() {
     combinedStats.clear();
     combinedStats.putAll(StatUpdateManager.combineMaps(
+        weaponMods,
         slotStatMap.get("HAND"),
         slotStatMap.get("OFF_HAND"),
         slotStatMap.get("HELMET"),

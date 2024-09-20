@@ -39,11 +39,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class ItemUtil {
 
-  public static Set<String> pickDestroyKeys = new HashSet<>();
-  public static Set<String> hoeDestroyKeys = new HashSet<>();
-  public static Set<String> axeDestroyKeys = new HashSet<>();
-  public static Set<String> shearsDestroyKeys = new HashSet<>();
-
   public static ItemStack withBase64(ItemStack item, String base64) {
     UUID hashAsId = new UUID(base64.hashCode(), base64.hashCode());
     return Bukkit.getUnsafe().modifyItemStack(item,
@@ -78,34 +73,11 @@ public class ItemUtil {
     if (stack == null) {
       return false;
     }
-    String material = stack.getType().toString();
-    if (material.endsWith("_PICKAXE")) {
-      return verifyAndApplyDestroyKeys(stack, pickDestroyKeys);
-    } else if (material.endsWith("_HOE")) {
-      return verifyAndApplyDestroyKeys(stack, hoeDestroyKeys);
-    } else if (material.endsWith("_AXE")) {
-      return verifyAndApplyDestroyKeys(stack, axeDestroyKeys);
-    } else if (stack.getType() == Material.SHEARS) {
-      return verifyAndApplyDestroyKeys(stack, shearsDestroyKeys);
-    } else if (stack.getType() == Material.FISHING_ROD || material.endsWith("_SHOVEL")) {
-      int modelData = getCustomData(stack);
-      return modelData < 8000;
-    }
-    return false;
-  }
-
-  private static boolean verifyAndApplyDestroyKeys(ItemStack stack, Set<String> keys) {
-    int modelData = getCustomData(stack);
-    if (modelData < 8000) {
-      ItemMeta iMeta = stack.getItemMeta();
-      iMeta.addItemFlags(ItemFlag.HIDE_DESTROYS);
-      Set<Namespaced> breakSpaces = new HashSet<>();
-      for (String s : keys) {
-        breakSpaces.add(NamespacedKey.minecraft(s));
+    var type = stack.getType();
+    switch (type) {
+      case STONE_AXE, IRON_AXE, STONE_HOE, IRON_HOE, IRON_PICKAXE, STONE_PICKAXE, FISHING_ROD -> {
+        return getCustomData(stack) < 8000;
       }
-      iMeta.setDestroyableKeys(breakSpaces);
-      stack.setItemMeta(iMeta);
-      return true;
     }
     return false;
   }

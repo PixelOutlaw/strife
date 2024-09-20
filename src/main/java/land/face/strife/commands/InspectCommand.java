@@ -18,6 +18,7 @@
  */
 package land.face.strife.commands;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
@@ -25,6 +26,10 @@ import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandCompletion;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
 import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.champion.Champion;
+import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.util.PlayerDataUtil;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 @CommandAlias("stats|inspect|view-stats|viewstats")
@@ -51,6 +56,26 @@ public class InspectCommand extends BaseCommand {
     if (!target.getPlayer().isValid()) {
       MessageUtils.sendMessage(sender, "&eThis player is offline or doesn't exist!");
       return;
+    }
+    if (sender.getGameMode() == GameMode.ADVENTURE) {
+      Champion defender = plugin.getChampionManager().getChampion(target.player);
+      if (!defender.getSaveData().isAllowInspect()) {
+        var loreLevel = PlayerDataUtil.getSkillLevels(sender, LifeSkillType.LOREMASTER, false);
+        if (loreLevel.getLevel() < 20) {
+          sender.sendMessage(FaceColor.YELLOW + "This player does not allow others view their stats!");
+          return;
+        }
+        int playerLevel = target.player.getLevel();
+        if (loreLevel.getLevelWithBonus() + 5 < playerLevel) {
+          sender.sendMessage(FaceColor.YELLOW + "Your Loremaster level is too low to view this player's stats!");
+          return;
+        }
+        if (sender.getLocation().getWorld() != target.getPlayer().getLocation().getWorld() ||
+            sender.getLocation().distanceSquared(target.player.getLocation()) > 256) {
+          sender.sendMessage(FaceColor.YELLOW + "This player is too far away to inspect!");
+          return;
+        }
+      }
     }
     plugin.getStatsMenu().getInspectionTargetMap().put(sender, target.getPlayer());
     plugin.getStatsMenu().open(sender);

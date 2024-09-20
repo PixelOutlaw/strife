@@ -10,7 +10,6 @@ import land.face.strife.data.effects.CreateWorldSpaceEntity;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import org.bukkit.Location;
-import org.bukkit.util.Vector;
 
 public class WSEManager {
 
@@ -22,11 +21,7 @@ public class WSEManager {
     if (!cse.isStrictDuration()) {
       newLifeSpan *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
-    Vector direction = caster.getEntity().getEyeLocation().getDirection().clone();
-    if (cse.isZeroVerticalAxis()) {
-      direction.setY(0.00005);
-      direction.normalize();
-    }
+    var direction = location.getDirection();
     direction.multiply(cse.getVelocity());
 
     var entity = WorldSpaceEffect.builder()

@@ -23,23 +23,14 @@ import static org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.TargetResponse;
 import land.face.strife.data.champion.LifeSkillType;
-import land.face.strife.data.effects.Effect;
 import land.face.strife.data.pojo.SkillLevelData;
-import land.face.strife.events.ProjectileDamageEvent;
 import land.face.strife.util.DamageUtil;
-import land.face.strife.util.LogUtil;
 import land.face.strife.util.PlayerDataUtil;
-import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
@@ -184,11 +175,7 @@ public class TargetingListener implements Listener {
     if (!MoveUtil.hasMoved((Player) event.getTarget(), 3000)) {
       return;
     }
-    if (event.getEntity().getType() == EntityType.HOGLIN ||
-        event.getEntity().getType() == EntityType.ZOGLIN ||
-        event.getEntity().getType() == EntityType.SLIME ||
-        event.getEntity().getType() == EntityType.MAGMA_CUBE
-    ) {
+    if (event.getEntity().getType() == EntityType.SLIME || event.getEntity().getType() == EntityType.MAGMA_CUBE) {
       return;
     }
     if (event.getReason() == CLOSEST_PLAYER && event.getEntity() instanceof LivingEntity mob) {
@@ -251,14 +238,13 @@ public class TargetingListener implements Listener {
           float xp = plugin.getStealthManager().getSneakActionExp(difficultyLevel, stealthLevel);
           xp *= distanceMult;
           SNEAK_KEYS.add(sneakKey);
-          Bukkit.getScheduler().runTaskLater(plugin,
-              () -> SNEAK_KEYS.remove(sneakKey), 40L);
-          plugin.getSkillExperienceManager().addExperience(player,
-              LifeSkillType.SNEAK, xp, false, false);
+          Bukkit.getScheduler().runTaskLater(plugin, () -> SNEAK_KEYS.remove(sneakKey), 40L);
+          plugin.getSkillExperienceManager().addExperience(player, LifeSkillType.SNEAK, xp, false, false);
         }
-      } else {
-        event.setCancelled(false);
+        return;
       }
+      TargetingUtil.expandMobRange(player, mob);
+      event.setCancelled(false);
     }
   }
 }

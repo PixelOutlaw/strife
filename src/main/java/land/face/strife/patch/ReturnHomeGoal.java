@@ -77,6 +77,12 @@ public class ReturnHomeGoal implements Goal<Mob> {
     if (mob.getTarget() != null) {
       return;
     }
+    if (mob.getOrigin() == null) {
+      mob.remove();
+      return;
+    }
+    mob.lookAt(mob.getOrigin());
+    mob.setVelocity(mob.getOrigin().toVector().subtract(mob.getLocation().toVector()).normalize());
     mob.getPathfinder().moveTo(mob.getOrigin(), 1.0D);
   }
 

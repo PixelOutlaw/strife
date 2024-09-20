@@ -100,7 +100,7 @@ public class WorldSpaceEffect {
         if (velocity.getY() <= 0) {
           if (restoreSpeedOnGroundContact) {
             double oldSpeed = velocity.length();
-            velocity.setY(0);
+            velocity.setY(0.0001);
             velocity.normalize();
             velocity.multiply(oldSpeed);
           } else {

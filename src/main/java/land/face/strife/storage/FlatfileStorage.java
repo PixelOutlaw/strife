@@ -92,6 +92,7 @@ public class FlatfileStorage implements DataStorage {
     // Preferences
     config.set(champUuid + ".display-exp", saveData.isDisplayExp());
     config.set(champUuid + ".glow-enabled", saveData.isGlowEnabled());
+    config.set(champUuid + ".allow-inspect", saveData.isAllowInspect());
 
     config.set(champUuid + ".unused-stat-points", saveData.getUnusedStatPoints());
     config.set(champUuid + ".highest-reached-level", saveData.getHighestReachedLevel());
@@ -169,6 +170,7 @@ public class FlatfileStorage implements DataStorage {
 
       saveData.setDisplayExp(section.getBoolean("display-exp", false));
       saveData.setGlowEnabled(section.getBoolean("glow-enabled", true));
+      saveData.setAllowInspect(section.getBoolean("allow-inspect", false));
 
       saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
 

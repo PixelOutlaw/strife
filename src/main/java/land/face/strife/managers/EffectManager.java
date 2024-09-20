@@ -339,6 +339,8 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setEffectSchedule(effectSchedule);
         ((CreateWorldSpaceEntity) effect).setMaxTicks(cs.getInt("refresh-delay", 5));
         ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
+        ((CreateWorldSpaceEntity) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
+
         ((CreateWorldSpaceEntity) effect).setModelEffect(cs.getString("model-effect", null));
         ((CreateWorldSpaceEntity) effect).setModelSize((float) cs.getDouble("model-size", 1));
         ((CreateWorldSpaceEntity) effect).setVerticalOffset((float) cs.getDouble("vertical-offset", 0));
@@ -348,12 +350,20 @@ public class EffectManager {
         }
         ((CreateWorldSpaceEntity) effect).setMaxFallTicks(cs.getInt("max-fall-ticks", 3));
         ((CreateWorldSpaceEntity) effect).setMaxDisplacement((float) cs.getDouble("max-displacement", 0));
-        ((CreateWorldSpaceEntity) effect).setOriginLocation(
-            OriginLocation.valueOf(cs.getString("origin", "HEAD")));
+        ((CreateWorldSpaceEntity) effect).setOriginLocation(OriginLocation.valueOf(cs.getString("origin", "HEAD")));
+
+        ((CreateWorldSpaceEntity) effect).setQuantity(cs.getInt("quantity", 1));
+        double initialAngle = cs.getDouble("initial-angle", 0);
+        if (initialAngle > 360) {
+          ((CreateWorldSpaceEntity) effect).setInitialAngle(-420);
+        } else {
+          ((CreateWorldSpaceEntity) effect).setInitialAngle((float) Math.toRadians(initialAngle));
+        }
+        ((CreateWorldSpaceEntity) effect).setSeparationAngle((float) Math.toRadians(cs.getDouble("separation-angle", 0)));
+
         ((CreateWorldSpaceEntity) effect).setVelocity((float) cs.getDouble("speed", 0));
         ((CreateWorldSpaceEntity) effect).setFriction((float) cs.getDouble("friction", 1));
         ((CreateWorldSpaceEntity) effect).setGravity((float) cs.getDouble("gravity", 0));
-        ((CreateWorldSpaceEntity) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
         ((CreateWorldSpaceEntity) effect).setZeroVerticalAxis(cs.getBoolean("zero-y-axis", false));
         ((CreateWorldSpaceEntity) effect).setDestroyOnContact(cs.getBoolean("destroy-on-contact", false));
         ((CreateWorldSpaceEntity) effect).setDestroyOnSharpAngle(cs.getBoolean("destroy-on-sharp-angle", false));
@@ -553,6 +563,14 @@ public class EffectManager {
         if (color != -1) {
           ((ShootProjectile) effect).setArrowColor(Color.fromRGB(color));
         }
+        ((ShootProjectile) effect).setModelColors(cs.getStringList("model-colors").stream().map(s -> {
+          try {
+            var realColor = java.awt.Color.decode(s);
+            return Color.fromRGB(realColor.getRed(), realColor.getGreen(), realColor.getBlue());
+          } catch (Exception e) {
+            return Color.WHITE;
+          }
+        }).toList());
         List<String> effects = cs.getStringList("hit-effects");
         delayedSetEffects(((ShootProjectile) effect).getHitEffects(), effects, key, false);
         List<String> trailEffects = cs.getStringList("trail-effects");

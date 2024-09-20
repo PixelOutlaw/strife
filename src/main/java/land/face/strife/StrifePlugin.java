@@ -61,6 +61,7 @@ import land.face.strife.commands.MountCommand;
 import land.face.strife.commands.PrayerCommand;
 import land.face.strife.commands.SpawnerCommand;
 import land.face.strife.commands.StrifeCommand;
+import land.face.strife.commands.ToggleInspectCommand;
 import land.face.strife.commands.ToggleXpCommand;
 import land.face.strife.data.LevelPath;
 import land.face.strife.data.LevelPath.Path;
@@ -493,6 +494,7 @@ public class StrifePlugin extends FacePlugin {
     commandManager.registerCommand(new GodCommand(this));
     commandManager.registerCommand(new StrifeCommand(this));
     commandManager.registerCommand(new ToggleXpCommand(this));
+    commandManager.registerCommand(new ToggleInspectCommand(this));
     commandManager.registerCommand(new SpawnerCommand(this));
     commandManager.registerCommand(new AbilityMacroCommand(this));
     commandManager.registerCommand(new AgilityCommand(this));
@@ -681,15 +683,6 @@ public class StrifePlugin extends FacePlugin {
     PlayerDataUtil.refresh(this);
     StatUtil.refreshPlugin(this);
     DOTUtil.refresh(this);
-
-    ItemUtil.pickDestroyKeys.clear();
-    ItemUtil.hoeDestroyKeys.clear();
-    ItemUtil.axeDestroyKeys.clear();
-    ItemUtil.shearsDestroyKeys.clear();
-    ItemUtil.pickDestroyKeys.addAll(configYAML.getStringList("pick-destroy-keys"));
-    ItemUtil.hoeDestroyKeys.addAll(configYAML.getStringList("hoe-destroy-keys"));
-    ItemUtil.axeDestroyKeys.addAll(configYAML.getStringList("axe-destroy-keys"));
-    ItemUtil.shearsDestroyKeys.addAll(configYAML.getStringList("shears-destroy-keys"));
 
     Riptide.buildNMSEnum();
     Riptide.startTask(this);

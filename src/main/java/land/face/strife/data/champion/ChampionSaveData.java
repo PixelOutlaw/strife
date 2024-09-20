@@ -53,7 +53,7 @@ public class ChampionSaveData {
   private double catchupExpUsed;
 
   @Getter @Setter
-  private boolean onMount, glowEnabled, displayExp;
+  private boolean onMount, glowEnabled, displayExp, allowInspect;
 
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;
