@@ -42,18 +42,10 @@ public class ViolationManager {
       lastPlayerLocationOnKill.put(player, player.getLocation());
       return 1f;
     }
-    if (player.getLocation().getWorld() != lastPlayerLocationOnKill.get(player).getWorld() ||
-        penaltyFreeWorlds.contains(player.getLocation().getWorld().getName())) {
-      violationLevel.put(player, 0);
-      lastPlayerLocationOnKill.put(player, player.getLocation());
-      cachedViolation.put(player, 1.0f);
-      return 1f;
-    }
     float mult = 1.0f;
     int amount = violationLevel.getOrDefault(player, 0);
     amount += getViolationChange(player);
-    amount = Math.max(amount, 0);
-    amount = Math.min(amount, 200);
+    amount = Math.max(Math.min(amount, 200), 0);
     violationLevel.put(player, amount);
     if (amount >= 100) {
       mult = (200f - amount) / 100f;
@@ -65,11 +57,17 @@ public class ViolationManager {
   }
 
   private int getViolationChange(Player player) {
+    if (lastPlayerLocationOnKill.get(player).getWorld() != player.getWorld()) {
+      return -200;
+    }
+    if (penaltyFreeWorlds.contains(player.getLocation().getWorld().getName())) {
+      return -200;
+    }
     if (!MoveUtil.hasMoved(player, 60000)) {
-      return 200;
+      return 35;
     }
     if (!MoveUtil.hasMoved(player, 10000)) {
-      return 10;
+      return 5;
     }
     double distance = lastPlayerLocationOnKill.get(player).distanceSquared(player.getLocation());
     if (distance < 0.35) {

@@ -5,6 +5,7 @@ import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +25,7 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.SkillRank;
+import land.face.strife.data.pojo.Shielding;
 import land.face.strife.events.BlockChangeEvent;
 import land.face.strife.events.RuneChangeEvent;
 import land.face.strife.managers.GuiManager;
@@ -50,6 +52,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
+@SuppressWarnings("unused")
 public class StrifeMob {
 
   @Getter
@@ -69,6 +72,7 @@ public class StrifeMob {
   private WeakReference<ModeledEntity> modelEntity = null;
   private WeakReference<StrifeMob> owner = new WeakReference<>(null);
 
+  @Setter
   @Getter
   private EntityAbilitySet abilitySet;
   @Getter
@@ -81,6 +85,7 @@ public class StrifeMob {
   private boolean charmImmune = false;
   private final Set<Buff> runningBuffs = new HashSet<>();
   private final Map<UUID, Float> takenDamage = new HashMap<>();
+  private final List<Shielding> shielding = new ArrayList<>();
   private final Set<UUID> reflectedTargets = new HashSet<>();
   @Getter
   private final Map<UUID, Float> threatTargets = new HashMap<>();
@@ -90,6 +95,7 @@ public class StrifeMob {
       maxBlock = 1000, frost, frostGraceTicks, corruption, bleed, threatLevel = 0;
   @Getter @Setter
   private int maxEarthRunes = 3, earthRunes = 0, maxAirJumps = 0, airJumps = 0;
+  @Setter
   @Getter
   private boolean useEquipment;
 
@@ -245,6 +251,15 @@ public class StrifeMob {
     if (amount < 0.01) {
       return amount;
     }
+    while (!shielding.isEmpty() && amount > 0) {
+      var currentShield = shielding.get(0);
+      if (currentShield.getAmount() > amount) {
+        currentShield.setAmount(currentShield.getAmount() - amount);
+        return 0;
+      }
+      amount -= currentShield.getAmount();
+      shielding.remove(currentShield);
+    }
     float diff = barrier - amount;
     if (diff > 0) {
       barrier -= amount;
@@ -265,12 +280,28 @@ public class StrifeMob {
     }
   }
 
-  public void setEnergy(float energy) {
-    this.energy = Math.min(Math.max(0, energy), maxEnergy);
+  public void addShielding(float amount, int ticks) {
+    var shield = new Shielding(amount);
+    shielding.add(shield);
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> shielding.remove(shield), ticks);
   }
 
-  public void setMaxEnergy(float maxEnergy) {
-    this.maxEnergy = maxEnergy;
+  public float getShielding() {
+    if (shielding.isEmpty()) {
+      return 0;
+    }
+    return (float) shielding.stream().mapToDouble(Shielding::getAmount).sum();
+  }
+
+  public float getMaxShielding() {
+    if (shielding.isEmpty()) {
+      return 0;
+    }
+    return (float) shielding.stream().mapToDouble(Shielding::getMaxAmount).sum();
+  }
+
+  public void setEnergy(float energy) {
+    this.energy = Math.min(Math.max(0, energy), maxEnergy);
   }
 
   public float getPrayer() {
@@ -479,14 +510,6 @@ public class StrifeMob {
 
   public LivingEntity getEntity() {
     return livingEntity.get();
-  }
-
-  public void setUseEquipment(boolean useEquipment) {
-    this.useEquipment = useEquipment;
-  }
-
-  public void setAbilitySet(EntityAbilitySet abilitySet) {
-    this.abilitySet = abilitySet;
   }
 
   public String getUniqueEntityId() {

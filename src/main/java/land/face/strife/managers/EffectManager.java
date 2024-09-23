@@ -254,6 +254,14 @@ public class EffectManager {
         ((RestoreBarrier) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
         ((RestoreBarrier) effect).setNewDelayTicks(cs.getInt("new-barrier-delay-ticks", -1));
       }
+      case SHIELDING -> {
+        effect = new Shielding();
+        ((Shielding) effect).setAmount((float) cs.getDouble("amount", 1));
+        ((Shielding) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((Shielding) effect).setFlatBonus((float) cs.getDouble("flat-bonus", 0));
+        ((Shielding) effect).setDurationTicks(cs.getInt("duration-ticks", 60));
+        ((Shielding) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
+      }
       case RESTORE_BLOCK -> {
         effect = new RestoreBlock();
         ((RestoreBlock) effect).setAmount((float) cs.getDouble("amount", 1));

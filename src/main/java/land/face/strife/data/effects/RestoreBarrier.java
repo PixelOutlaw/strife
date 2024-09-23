@@ -2,21 +2,19 @@ package land.face.strife.data.effects;
 
 import land.face.strife.data.BonusDamage;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.DamageScale;
 import land.face.strife.util.DamageUtil.DamageType;
 import lombok.Setter;
 
+@Setter
 public class RestoreBarrier extends Effect {
 
-  @Setter
   private float amount;
-  @Setter
   private float flatBonus = 0;
-  @Setter
   private DamageScale damageScale;
-  @Setter
   private int newDelayTicks;
 
   @Override

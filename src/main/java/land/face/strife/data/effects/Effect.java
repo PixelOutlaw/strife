@@ -91,6 +91,7 @@ public abstract class Effect {
     COOLDOWN_REDUCTION,
     UNTOGGLE,
     RESTORE_BARRIER,
+    SHIELDING,
     RESTORE_BLOCK,
     RESTORE_ENERGY,
     INCREASE_RAGE,
