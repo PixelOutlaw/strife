@@ -674,6 +674,7 @@ public class AbilityManager {
     Ability ability = Ability.builder()
         .id(key)
         .name(name)
+        .hidden(cs.getBoolean("hidden", true))
         .friendly(cs.getBoolean("friendly", false))
         .cooldown(cooldown)
         .sneakCooldown(sneakCooldown)
