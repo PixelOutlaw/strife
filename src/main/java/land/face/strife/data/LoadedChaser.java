@@ -44,8 +44,8 @@ public class LoadedChaser {
     data.setMaxSpeed((float) cs.getDouble("max-speed", 1));
     data.setStartSpeed((float) cs.getDouble("start-speed", 1));
 
-    data.setStartHorizontalMin((float) cs.getDouble("start-horizontal-min", 0));
-    data.setStartHorizontalMax((float) cs.getDouble("start-horizontal-max", 0.1));
+    data.setStartHorizontalMin((float) cs.getDouble("start-horizontal-min", 0) / 57.2958f);
+    data.setStartHorizontalMax((float) cs.getDouble("start-horizontal-max", 0.1) / 57.2958f);
     data.setStartVerticalMin((float) cs.getDouble("start-vertical-min", 0));
     data.setStartVerticalMax((float) cs.getDouble("start-vertical-max", 0.1));
 

@@ -17,7 +17,7 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
-import io.pixeloutlaw.minecraft.spigot.config.VersionedSmartYamlConfiguration;
+import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +44,7 @@ public class StrifeAttributeManager {
   private static final String noUnspentPoints = StringExtensionsKt.chatColorize(
       "&8No Attribute Points Left!");
 
-  public StrifeAttributeManager(VersionedSmartYamlConfiguration attributesYAML) {
+  public StrifeAttributeManager(SmartYamlConfiguration attributesYAML) {
     attributeMap = new LinkedHashMap<>();
     for (String key : attributesYAML.getKeys(false)) {
       if (!attributesYAML.isConfigurationSection(key)) {

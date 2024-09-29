@@ -1,9 +1,13 @@
 package land.face.strife.data.pojo;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class KeyframeParticle {
 
@@ -24,4 +28,23 @@ public class KeyframeParticle {
     location.getWorld().spawnParticle(particleEnum, location, amount, spread, spread, spread, speed);
   }
 
+  public void play(Player player, Location location) {
+    if (particleEnum == null) {
+      particleEnum = Particle.valueOf(particle);
+    }
+    location.getWorld().spawnParticle(
+        particleEnum,
+        List.of(player),
+        player,
+        location.getX(),
+        location.getY(),
+        location.getZ(),
+        amount,
+        spread,
+        spread,
+        spread,
+        speed,
+        null
+    );
+  }
 }

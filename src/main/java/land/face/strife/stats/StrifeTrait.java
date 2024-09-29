@@ -112,12 +112,13 @@ public enum StrifeTrait {
       "|none|丒", "|yellow|Shadow damage taken is halved"),
 
   FAITH_DEFENSE("|orange||ul|Passive Effect - Divine Armor",
-      "|pink|Armor Of Faith |yellow|reduces damage by",
-      "|yellow|10% per missing armor piece"
+      "|pink||ul|Armor Of Faith|yellow| grants |white|10%",
+      "|yellow|damage reduction per missing",
+      "|yellow|piece of armor"
   ),
   FAITH_DAMAGE("|orange||ul|Passive Effect - Weapon Of Faith",
-      "|none|丒", "|pink|Fervor |yellow|increases damage by",
-      "|yellow|5% per missing armor piece"
+      "|none|丒", "|pink||ul|Fervor|yellow| grants |white|5% damage",
+      "|yellow|per missing piece of armor"
   ),
 
   COIN_FLIP("|orange||ul|Passive Effect - Coin Flip",

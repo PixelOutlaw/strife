@@ -53,7 +53,7 @@ import land.face.dinvy.DeluxeInvyPlugin;
 import land.face.learnin.LearninBooksPlugin;
 import land.face.learnin.objects.LoadedKnowledge;
 import land.face.strife.commands.AbilityMacroCommand;
-import land.face.strife.commands.AgilityCommand;
+import land.face.strife.commands.ContactObjectCommand;
 import land.face.strife.commands.GodCommand;
 import land.face.strife.commands.InspectCommand;
 import land.face.strife.commands.LevelUpCommand;
@@ -66,6 +66,7 @@ import land.face.strife.commands.ToggleXpCommand;
 import land.face.strife.data.LevelPath;
 import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.LoadedMount;
+import land.face.strife.data.LoreBooks;
 import land.face.strife.data.Spawner;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
@@ -114,13 +115,13 @@ import land.face.strife.listeners.SwingListener;
 import land.face.strife.listeners.TargetingListener;
 import land.face.strife.managers.AbilityIconManager;
 import land.face.strife.managers.AbilityManager;
-import land.face.strife.managers.AgilityManager;
 import land.face.strife.managers.AttackSpeedManager;
 import land.face.strife.managers.BlockManager;
 import land.face.strife.managers.BoostManager;
 import land.face.strife.managers.BossBarManager;
 import land.face.strife.managers.BuffManager;
 import land.face.strife.managers.ChampionManager;
+import land.face.strife.managers.ContactObjectManager;
 import land.face.strife.managers.CorruptionManager;
 import land.face.strife.managers.CounterManager;
 import land.face.strife.managers.DamageManager;
@@ -176,7 +177,6 @@ import land.face.strife.tasks.StrifeMobTracker;
 import land.face.strife.tasks.VirtualEntityTask;
 import land.face.strife.util.DOTUtil;
 import land.face.strife.util.DamageUtil;
-import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.LogUtil.LogLevel;
 import land.face.strife.util.PlayerDataUtil;
@@ -212,9 +212,9 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private MasterConfiguration settings;
   @Getter
-  private VersionedSmartYamlConfiguration attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
+  private SmartYamlConfiguration attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
       pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML, prayerYAML, displaysYaml,
-      herdYML;
+      herdYML, contactPrefabsYml, lorebooksYml;
   private SmartYamlConfiguration spawnerYAML;
 
   @Getter
@@ -294,7 +294,7 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private WSEManager wseManager;
   @Getter
-  private AgilityManager agilityManager;
+  private ContactObjectManager contactObjectManager;
   @Getter
   private CitizenModelListener citizenModelListener;
 
@@ -366,10 +366,10 @@ public class StrifePlugin extends FacePlugin {
       LogUtil.printError("DANGUS ALERT! Bad log level! Acceptable values: " + Arrays.toString(LogLevel.values()));
     }
 
-    List<VersionedSmartYamlConfiguration> configurations = new ArrayList<>();
-    VersionedSmartYamlConfiguration configYAML;
+    List<SmartYamlConfiguration> configurations = new ArrayList<>();
+    SmartYamlConfiguration configYAML;
     configurations.add(configYAML = defaultSettingsLoad("config.yml"));
-    VersionedSmartYamlConfiguration langYAML;
+    SmartYamlConfiguration langYAML;
     configurations.add(langYAML = defaultSettingsLoad("language.yml"));
     configurations.add(attributesYAML = defaultSettingsLoad("attributes.yml"));
     configurations.add(baseStatsYAML = defaultSettingsLoad("base-entity-stats.yml"));
@@ -384,16 +384,11 @@ public class StrifePlugin extends FacePlugin {
     configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
     configurations.add(mountsYAML = defaultSettingsLoad("mounts.yml"));
     configurations.add(prayerYAML = defaultSettingsLoad("prayer.yml"));
+    configurations.add(contactPrefabsYml = defaultSettingsLoad("contact-prefabs.yml"));
     configurations.add(displaysYaml = defaultSettingsLoad("display-vfx.yml"));
+    configurations.add(lorebooksYml = defaultSettingsLoad("lore.yml"));
 
-    SmartYamlConfiguration agilityYAML = new SmartYamlConfiguration(
-        new File(getDataFolder(), "agility-locations.yml"));
-
-    for (VersionedSmartYamlConfiguration config : configurations) {
-      if (config.update()) {
-        getLogger().info("Updating " + config.getFileName());
-      }
-    }
+    SmartYamlConfiguration contactSpawnersYaml = new SmartYamlConfiguration(new File(getDataFolder(), "contact-spawners.yml"));
 
     List<SmartYamlConfiguration> uniques = uniqueFileLoad();
     spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
@@ -435,7 +430,7 @@ public class StrifePlugin extends FacePlugin {
     monsterManager = new MonsterManager(championManager);
     stealthManager = new StealthManager(this);
     wseManager = new WSEManager();
-    agilityManager = new AgilityManager(this, agilityYAML);
+    contactObjectManager = new ContactObjectManager(this, contactSpawnersYaml);
     spawnerManager = new SpawnerManager(this);
     mobModManager = new MobModManager(this, settings, equipmentManager);
     abilityIconManager = new AbilityIconManager(this);
@@ -475,6 +470,7 @@ public class StrifePlugin extends FacePlugin {
     loadSpawners();
     loadMounts();
     prayerManager.setupGodPrayers();
+    LoreBooks.buildStuff(lorebooksYml);
 
     SaveTask saveTask = new SaveTask(this);
     StrifeMobTracker strifeMobTracker = new StrifeMobTracker(this);
@@ -497,7 +493,7 @@ public class StrifePlugin extends FacePlugin {
     commandManager.registerCommand(new ToggleInspectCommand(this));
     commandManager.registerCommand(new SpawnerCommand(this));
     commandManager.registerCommand(new AbilityMacroCommand(this));
-    commandManager.registerCommand(new AgilityCommand(this));
+    commandManager.registerCommand(new ContactObjectCommand(this));
 
     commandManager.getCommandCompletions()
         .registerCompletion("uniques", c -> uniqueEntityManager.getLoadedUniquesMap().keySet());
@@ -568,7 +564,8 @@ public class StrifePlugin extends FacePlugin {
         20L * 1860
     ));
 
-    agilityManager.loadAgilityContainers();
+    contactObjectManager.loadPrefabs(contactPrefabsYml);
+    contactObjectManager.loadSpawners(contactSpawnersYaml);
     boostManager.loadBoosts();
 
     Bukkit.getPluginManager().registerEvents(new ExperienceListener(this), this);
@@ -756,7 +753,8 @@ public class StrifePlugin extends FacePlugin {
 
     strifeMobManager.despawnAllTempEntities();
     bossBarManager.clearBars();
-    agilityManager.saveLocations();
+    contactObjectManager.saveLocations();
+    contactObjectManager.destroyAll();
     spawnerManager.cancelAll();
     corruptionManager.endTasks();
     blockManager.endTasks();
@@ -784,7 +782,7 @@ public class StrifePlugin extends FacePlugin {
     LogUtil.printInfo("Successfully disabled Strife-v" + getDescription().getVersion());
   }
 
-  private VersionedSmartYamlConfiguration defaultSettingsLoad(String name) {
+  private SmartYamlConfiguration defaultSettingsLoad(String name) {
     return new VersionedSmartYamlConfiguration(new File(getDataFolder(), name),
         getResource(name), VersionedConfiguration.VersionUpdateType.BACKUP_AND_UPDATE);
   }

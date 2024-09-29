@@ -5,9 +5,7 @@ import static land.face.strife.data.champion.LifeSkillType.AGILITY;
 import com.tealcube.minecraft.bukkit.facecore.event.LandEvent;
 import com.tealcube.minecraft.bukkit.facecore.event.LaunchEvent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
-import java.util.UUID;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.AgilityLocationContainer;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.SkillRank;
 import land.face.strife.data.effects.Riptide;
@@ -15,7 +13,6 @@ import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.JumpUtil;
 import land.face.strife.util.StatUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -33,10 +30,6 @@ public class LaunchAndLandListener implements Listener {
 
   @EventHandler
   public void onLaunch(LaunchEvent event) {
-    for (AgilityLocationContainer cont : plugin.getAgilityManager()
-        .getInWorld(event.getLocation().getWorld().getName())) {
-      AgilityLocationContainer.checkStart(cont, event.getPlayer(), event.getLocation());
-    }
     if (!event.getPlayer().isSprinting() || MoveUtil.timeOffGround(event.getPlayer()) > 65) {
       return;
     }
@@ -80,20 +73,5 @@ public class LaunchAndLandListener implements Listener {
   @EventHandler
   public void onLand(LandEvent event) {
     Riptide.sendCancelPacket(event.getPlayer());
-    for (AgilityLocationContainer cont : plugin.getAgilityManager().getInWorld(event.getLocation().getWorld().getName())) {
-      boolean success = AgilityLocationContainer.setProgress(cont, event.getPlayer(), event.getLocation());
-      if (success) {
-        float xp = cont.getExp();
-        if (cont.getRecentPlayers().contains(event.getPlayer().getUniqueId())) {
-          // Nothing
-        } else {
-          cont.getRecentPlayers().add(event.getPlayer().getUniqueId());
-          UUID uuid = event.getPlayer().getUniqueId();
-          Bukkit.getScheduler().runTaskLater(plugin, () -> cont.getRecentPlayers().remove(uuid), 20L * 60 * 5);
-          xp *= 10;
-        }
-        plugin.getSkillExperienceManager().addExperience(event.getPlayer(), AGILITY, xp, false, false);
-      }
-    }
   }
 }

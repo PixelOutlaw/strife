@@ -124,6 +124,7 @@ public class JoinAndLeaveListener implements Listener {
   @EventHandler(priority = EventPriority.HIGH)
   public void onPlayerJoinLater(final PlayerJoinEvent event) {
     plugin.getPlayerMountManager().updateAllMountCollisions();
+    plugin.getContactObjectManager().loginSync(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

@@ -10,9 +10,7 @@ import java.util.List;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.effects.StrifeParticle;
-import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ProjectileUtil;
-import land.face.strife.util.TargetingUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -121,7 +119,8 @@ public class ChaserEntity {
             template.getModelColors().get(StrifePlugin.RNG.nextInt(template.getModelColors().size()));
         var s = template.getModelSizes().isEmpty() ? 1 :
             template.getModelSizes().get(StrifePlugin.RNG.nextInt(template.getModelSizes().size()));
-        ProjectileUtil.setupModelledProjectile(template.getModelId(), caster, arrow, ce.location, ce.velocity, c, s,false);
+        ProjectileUtil.setupModelledProjectile(template.getModelId(), caster, arrow, ce.location, ce.velocity, c, s,
+            false);
       }
       if (template.isBlockContactEffects()) {
         ProjectileUtil.setContactTrigger(arrow);
@@ -172,22 +171,23 @@ public class ChaserEntity {
       return;
     }
 
-    if (!template.isPhysical()) {
-      if (target.get() != null) {
-        Location targetCoords = target.get().getLocation().clone();
-        targetCoords.setY(targetCoords.getY() + target.get().getHeight() / 2 + 0.07);
-        double range = 0.5 + Math.pow(target.get().getWidth(), 2);
-        if (location.distanceSquared(targetCoords) < range) {
-          runEffects(target.get(), null);
-          delete();
-        }
-      } else if (targetLocation != null) {
-        double range = 0.5 + Math.pow(speed, 2);
-        if (location.distanceSquared(targetLocation) < range) {
-          runEffects(null, targetLocation);
-          delete();
-        }
+    if (targetLocation != null) {
+      double range = 1 + Math.pow(speed, 2);
+      if (location.distanceSquared(targetLocation) < range) {
+        runEffects(null, targetLocation);
+        delete();
       }
+      return;
+    }
+    if (guided && target.get() != null) {
+      Location targetCoords = target.get().getLocation().clone();
+      targetCoords.setY(targetCoords.getY() + target.get().getHeight() / 2 + 0.07);
+      double range = 1 + Math.pow(speed + Math.max(target.get().getHeight(), target.get().getWidth()), 2);
+      if (location.distanceSquared(targetCoords) < range) {
+        runEffects(target.get(), null);
+        delete();
+      }
+      return;
     }
   }
 
