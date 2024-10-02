@@ -147,6 +147,7 @@ import land.face.strife.managers.StatUpdateManager;
 import land.face.strife.managers.StealthManager;
 import land.face.strife.managers.StrifeAttributeManager;
 import land.face.strife.managers.StrifeMobManager;
+import land.face.strife.managers.ThreatEngine;
 import land.face.strife.managers.TopBarManager;
 import land.face.strife.managers.UnionManager;
 import land.face.strife.managers.UniqueEntityManager;
@@ -680,6 +681,7 @@ public class StrifePlugin extends FacePlugin {
     PlayerDataUtil.refresh(this);
     StatUtil.refreshPlugin(this);
     DOTUtil.refresh(this);
+    ThreatEngine.start(this);
 
     Riptide.buildNMSEnum();
     Riptide.startTask(this);

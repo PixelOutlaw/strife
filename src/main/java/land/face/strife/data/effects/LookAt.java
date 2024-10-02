@@ -1,8 +1,7 @@
 package land.face.strife.data.effects;
 
+import com.ticxo.modelengine.api.ModelEngineAPI;
 import land.face.strife.data.StrifeMob;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
@@ -28,12 +27,18 @@ public class LookAt extends Effect {
     }
     if (fromTarget instanceof Mob) {
       ((Mob) fromTarget).lookAt(toTarget);
-    } else {
-      Location newLoc = fromTarget.getLocation().clone();
-      Vector savedVelocity = fromTarget.getVelocity();
-      newLoc.setDirection(toTarget.getLocation().subtract(fromTarget.getLocation()).toVector().normalize());
-      fromTarget.teleport(newLoc, TeleportCause.PLUGIN);
-      fromTarget.setVelocity(savedVelocity);
     }
+    Location newLoc = fromTarget.getLocation().clone();
+    Vector savedVelocity = fromTarget.getVelocity();
+    newLoc.setDirection(toTarget.getLocation().subtract(fromTarget.getLocation()).toVector().normalize());
+    fromTarget.teleport(newLoc, TeleportCause.PLUGIN);
+    fromTarget.setVelocity(savedVelocity);
+    var me = ModelEngineAPI.getModeledEntity(fromTarget);
+    if (me == null || me.getModels().isEmpty()) {
+      return;
+    }
+    me.getBase().getBodyRotationController().setYBodyRot(fromTarget.getLocation().getYaw());
+    me.getBase().getBodyRotationController().setYHeadRot(fromTarget.getLocation().getYaw());
+    me.getBase().getBodyRotationController().setXHeadRot(fromTarget.getLocation().getPitch());
   }
 }

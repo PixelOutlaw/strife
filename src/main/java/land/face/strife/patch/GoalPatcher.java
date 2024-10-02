@@ -36,6 +36,12 @@ public class GoalPatcher {
           Bukkit.getMobGoals().addGoal(mob, 2, goal);
         }
       }
+      case "strife:threat_retarget" -> {
+        ThreatRetarget goal = new ThreatRetarget(mob);
+        if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {
+          Bukkit.getMobGoals().addGoal(mob, 2, goal);
+        }
+      }
       case "strife:chase_target" -> {
         ChaseTargetGoal goal = new ChaseTargetGoal(mob);
         if (!Bukkit.getMobGoals().hasGoal(mob, goal.getKey())) {

@@ -41,7 +41,6 @@ import land.face.strife.tasks.InvincibleTask;
 import land.face.strife.tasks.LifeTask;
 import land.face.strife.tasks.MinionTask;
 import land.face.strife.tasks.RageTask;
-import land.face.strife.tasks.ThreatTask;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
@@ -85,14 +84,14 @@ public class StrifeMob {
   private boolean charmImmune = false;
   private final Set<Buff> runningBuffs = new HashSet<>();
   private final Map<UUID, Float> takenDamage = new HashMap<>();
-  private final List<Shielding> shielding = new ArrayList<>();
   private final Set<UUID> reflectedTargets = new HashSet<>();
+  private final List<Shielding> shielding = new ArrayList<>();
   @Getter
   private final Map<UUID, Float> threatTargets = new HashMap<>();
 
   @Getter @Setter
   private float maxPrayer, energy = 0, maxEnergy = 0, maxRage = 0, barrier = 0, maxLife = 1, maxBarrier = 0, block = 0,
-      maxBlock = 1000, frost, frostGraceTicks, corruption, bleed, threatLevel = 0;
+      maxBlock = 1000, frost, frostGraceTicks, corruption, bleed;
   @Getter @Setter
   private int maxEarthRunes = 3, earthRunes = 0, maxAirJumps = 0, airJumps = 0;
   @Setter
@@ -105,7 +104,6 @@ public class StrifeMob {
   private LifeTask lifeTask = new LifeTask(this);
   private EnergyTask energyTask = new EnergyTask(this);
   private FrostTask frostTask = new FrostTask(this);
-  private ThreatTask threatTask = new ThreatTask(this);
   @Getter
   private RageTask rageTask = null;
   private InvincibleTask invincibleTask = null;
@@ -833,11 +831,6 @@ public class StrifeMob {
       frostTask.cancel();
     }
     frostTask = new FrostTask(this);
-
-    if (threatTask != null && !threatTask.isCancelled()) {
-      threatTask.cancel();
-    }
-    threatTask = new ThreatTask(this);
 
     if (rageTask != null) {
       rageTask.reduceRage(1000000);
