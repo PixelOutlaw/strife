@@ -74,7 +74,7 @@ public class AttributeIcon extends MenuItem {
     }
     ItemMeta itemMeta = icon.getItemMeta();
     if (pendingPoints != statCap && champion.getPendingUnusedStatPoints() > 0) {
-      itemMeta.addEnchant(Enchantment.DURABILITY, 1, true);
+      itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
       itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
     }
     icon.setItemMeta(itemMeta);

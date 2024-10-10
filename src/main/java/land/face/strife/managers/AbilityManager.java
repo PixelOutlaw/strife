@@ -5,6 +5,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import info.faceland.loot.utils.ItemRenderer;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -488,7 +489,8 @@ public class AbilityManager {
         return new TargetResponse(targets, true);
       }
       case NEARBY_ENEMIES -> {
-        targets = HitDetectionUtil.getEntitiesInArea(caster.getEntity().getLocation(), ability.getRange());
+        float range = ability.getRange() + (1 + caster.getStat(StrifeStat.CAST_RANGE) / 125f);
+        targets = HitDetectionUtil.getEntitiesInArea(caster.getEntity().getLocation(), range);
         TargetingUtil.filterFriendlyEntities(targets, caster, false);
         TargetingUtil.filterByTargetPriority(targets, ability.getTargetingPriority(), caster, ability.getMaxTargets());
         return new TargetResponse(targets, true);
@@ -510,35 +512,37 @@ public class AbilityManager {
           targets.add(target.getEntity());
           return new TargetResponse(targets);
         }
-        if (ability.isSneakSelfTarget() &&
-            caster.getEntity().getType() == EntityType.PLAYER && caster.getEntity().isSneaking()) {
+        if (ability.isSneakSelfTarget() && caster.getEntity().getType() == EntityType.PLAYER &&
+            caster.getEntity().isSneaking()) {
           targets.add(caster.getEntity());
           return new TargetResponse(targets, true);
         }
-        LivingEntity newTarget = TargetingUtil.selectFirstEntityInSight(caster.getEntity(),
-            ability.getRange(), ability.isFriendly());
-        if (newTarget != null) {
-          targets.add(newTarget);
+        float range = ability.getRange() + (1 + caster.getStat(StrifeStat.CAST_RANGE) / 125f);
+        LivingEntity t = TargetingUtil.selectFirstEntityInSight(caster.getEntity(), range, ability.isFriendly());
+        if (t != null) {
+          targets.add(t);
         }
         return new TargetResponse(targets, true);
       }
       case TARGET_AREA -> {
         LivingEntity targetEntity = (target == null || target.getEntity() == null)
             ? null : target.getEntity();
-        Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), targetEntity,
-            ability.getRange(), ability.isRaycastsTargetEntities(), ability.isFriendly());
+        float range = ability.getRange() + (1 + caster.getStat(StrifeStat.CAST_RANGE) / 125f);
+        Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), targetEntity, range,
+            ability.isRaycastsTargetEntities(), ability.isFriendly());
         return new TargetResponse(loc);
       }
       case TARGET_GROUND -> {
+        float range = ability.getRange() + (1 + caster.getStat(StrifeStat.CAST_RANGE) / 125f);
         LivingEntity targetEntity = (target == null || target.getEntity() == null) ? null : target.getEntity();
         Location loc2 = TargetingUtil.getTargetLocation(caster.getEntity(),
-            targetEntity, ability.getRange(), ability.isRaycastsTargetEntities(), ability.isFriendly());
+            targetEntity, range, ability.isRaycastsTargetEntities(), ability.isFriendly());
         loc2 = TargetingUtil.modifyLocation(loc2, ability.getRange() + 2);
         return new TargetResponse(loc2);
       }
       case NEAREST_SOUL -> {
-        SoulTimer soul = plugin.getSoulManager().getNearestSoul(caster.getEntity(),
-            ability.getRange());
+        float range = ability.getRange() + (1 + caster.getStat(StrifeStat.CAST_RANGE) / 125f);
+        SoulTimer soul = plugin.getSoulManager().getNearestSoul(caster.getEntity(), range);
         if (soul != null) {
           targets.add(soul.getOwner());
         }
@@ -736,7 +740,7 @@ public class AbilityManager {
     TextUtils.setLore(icon, lore);
     ItemStackExtensionsKt.setUnbreakable(icon, true);
     ItemStackExtensionsKt.setCustomModelData(icon, iconSection.getInt("custom-model-data", 7999));
-    icon.addItemFlags(ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES);
+    ItemRenderer.applyCommonFlags(icon);
 
     AbilityIconData data = new AbilityIconData(icon);
 

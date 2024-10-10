@@ -145,6 +145,9 @@ public class UniqueEntityManager {
           modeledEntity.setBaseEntityVisible(false);
           StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) entity);
           mob.setModelEntity(modeledEntity);
+          float scale = mob.getStat(StrifeStat.CHARACTER_SIZE) / 100f;
+          model.setScale(scale);
+          model.setHitboxScale(scale);
           if (StringUtils.isNotBlank(entity.getCustomName())) {
             TextComponent tc = LegacyComponentSerializer.legacySection().deserialize(entity.getCustomName());
             model.getBone("name").flatMap(modelBone ->
@@ -307,13 +310,6 @@ public class UniqueEntityManager {
       horse.getInventory().setSaddle(DEV_SADDLE);
     }
 
-    if (uniqueEntity.getItemPassenger() != null) {
-      Item item = Objects.requireNonNull(location.getWorld()).spawn(location, Item.class,
-          i -> modifyPassengerItem(le, i));
-      item.setItemStack(uniqueEntity.getItemPassenger());
-      le.addPassenger(item);
-    }
-
     le.setCustomName(uniqueEntity.getName());
     le.setCustomNameVisible(uniqueEntity.isShowName());
 
@@ -329,8 +325,7 @@ public class UniqueEntityManager {
     if (mobLevel == 0) {
       mob.setStats(uniqueEntity.getAttributeMap());
     } else {
-      mob.setStats(
-          StatUpdateManager.combineMaps(mob.getBaseStats(), uniqueEntity.getAttributeMap()));
+      mob.setStats(StatUpdateManager.combineMaps(mob.getBaseStats(), uniqueEntity.getAttributeMap()));
     }
 
     if (uniqueEntity.getMaxMods() > 0) {
@@ -346,7 +341,6 @@ public class UniqueEntityManager {
     if (uniqueEntity.getBoundingBonus() != -1) {
       entity.getBoundingBox().expand(uniqueEntity.getBoundingBonus());
     }
-
     if (uniqueEntity.isBurnImmune()) {
       SpecialStatusUtil.setBurnImmune(le);
     }
@@ -448,10 +442,8 @@ public class UniqueEntityManager {
         }
         uniqueEntity.setArmsRaised(cs.getBoolean("arms-raised", true));
         uniqueEntity.setModelId(cs.getString("model-id", null));
-        uniqueEntity.setAttackDisabledOnGlobalCooldown(
-            cs.getBoolean("disable-attacks-on-global-cooldown", false));
-        uniqueEntity.setAlwaysRunTimer(
-            cs.getBoolean("always-run-timer", false));
+        uniqueEntity.setAttackDisabledOnGlobalCooldown(cs.getBoolean("disable-attacks-on-global-cooldown", false));
+        uniqueEntity.setAlwaysRunTimer(cs.getBoolean("always-run-timer", false));
         uniqueEntity.setGravity(cs.getBoolean("gravity", true));
         uniqueEntity.setCollidable(cs.getBoolean("collidable", true));
         uniqueEntity.setIgnoreTargetLevel(cs.getBoolean("ignore-target-level", false));
@@ -463,8 +455,7 @@ public class UniqueEntityManager {
         uniqueEntity.setSilent(cs.getBoolean("silent", false));
         uniqueEntity.setGuildMob(cs.getBoolean("guild-mob", false));
         boolean adaptiveName = cs.getBoolean("adaptive-name", false);
-        if (uniqueEntity.getType() == EntityType.VILLAGER
-            || uniqueEntity.getType() == EntityType.ZOMBIE_VILLAGER) {
+        if (uniqueEntity.getType() == EntityType.VILLAGER || uniqueEntity.getType() == EntityType.ZOMBIE_VILLAGER) {
           String prof = cs.getString("profession");
           if (prof != null) {
             uniqueEntity.setProfession(Profession.valueOf(prof.toUpperCase()));
@@ -488,14 +479,8 @@ public class UniqueEntityManager {
         Map<StrifeStat, Float> attributeMap = StatUtil.getStatMapFromSection(statCs);
         uniqueEntity.setAttributeMap(attributeMap);
 
-        uniqueEntity.setEquipment(
-            plugin.getEquipmentManager()
-                .buildEquipmentFromConfigSection(cs.getConfigurationSection("equipment")));
-
-        String passengerItem = cs.getString("item-passenger", "");
-        if (StringUtils.isNotBlank(passengerItem)) {
-          uniqueEntity.setItemPassenger(plugin.getEquipmentManager().getItem(passengerItem));
-        }
+        uniqueEntity.setEquipment(plugin.getEquipmentManager()
+            .buildEquipmentFromConfigSection(cs.getConfigurationSection("equipment")));
 
         String particle = cs.getString("particle", "");
         if (StringUtils.isNotBlank(particle)) {

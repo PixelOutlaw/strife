@@ -61,6 +61,7 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -72,7 +73,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDamageEvent.DamageModifier;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -97,9 +97,9 @@ public class DamageUtil {
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   public static final DamageType[] DMG_TYPES = DamageType.values();
 
-  private static final String POISON_TEXT = "彣";
+  private static final BlockData DORT = Material.COARSE_DIRT.createBlockData();
 
-  private static final ItemStack EARTH_CRACK = new ItemStack(Material.COARSE_DIRT);
+  private static final String POISON_TEXT = "彣";
 
   private static final RegionContainer regionContainer = WorldGuard.getInstance()
       .getPlatform().getRegionContainer();
@@ -709,10 +709,10 @@ public class DamageUtil {
         defender.getEntity().getWorld().playSound(
             defender.getEntity().getEyeLocation(), Sound.BLOCK_ROOTED_DIRT_BREAK, 1f, 0.85f);
         defender.getEntity().getWorld().spawnParticle(
-            Particle.ITEM_CRACK,
+            Particle.BLOCK,
             defender.getEntity().getLocation().clone().add(0, 0.4, 0),
             20, 0.1, 0.1, 0.1, 0.13f,
-            EARTH_CRACK
+            DORT
         );
         damageMap.put(DamageType.EARTH, newDamage);
       }
@@ -724,7 +724,7 @@ public class DamageUtil {
         defender.getEntity().getWorld()
             .playSound(defender.getEntity().getEyeLocation(), Sound.BLOCK_BELL_RESONATE, 1f, 2f);
         defender.getEntity().getWorld().spawnParticle(
-            Particle.FIREWORKS_SPARK,
+            Particle.FIREWORK,
             defender.getEntity().getLocation().clone().add(0, 0.4, 0),
             16,
             0.1, 0.1, 0.1,
@@ -953,7 +953,7 @@ public class DamageUtil {
   public static float getPotionMult(LivingEntity attacker, LivingEntity defender) {
     float potionMult = 1.0f;
 
-    PotionEffect powerEffect = attacker.getPotionEffect(PotionEffectType.INCREASE_DAMAGE);
+    PotionEffect powerEffect = attacker.getPotionEffect(PotionEffectType.STRENGTH);
     if (powerEffect != null) {
       potionMult += 0.1f * (powerEffect.getAmplifier() + 1);
     }
@@ -966,7 +966,7 @@ public class DamageUtil {
     if (vulnerabilityEffect != null) {
       potionMult += 0.1f * (vulnerabilityEffect.getAmplifier() + 1);
     }
-    PotionEffect resistEffect = defender.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
+    PotionEffect resistEffect = defender.getPotionEffect(PotionEffectType.RESISTANCE);
     if (resistEffect != null) {
       potionMult -= 0.1f * (resistEffect.getAmplifier() + 1);
     }

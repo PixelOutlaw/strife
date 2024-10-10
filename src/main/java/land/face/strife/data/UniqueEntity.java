@@ -61,7 +61,6 @@ public class UniqueEntity {
   @Setter double boundingBonus;
   @Setter String mount;
   @Setter Map<EquipmentSlot, String> equipment = new HashMap<>();
-  @Setter ItemStack itemPassenger = null;
   @Setter StrifeParticle strifeParticle;
   @Setter boolean customAi;
   @Setter boolean aggressiveAi;

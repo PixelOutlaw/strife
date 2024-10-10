@@ -257,20 +257,20 @@ public class StatUtil {
       attackTime *= 1 + Math.abs(attackBonus / 100);
     }
 
-    ae.getEntity().removePotionEffect(PotionEffectType.FAST_DIGGING);
-    ae.getEntity().removePotionEffect(PotionEffectType.SLOW_DIGGING);
+    ae.getEntity().removePotionEffect(PotionEffectType.HASTE);
+    ae.getEntity().removePotionEffect(PotionEffectType.MINING_FATIGUE);
     if (attackTime > 1.6) {
-      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 14, 1, true, false));
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 14, 1, true, false));
     } else if (attackTime > 1.405) {
-      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 12, 0, true, false));
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.MINING_FATIGUE, 12, 0, true, false));
     } else if (attackTime > 1.15) {
       // do nothing
     } else if (attackTime > 0.85) {
-      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 10, 0, true, false));
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 10, 0, true, false));
     } else if (attackTime > 0.55) {
-      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 9, 1, true, false));
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 9, 1, true, false));
     } else {
-      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.FAST_DIGGING, 8, 2, true, false));
+      ae.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.HASTE, 8, 2, true, false));
     }
 
     return attackTime;

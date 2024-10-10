@@ -58,6 +58,7 @@ import org.bukkit.Color;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.Particle.DustOptions;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -450,9 +451,14 @@ public class EffectManager {
         ((AreaEffect) effect).setExcludeCaster(cs.getBoolean("exclude-caster", false));
         ((AreaEffect) effect).setRange(cs.getDouble("range", 1));
         ((AreaEffect) effect).setMaxTargets(cs.getInt("max-targets", -1));
+
         ((AreaEffect) effect).setMultishotScaling(cs.getBoolean("scale-targets-with-multishot", false));
-        ((AreaEffect) effect).setMultishotRangeScaling(cs.getBoolean("scale-range-with-multishot", false));
         ((AreaEffect) effect).setPierceScaling(cs.getBoolean("scale-targets-with-pierce", false));
+
+        ((AreaEffect) effect).setMultishotRangeScaling(cs.getBoolean("scale-range-with-multishot", false));
+        ((AreaEffect) effect).setCastScaling(cs.getBoolean("scale-range-with-cast-range", false));
+        ((AreaEffect) effect).setReachScaling(cs.getBoolean("scale-range-with-reach", false));
+
         ((AreaEffect) effect).setLineOfSight(LineOfSight.valueOf(cs.getString("line-of-sight", "CASTER")));
         ((AreaEffect) effect).setAreaType(AreaType.valueOf(cs.getString("area-type", "RADIUS")));
         boolean canBeBlocked = cs.getBoolean("can-be-blocked", false);
@@ -999,12 +1005,22 @@ public class EffectManager {
         ((StrifeParticle) effect).setParticle(particle);
         ParticleStyle style = ParticleStyle.valueOf(cs.getString("style", "NORMAL"));
         ((StrifeParticle) effect).setStyle(style);
-        if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
-            || particle == Particle.SPELL_INSTANT || particle == Particle.GLOW
-            || particle == Particle.ELECTRIC_SPARK) {
-          ((StrifeParticle) effect).setRed(cs.getDouble("red", 0) / 255D);
-          ((StrifeParticle) effect).setBlue(cs.getDouble("blue", 0) / 255D);
-          ((StrifeParticle) effect).setGreen(cs.getDouble("green", 0) / 255D);
+        if (particle == Particle.ENTITY_EFFECT) {
+          var color = Color.fromRGB(
+              cs.getInt("red", 0),
+              cs.getInt("green", 0),
+              cs.getInt("blue", 0)
+          );
+          ((StrifeParticle) effect).setColor(color);
+        }
+        if (particle == Particle.DUST) {
+          var color = Color.fromRGB(
+              cs.getInt("red", 0),
+              cs.getInt("green", 0),
+              cs.getInt("blue", 0)
+          );
+          var size = (float) cs.getDouble("dust-size", 1);
+          ((StrifeParticle) effect).setDustOptions(new DustOptions(color, size));
         }
         if (style == ParticleStyle.ARC || style == ParticleStyle.CLAW) {
           ((StrifeParticle) effect).setArcAngle(cs.getDouble("arc-angle", 30));

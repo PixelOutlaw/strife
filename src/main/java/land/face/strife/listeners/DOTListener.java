@@ -41,7 +41,7 @@ public record DOTListener(StrifePlugin plugin) implements Listener {
         le.setFireTicks(Math.max(le.getFireTicks(), 17));
         event.setCancelled(true);
       }
-      case HOT_FLOOR -> {
+      case HOT_FLOOR, CAMPFIRE -> {
         le.setFireTicks(9);
         event.setCancelled(true);
       }

@@ -56,7 +56,7 @@ public class CorruptionManager {
       mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(),
           Sound.ENTITY_WITHER_SHOOT, 0.7f, 2f);
     }
-    mob.getEntity().getWorld().spawnParticle(Particle.SMOKE_NORMAL,
+    mob.getEntity().getWorld().spawnParticle(Particle.LARGE_SMOKE,
         mob.getEntity().getLocation(), 10, 0.4, 1, 0.5, 0.1);
     if (!corruptMap.containsKey(mob.getEntity().getUniqueId())) {
       corruptMap.put(mob.getEntity().getUniqueId(), new CorruptionTimer(this, mob));
@@ -77,7 +77,7 @@ public class CorruptionManager {
 
   public void spawnCorruptionParticles(LivingEntity target, float corruption) {
     double particleAmount = Math.min(5 + corruption / 3, 30);
-    target.getWorld().spawnParticle(Particle.SMOKE_NORMAL,
+    target.getWorld().spawnParticle(Particle.SMOKE,
         TargetingUtil.getOriginLocation(target, OriginLocation.CENTER),
         (int) particleAmount,
         0.4, 0.4, 0.5,

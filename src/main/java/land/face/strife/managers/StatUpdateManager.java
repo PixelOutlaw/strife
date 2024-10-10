@@ -34,6 +34,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.StatUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -118,8 +119,50 @@ public class StatUpdateManager {
   }
 
   public void updateSize(StrifeMob mob) {
-    //float value = 0.95f * (1f + (mob.getStat(StrifeStat.CHARACTER_SIZE) / 100));
-    //mob.getEntity().getAttribute(Attribute.GENERIC_ENTITY_SCALE).setBaseValue(value);
+    float value = mob.getStat(StrifeStat.CHARACTER_SIZE);
+    if (Math.round(value) == 100) {
+      return;
+    }
+    value = mob.getStat(StrifeStat.CHARACTER_SIZE) / 100f;
+    mob.getEntity().getAttribute(Attribute.GENERIC_SCALE).setBaseValue(value);
+  }
+
+  public void updateRange(StrifeMob mob) {
+    float multiplier = 1f + (mob.getStat(StrifeStat.ATTACK_RANGE) / 100);
+    float value = 2.75f * multiplier;
+    mob.getEntity().getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).setBaseValue(0.4f + value);
+    mob.getEntity().getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).setBaseValue(1.5f + value);
+  }
+
+  public void updateBreak(StrifeMob mob) {
+    mob.getEntity().getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED).setBaseValue(0.005);
+  }
+
+  public void updateLeg(StrifeMob mob) {
+    mob.getEntity().getAttribute(Attribute.GENERIC_STEP_HEIGHT).setBaseValue(1.07);
+  }
+
+  public void updateJump(StrifeMob mob) {
+    float netGravity = mob.getStat(StrifeStat.INCREASED_GRAVITY) - mob.getStat(StrifeStat.REDUCED_GRAVITY);
+    float gravityRatio;
+    if (netGravity == 0) {
+      gravityRatio = 1;
+      mob.getEntity().getAttribute(Attribute.GENERIC_GRAVITY).setBaseValue(0.08f);
+    } else if (netGravity > 0) {
+      gravityRatio = 1 + netGravity / 185f;
+      float multiplier = 1 + (netGravity / 100);
+      mob.getEntity().getAttribute(Attribute.GENERIC_GRAVITY).setBaseValue(0.08f * multiplier);
+    } else {
+      gravityRatio = 155f / (-netGravity + 155f);
+      float multiplier = 1 + (-netGravity / 100);
+      mob.getEntity().getAttribute(Attribute.GENERIC_GRAVITY).setBaseValue(0.08f / multiplier);
+    }
+    float value = (1f + mob.getStat(StrifeStat.JUMP_HEIGHT) / 100) * gravityRatio;
+    if (value <= 0) {
+      mob.getEntity().getAttribute(Attribute.GENERIC_JUMP_STRENGTH).setBaseValue(0);
+    } else {
+      mob.getEntity().getAttribute(Attribute.GENERIC_JUMP_STRENGTH).setBaseValue(value * 0.41f);
+    }
   }
 
   public void updateMovementSpeed(StrifeMob strifeMob) {
@@ -145,15 +188,20 @@ public class StatUpdateManager {
     updateHealth(strifeMob);
     updateWeight(strifeMob);
     updateSize(strifeMob);
-    float maxAir = plugin.getStrifeMobManager().getBaseAirTicks() * (1
-        + strifeMob.getStat(StrifeStat.LUNG_CAPACITY) / 100);
-    strifeMob.getEntity()
-        .setRemainingAir(Math.min(strifeMob.getEntity().getRemainingAir(), (int) maxAir));
+    updateJump(strifeMob);
+    updateLeg(strifeMob);
+
+    float maxAir = plugin.getStrifeMobManager().getBaseAirTicks() * (1 + strifeMob.getStat(StrifeStat.LUNG_CAPACITY) / 100);
+    strifeMob.getEntity().setRemainingAir(Math.min(strifeMob.getEntity().getRemainingAir(), (int) maxAir));
     strifeMob.getEntity().setMaximumAir((int) maxAir);
     StatUtil.getStat(strifeMob, StrifeStat.BARRIER);
     StatUtil.getStat(strifeMob, StrifeStat.MAXIMUM_RAGE);
     StatUtil.getStat(strifeMob, StrifeStat.MAX_PRAYER_POINTS);
-    if (strifeMob.getEntity() instanceof Player p) {
+
+    if (strifeMob.getChampion() != null) {
+      updateRange(strifeMob);
+      updateBreak(strifeMob);
+      Player p = (Player) strifeMob.getEntity();
       if (plugin.getGuiManager().getLifeSeparators().get(105) != null) {
         if (strifeMob.getMaxLife() >= 105) {
           plugin.getGuiManager().updateComponent(p,

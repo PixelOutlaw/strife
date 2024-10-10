@@ -60,7 +60,7 @@ public class BarrierTask extends BukkitRunnable {
   public static void spawnBarrierParticles(LivingEntity entity, float amount) {
     int particleAmount = (int) Math.ceil(amount / 5);
     entity.getWorld().spawnParticle(
-        Particle.BLOCK_CRACK,
+        Particle.BLOCK,
         entity.getLocation().clone().add(0, entity.getEyeHeight() / 2, 0),
         particleAmount,
         0.0, 0.0, 0.0,

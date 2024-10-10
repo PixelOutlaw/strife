@@ -1,12 +1,12 @@
 package land.face.strife.util;
 
 import de.oliver.fancyholograms.api.FancyHologramsPlugin;
-import de.oliver.fancyholograms.api.Hologram;
 import de.oliver.fancyholograms.api.HologramManager;
-import de.oliver.fancyholograms.api.HologramType;
 import de.oliver.fancyholograms.api.data.DisplayHologramData;
 import de.oliver.fancyholograms.api.data.HologramData;
 import de.oliver.fancyholograms.api.data.TextHologramData;
+import de.oliver.fancyholograms.api.hologram.Hologram;
+import info.faceland.loot.LootPlugin;
 import java.util.List;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
@@ -32,25 +32,22 @@ public class PopoffUtil {
   public static DamagePopoff createPopoff(Player player, Location location, Vector velocity,
       double gravity, int life, String text, float startScale, float midScale, float endScale) {
 
-    DisplayHologramData displayData = DisplayHologramData.getDefault(location);
-    displayData.setTranslation(new Vector3f(0));
-    displayData.setBillboard(Billboard.CENTER);
-    displayData.setScale(new Vector3f(startScale));
-    displayData.setBrightness(new Brightness(10, 10));
-
-    TextHologramData textData = TextHologramData.getDefault(" ");
-    textData.setBackground(Hologram.TRANSPARENT);
+    TextHologramData textData = new TextHologramData(UUID.randomUUID().toString(), location);
     textData.setText(List.of(text));
+    textData.setBackground(Hologram.TRANSPARENT);
+    textData.setBillboard(Billboard.CENTER);
+    textData.setBrightness(new Brightness(13, 13));
     textData.setTextShadow(false);
+    textData.setPersistent(false);
 
-    HologramData data = new HologramData(UUID.randomUUID().toString(), displayData, HologramType.TEXT, textData);
+    var manager = FancyHologramsPlugin.get().getHologramManager();
 
-    Hologram holo = FancyHologramsPlugin.get().getHologramManager().create(data);
-    Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () ->
-        holo.showHologram(List.of()));
+    Hologram holo = manager.create(textData);
     holo.createHologram();
-    Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () ->
-        holo.showHologram(player));
+
+    Bukkit.getScheduler().runTaskAsynchronously(LootPlugin.getInstance(), () -> {
+      holo.forceShowHologram(player);
+    });
 
     DamagePopoff indicator = new DamagePopoff();
 
@@ -75,6 +72,7 @@ public class PopoffUtil {
     }
     indicator.setLife(indicator.getLife() - 1);
     Hologram hologram = indicator.getHologram();
+
     Vector velocity = indicator.getVelocity();
     velocity.setY(Math.max(MAX_GRAVITY, velocity.getY() - indicator.getGravity()));
     indicator.setVelocity(velocity);
@@ -85,10 +83,12 @@ public class PopoffUtil {
     } else {
       scale = indicator.getStartScale() + (percent * 2 * (indicator.getMidScale() - indicator.getStartScale()));
     }
-    hologram.getData().getDisplayData().getTranslation().add((float) velocity.getX(), (float) velocity.getY(), 0);
-    hologram.getData().getDisplayData().setScale(new Vector3f(scale));
-    hologram.updateHologram();
-    hologram.refreshHologram(indicator.getViewer());
+    ((DisplayHologramData) hologram.getData()).getTranslation().add((float) velocity.getX(), (float) velocity.getY(), 0);
+    ((DisplayHologramData) hologram.getData()).getScale().set(new Vector3f(scale));
+    Bukkit.getScheduler().runTaskAsynchronously(LootPlugin.getInstance(), () -> {
+      hologram.refreshForViewers();
+      //hologram.forceShowHologram(indicator.getViewer());
+    });
     return false;
   }
 
@@ -96,8 +96,9 @@ public class PopoffUtil {
     Hologram hologram = indicator.getHologram();
     if (indicator.getViewer() != null) {
       Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () -> {
-        hologram.hideHologram(indicator.getViewer());
+        hologram.forceHideHologram(indicator.getViewer());
         hologram.deleteHologram();
+        //hologram.forceUpdate();
       });
     }
   }

@@ -2,11 +2,11 @@ package land.face.strife.tasks;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import de.oliver.fancyholograms.api.FancyHologramsPlugin;
-import de.oliver.fancyholograms.api.Hologram;
-import de.oliver.fancyholograms.api.HologramType;
 import de.oliver.fancyholograms.api.data.DisplayHologramData;
 import de.oliver.fancyholograms.api.data.HologramData;
 import de.oliver.fancyholograms.api.data.TextHologramData;
+import de.oliver.fancyholograms.api.hologram.Hologram;
+import de.oliver.fancyholograms.api.hologram.HologramType;
 import java.util.List;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
@@ -65,29 +65,29 @@ public class DisplayRunner {
     } else if (livingEntity != null) {
       loc = TargetingUtil.getOriginLocation(livingEntity, OriginLocation.CENTER);
     }
-    DisplayHologramData displayData = DisplayHologramData.getDefault(loc);
-    displayData.setTranslation(new Vector3f(0));
-    displayData.setBillboard(Billboard.CENTER);
-    displayData.setScale(new Vector3f(1));
-    displayData.setBrightness(new Brightness(9, 9));
 
-    TextHologramData textData = TextHologramData.getDefault(" ");
+    var manager = FancyHologramsPlugin.get().getHologramManager();
+
+    TextHologramData textData = new TextHologramData(UUID.randomUUID().toString(), loc);
+    textData.setText(List.of(""));
     textData.setBackground(Hologram.TRANSPARENT);
-    textData.setText(List.of(" "));
+    textData.setBillboard(Billboard.CENTER);
+    textData.setBrightness(new Brightness(10, 10));
     textData.setTextShadow(false);
+    textData.setPersistent(false);
 
-    HologramData data = new HologramData(UUID.randomUUID().toString(), displayData, HologramType.TEXT, textData);
-
-    Hologram holo = FancyHologramsPlugin.get().getHologramManager().create(data);
+    Hologram holo = manager.create(textData);
     holo.createHologram();
+
+    var players = Bukkit.getOnlinePlayers();
     Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () -> {
-          var players = Bukkit.getOnlinePlayers();
-          if (hideFromTarget && livingEntity != null) {
-            players.removeIf(p -> p.getUniqueId().equals(livingEntity.getUniqueId()));
-          }
-          holo.showHologram(players);
-        }
-    );
+      if (hideFromTarget && livingEntity != null) {
+        players.removeIf(p -> p.getUniqueId().equals(livingEntity.getUniqueId()));
+      }
+      for (var p : players) {
+        holo.forceShowHologram(p);
+      }
+    });
     display = holo;
     task = Bukkit.getScheduler().runTaskTimer(StrifePlugin.getInstance(), this::tick, 0L, 1L);
   }
@@ -98,8 +98,11 @@ public class DisplayRunner {
       loop++;
     }
     if (loop > displayContainer.getLoops()) {
+      var pls = Bukkit.getOnlinePlayers();
       Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () -> {
-        display.hideHologram(Bukkit.getOnlinePlayers());
+        for (var p : pls) {
+          display.forceHideHologram(p);
+        }
         display.deleteHologram();
       });
       task.cancel();
@@ -108,8 +111,11 @@ public class DisplayRunner {
     DisplayFrame displayFrame = displayContainer.getFrames().get(frame);
     if (livingEntity != null) {
       if (!livingEntity.isValid()) {
+        var pls = Bukkit.getOnlinePlayers();
         Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () -> {
-          display.hideHologram(Bukkit.getOnlinePlayers());
+          for (var p : pls) {
+            display.forceHideHologram(p);
+          }
           display.deleteHologram();
         });
         task.cancel();
@@ -122,10 +128,10 @@ public class DisplayRunner {
       if (offset != 0) {
         loc.add(livingEntity.getLocation().getDirection().multiply(offset));
       }
-      display.getData().getDisplayData().setLocation(loc);
+      display.getData().setLocation(loc);
     }
     frame++;
     displayFrame.applyToDisplay(display, color);
-    display.updateHologram();
+    display.refreshForViewers();
   }
 }

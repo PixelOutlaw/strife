@@ -27,7 +27,7 @@ public enum StrifeStat {
   SKILL_REQUIREMENT("Skill Requirement"),
 
   CHARACTER_SIZE("Character Size"),
-  ATTACK_RANGE("Attack Range"),
+  ATTACK_RANGE("Melee Reach"),
   WEIGHT("Weight"),
 
   HEALTH("Maximum Life"),
@@ -127,6 +127,7 @@ public enum StrifeStat {
   MAX_MINIONS("Maximum Minions"),
 
   AREA_OF_EFFECT("Area Of Effect"),
+  CAST_RANGE("Casting Range"),
 
   MOVEMENT_SPEED("Movement Speed"),
   TRUE_DAMAGE("True Damage"),
@@ -161,6 +162,10 @@ public enum StrifeStat {
   MONEY_KEPT("Bits Kept On Death"),
   XP_LOST_ON_DEATH("Less XP Loss On Death"),
 
+  JUMP_HEIGHT("Jump Height"),
+  FALL_DAMAGE("Reduced Fall Damage"),
+  REDUCED_GRAVITY("Reduced Gravity"),
+  INCREASED_GRAVITY("Increased Gravity"),
   AIR_JUMPS("Additional Air Jumps"),
 
   DOGE("Doge Chance"),

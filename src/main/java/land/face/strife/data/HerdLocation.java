@@ -66,7 +66,7 @@ public class HerdLocation {
     Location loc = livingEntity.getLocation().clone().add(0, height, 0);
     livingEntity.getWorld().spawnParticle(Particle.CLOUD, loc, (int) (10 * (height + width)), width,
         height, width, 0);
-    livingEntity.getWorld().spawnParticle(Particle.TOTEM, loc, (int) (10 * (height + width)), width,
+    livingEntity.getWorld().spawnParticle(Particle.TOTEM_OF_UNDYING, loc, (int) (10 * (height + width)), width,
         height, width, 0);
   }
 }

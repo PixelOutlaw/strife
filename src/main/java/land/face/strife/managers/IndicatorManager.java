@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.BlockData;
 import land.face.strife.data.effects.DamagePopoff;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.PopoffUtil;
@@ -98,10 +99,12 @@ public class IndicatorManager {
 
   public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorStyle type, int life, String text,
       float startScale, float midScale, float endScale) {
-    Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.BELOW_HEAD);
+    //Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.CENTER);
+    Location loc = target.getLocation().clone();
     if (!loc.getWorld().getName().equals(target.getEyeLocation().getWorld().getName())) {
       return;
     }
+    loc.add(0, target.getHeight() / 3, 0);
     addIndicator(creator, loc, type, life, text, startScale, midScale, endScale);
   }
 

@@ -19,7 +19,7 @@ package land.face.strife.listeners;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CUSTOM;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
-import static org.bukkit.potion.PotionEffectType.DAMAGE_RESISTANCE;
+import static org.bukkit.potion.PotionEffectType.RESISTANCE;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
@@ -140,8 +140,8 @@ public class TargetingListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onTargetProteted(EntityTargetLivingEntityEvent event) {
-    if (event.getTarget() != null && event.getTarget().hasPotionEffect(DAMAGE_RESISTANCE)) {
-      if (event.getTarget().getPotionEffect(DAMAGE_RESISTANCE).getAmplifier() >= 10) {
+    if (event.getTarget() != null && event.getTarget().hasPotionEffect(RESISTANCE)) {
+      if (event.getTarget().getPotionEffect(RESISTANCE).getAmplifier() >= 10) {
         event.setCancelled(true);
       }
     }

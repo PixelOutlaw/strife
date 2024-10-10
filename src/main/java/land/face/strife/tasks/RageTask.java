@@ -118,7 +118,7 @@ public class RageTask extends BukkitRunnable {
 
   private static void spawnRageParticles(LivingEntity entity, float rageStacks) {
     entity.getWorld().spawnParticle(
-        Particle.VILLAGER_ANGRY,
+        Particle.ANGRY_VILLAGER,
         entity.getEyeLocation(),
         1 + (int) (Math.max(0, rageStacks) / 20),
         0.6, 0.6, 0.6

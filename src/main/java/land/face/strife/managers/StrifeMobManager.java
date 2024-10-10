@@ -75,9 +75,8 @@ public class StrifeMobManager {
     if (entity == null || entity.hasMetadata("NPC") || entity.hasMetadata("pet")) {
       return null;
     }
-    Champion champion = entity.getType() == EntityType.PLAYER ?
-        plugin.getChampionManager().getChampion((Player) entity) : null;
     if (!trackedEntities.containsKey(entity)) {
+      Champion champion = entity.getType() == EntityType.PLAYER ? plugin.getChampionManager().getChampion((Player) entity) : null;
       StrifeMob mob = new StrifeMob(entity, champion);
       int level = StatUtil.getMobLevel(entity);
       mob.setStats(plugin.getMonsterManager().getBaseStats(entity.getType(), level));

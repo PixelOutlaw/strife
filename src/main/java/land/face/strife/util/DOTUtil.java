@@ -93,7 +93,7 @@ public class DOTUtil {
   public static void spawnBleedParticles(LivingEntity entity, double damage) {
     int particleAmount = Math.min(3 + (int) (damage * 10), 40);
     entity.getWorld().spawnParticle(
-        Particle.ITEM_CRACK,
+        Particle.ITEM,
         entity.getEyeLocation().clone().add(0, -entity.getEyeHeight() / 2, 0),
         particleAmount,
         0.0, 0.0, 0.0,
@@ -104,7 +104,7 @@ public class DOTUtil {
 
   public static void spawnInstantBleedParticles(LivingEntity entity) {
     entity.getWorld().spawnParticle(
-        Particle.ITEM_CRACK,
+        Particle.ITEM,
         entity.getEyeLocation().clone().add(0, -entity.getEyeHeight() / 2, 0),
         12,
         0.0, 0.0, 0.0,

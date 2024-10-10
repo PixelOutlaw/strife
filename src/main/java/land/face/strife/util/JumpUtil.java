@@ -47,8 +47,8 @@ public class JumpUtil {
   }
 
   public static boolean isRooted(Player p) {
-    if (p.hasPotionEffect(PotionEffectType.JUMP)) {
-      int amp = p.getPotionEffect(PotionEffectType.JUMP).getAmplifier();
+    if (p.hasPotionEffect(PotionEffectType.JUMP_BOOST)) {
+      int amp = p.getPotionEffect(PotionEffectType.JUMP_BOOST).getAmplifier();
       return amp < 0 || amp > 100;
     }
     return false;

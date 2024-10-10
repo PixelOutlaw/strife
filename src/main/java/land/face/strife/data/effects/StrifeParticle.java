@@ -9,9 +9,11 @@ import land.face.strife.util.TargetingUtil;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.Particle.DustOptions;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
@@ -27,10 +29,6 @@ public class StrifeParticle extends LocationEffect {
   private float spread = 0;
   private float speed = 0;
   private float size = 1;
-
-  private double red;
-  private double green;
-  private double blue;
 
   private double arcAngle;
   private double arcOffset;
@@ -50,6 +48,8 @@ public class StrifeParticle extends LocationEffect {
 
   private ItemStack itemData = null;
   private BlockData blockData = null;
+  private Color color = null;
+  private DustOptions dustOptions = null;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -217,13 +217,10 @@ public class StrifeParticle extends LocationEffect {
   }
 
   private void spawnParticle(Particle particle, Location location) {
-    if (particle == Particle.SPELL_MOB || particle == Particle.SPELL_WITCH
-        || particle == Particle.SPELL_INSTANT) {
-      for (int i = 0; i < quantity; i++) {
-        Location newLoc = location.clone().add(-spread + StrifePlugin.RNG.nextDouble() * spread * 2, -spread
-            + StrifePlugin.RNG.nextDouble() * spread * 2, -spread + StrifePlugin.RNG.nextDouble() * spread * 2);
-        location.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, red, green, blue, 1);
-      }
+    if (particle == Particle.ENTITY_EFFECT) {
+      location.getWorld().spawnParticle(Particle.ENTITY_EFFECT, location, quantity, spread, spread, spread, speed, color);
+    } else if (particle == Particle.DUST) {
+      location.getWorld().spawnParticle(Particle.DUST, location, quantity, spread, spread, spread, speed, dustOptions);
     } else if (itemData != null) {
       if (particle == Particle.FALLING_DUST) {
         location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed, blockData);

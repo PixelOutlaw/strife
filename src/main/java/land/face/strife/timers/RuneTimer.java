@@ -92,7 +92,7 @@ public class RuneTimer extends BukkitRunnable {
         mob.getEntity().getWorld()
             .playSound(hologram.getLocation(), Sound.BLOCK_GRASS_BREAK, 1f, 0.8f);
         mob.getEntity().getWorld().spawnParticle(
-            Particle.ITEM_CRACK,
+            Particle.ITEM,
             hologram.getLocation(),
             20, 0, 0, 0, 0.07f,
             RUNE_STACK

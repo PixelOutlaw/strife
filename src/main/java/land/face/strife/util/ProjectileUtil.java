@@ -231,8 +231,7 @@ public class ProjectileUtil {
       ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed,
           randomBulletOffset(projectiles));
     }
-    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(),
-        Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
+    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
     shotId++;
   }
 
@@ -262,7 +261,7 @@ public class ProjectileUtil {
     });
     arrow.setShooter(shooter);
     arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
-    arrow.getBoundingBox().expand(0.35);
+    arrow.getBoundingBox().expand(1);
 
     setPierce(arrow, pierceChance);
     setAttackMult(arrow, (float) attackMult);
@@ -282,7 +281,7 @@ public class ProjectileUtil {
     //DisguiseAPI.disguiseToAll(arrow, wandDisguise);
 
     arrow.setShooter(shooter);
-    arrow.getBoundingBox().expand(0.35);
+    arrow.getBoundingBox().expand(1);
 
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
       if (arrow.isValid()) {
@@ -309,7 +308,7 @@ public class ProjectileUtil {
         bullet.remove();
       }
     }, 6);
-    bullet.getBoundingBox().expand(0.35);
+    bullet.getBoundingBox().expand(1);
 
     setAttackMult(bullet, (float) attackMult);
     setShotId(bullet);
@@ -348,7 +347,7 @@ public class ProjectileUtil {
 
   public static boolean isProjectile(EntityType entityType) {
     return switch (entityType) {
-      case ARROW, THROWN_EXP_BOTTLE, SPLASH_POTION, WITHER_SKULL, SHULKER_BULLET, PRIMED_TNT, SMALL_FIREBALL,
+      case ARROW, EXPERIENCE_BOTTLE, POTION, WITHER_SKULL, SHULKER_BULLET, TNT, SMALL_FIREBALL,
            LLAMA_SPIT, SPECTRAL_ARROW, TRIDENT, FIREBALL, DRAGON_FIREBALL, EGG, SNOWBALL -> true;
       default -> false;
     };

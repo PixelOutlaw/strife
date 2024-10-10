@@ -154,10 +154,7 @@ public class EntityMagicListener implements Listener {
   private StrifeParticle buildChaserParticle() {
     StrifeParticle particle = new StrifeParticle();
     particle.setFriendly(true);
-    particle.setParticle(Particle.SPELL_WITCH);
-    particle.setRed(0.8);
-    particle.setBlue(0.8);
-    particle.setGreen(0.2);
+    particle.setParticle(Particle.WITCH);
     particle.setOrigin(OriginLocation.CENTER);
     particle.setStyle(ParticleStyle.NORMAL);
     particle.setQuantity(5);

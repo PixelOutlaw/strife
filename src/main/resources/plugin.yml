@@ -11,6 +11,8 @@ depend:
 softdepend:
   - LearninBooks
   - FacePet
+  - BlueMap
+  - HeadDatabase
 
 commands:
   cast:

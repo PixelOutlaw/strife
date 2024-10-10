@@ -31,18 +31,23 @@ public class SpawnerManager {
   }
 
   public void setSpawnerMap(Map<String, Spawner> spawnerMap) {
-    this.spawnerMap.clear();
-    this.spawnerMap.putAll(spawnerMap);
-    purgeIcons();
-    iconsBuilt = false;
-    loadItems();
-    Bukkit.getScheduler().runTaskTimer(plugin, (task) -> {
-      if (iconsBuilt) {
-        task.cancel();
-        return;
-      }
-      setupMapIcons();
-    }, 200, 200);
+    try {
+      this.spawnerMap.clear();
+      this.spawnerMap.putAll(spawnerMap);
+      purgeIcons();
+      iconsBuilt = false;
+      loadItems();
+      Bukkit.getScheduler().runTaskTimer(plugin, (task) -> {
+        if (iconsBuilt) {
+          task.cancel();
+          return;
+        }
+        setupMapIcons();
+      }, 200, 200);
+    } catch (Exception e) {
+      Bukkit.getLogger().warning("[Strife] Bluemap spawner markers have failed to load!");
+      e.printStackTrace();
+    }
   }
 
   public void addSpawner(String id, Spawner spawner) {

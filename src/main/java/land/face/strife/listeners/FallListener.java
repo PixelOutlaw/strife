@@ -7,6 +7,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.pojo.SkillLevelData;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.PlayerDataUtil;
@@ -47,10 +48,6 @@ public class FallListener implements Listener {
     if (!(event.getEntity() instanceof Player player)) {
       return;
     }
-    if (((Player) event.getEntity()).hasPotionEffect(PotionEffectType.JUMP)) {
-      event.setCancelled(true);
-      return;
-    }
 
     int msSinceLastSneak = MoveUtil.getLastSneak(player);
     boolean rollBonus = msSinceLastSneak != -1 && msSinceLastSneak <= fallMs;
@@ -63,8 +60,8 @@ public class FallListener implements Listener {
       Vector newMovement = location.getDirection().setY(0.00001);
       newMovement.normalize();
       double intensity = Math.min(2, event.getDamage() / 10);
-      newMovement.multiply(1.5 + intensity * 0.65);
-      newMovement.setY(0.625 + intensity * 0.3);
+      newMovement.multiply(1.5 + intensity * 0.55);
+      newMovement.setY(0.625 + intensity * 0.55);
       event.getEntity().setVelocity(newMovement);
       player.getWorld().playSound(player.getLocation(), Sound.ITEM_SHIELD_BLOCK, 1, 1.3f);
       event.setCancelled(true);
@@ -75,8 +72,27 @@ public class FallListener implements Listener {
       event.setCancelled(true);
       return;
     }
+    if (mob.isInvincible()) {
+      event.setCancelled(true);
+      return;
+    }
 
     double damage = event.getDamage(DamageModifier.BASE) - 1;
+    float jumpHeight = mob.getStat(StrifeStat.JUMP_HEIGHT);
+    if (jumpHeight > 0) {
+      damage -= 0.04 * jumpHeight;
+    }
+    if (damage <= 0) {
+      event.setCancelled(true);
+      return;
+    }
+
+    float fallDamageStat = mob.getStat(StrifeStat.FALL_DAMAGE);
+    if (fallDamageStat >= 100) {
+      event.setCancelled(true);
+      return;
+    }
+
     double maxHealth = mob.getMaxLife();
     damage += damage * maxHealth * 0.055;
     damage = Math.max(damage, 0);
@@ -86,24 +102,24 @@ public class FallListener implements Listener {
       damage *= 100.0 / (100 + data.getLevelWithBonus());
     } else {
       damage *= 50.0 / (50 + data.getLevelWithBonus());
-      player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 100, 0, true, false));
     }
 
-    if (mob.isInvincible()) {
-      event.setCancelled(true);
-      return;
-    }
-
-    if (player.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+    if (player.hasPotionEffect(PotionEffectType.RESISTANCE)) {
       //noinspection DataFlowIssue
-      double level = ((Player) event.getEntity()).getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE).getAmplifier();
+      int level = player.getPotionEffect(PotionEffectType.RESISTANCE).getAmplifier();
+      if (level >= 10) {
+        event.setCancelled(true);
+        return;
+      }
       damage *= 1 - (0.1 * (level + 1));
     }
 
-    if (damage <= 0) {
-      event.setCancelled(true);
-      return;
+    float netGravity = mob.getStat(StrifeStat.INCREASED_GRAVITY) - mob.getStat(StrifeStat.REDUCED_GRAVITY);
+    if (netGravity < 0) {
+      damage *= 100 / (-netGravity + 100);
     }
+
+    damage *= 1 - fallDamageStat / 100;
 
     DamageUtil.removeDamageModifiers(event);
     if (damage >= player.getHealth()) {
@@ -112,6 +128,7 @@ public class FallListener implements Listener {
     if (damage >= player.getHealth()) {
       plugin.getDamageManager().getSourceOfDeath().put(player.getUniqueId(), FaceColor.YELLOW + "falling damage");
     }
+    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 100, 0, true, false));
     event.setDamage(DamageModifier.BASE, damage);
   }
 }

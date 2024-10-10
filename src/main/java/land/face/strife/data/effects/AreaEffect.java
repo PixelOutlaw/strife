@@ -37,8 +37,6 @@ public class AreaEffect extends LocationEffect {
   private final List<Effect> effects = new ArrayList<>();
   private final Set<Condition> filterConditions = new HashSet<>();
 
-  private final Map<Integer, Float> circleMathCache = new HashMap<>();
-
   private AreaType areaType;
   private TargetingPriority priority;
   private LineOfSight lineOfSight;
@@ -46,8 +44,8 @@ public class AreaEffect extends LocationEffect {
   private float radius;
   private float area;
   private int maxTargets;
-  private boolean areaScaling, multishotScaling, multishotRangeScaling, pierceScaling, canBeEvaded, canBeBlocked,
-      canBeCountered, excludeCaster;
+  private boolean reachScaling, multishotScaling, multishotRangeScaling, pierceScaling, canBeEvaded, canBeBlocked,
+      canBeCountered, excludeCaster, castScaling;
   private long targetingCooldown;
 
   private long lastApplication = System.currentTimeMillis();
@@ -98,28 +96,26 @@ public class AreaEffect extends LocationEffect {
     }
 
     float searchRadius = range;
-    float rangeModifier = 0f;
+    float rangeModifier = caster.getStat(StrifeStat.AREA_OF_EFFECT);
     if (multishotRangeScaling) {
       rangeModifier += StatUtil.getStat(caster, StrifeStat.MULTISHOT) / 2;
-      rangeModifier += StatUtil.getStat(caster, StrifeStat.EXTRA_PROJECTILES) * 25f;
+      rangeModifier += StatUtil.getStat(caster, StrifeStat.EXTRA_PROJECTILES) * 35f;
     }
-    if (areaScaling) {
-      rangeModifier += StatUtil.getStat(caster, StrifeStat.AREA_OF_EFFECT);
+    if (reachScaling) {
+      rangeModifier += StatUtil.getStat(caster, StrifeStat.ATTACK_RANGE);
     }
-    if (rangeModifier != 0) {
-      int bonus = (int) (rangeModifier - (rangeModifier % 5));
-      if (!circleMathCache.containsKey(bonus)) {
-        float bonusMult = 1 + ((float) bonus / 100);
-        float newArea = area * bonusMult;
-        float newRadius = (float) Math.sqrt(newArea / Math.PI);
-        circleMathCache.put(bonus, newRadius);
-        searchRadius = newRadius;
-      } else {
-        searchRadius = circleMathCache.get(bonus);
-      }
+    if (castScaling) {
+      rangeModifier += StatUtil.getStat(caster, StrifeStat.CAST_RANGE);
+    }
+    if (Math.round(rangeModifier) != 0) {
+      float newArea = area * (1 + rangeModifier / 100);
+      searchRadius = (float) Math.sqrt(newArea / Math.PI);
     }
 
     Set<LivingEntity> areaTargets = new HashSet<>();
+    if (caster.getEntity() == null) {
+      return areaTargets;
+    }
     switch (areaType) {
       case RADIUS -> areaTargets.addAll(HitDetectionUtil.getEntitiesInArea(location, searchRadius));
       case LINE -> areaTargets.addAll(HitDetectionUtil.getEntitiesInLine(location, searchRadius, radius));

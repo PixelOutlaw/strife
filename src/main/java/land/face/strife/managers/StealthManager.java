@@ -19,6 +19,7 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
+import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -129,7 +130,7 @@ public class StealthManager {
             .addIndicator(player, (Mob) e, IndicatorStyle.BOUNCE, 6, "<bold>???", 1.0f, 1.0f, 1.0f);
       }
     }
-    player.spawnParticle(Particle.SMOKE_NORMAL, player.getLocation(), 90, 0.5, 1, 0.5, 0);
+    player.spawnParticle(Particle.SMOKE, player.getLocation(), 90, 0.5, 1, 0.5, 0);
     stealthedPlayers.put(player.getUniqueId(), System.currentTimeMillis() + DISABLE_MS);
     for (Player p : Bukkit.getOnlinePlayers()) {
       p.hidePlayer(plugin, player);
@@ -140,7 +141,7 @@ public class StealthManager {
     if (!stealthedPlayers.containsKey(player.getUniqueId())) {
       return;
     }
-    player.spawnParticle(Particle.SMOKE_NORMAL, player.getLocation(), 90, 0.5, 1, 0.5, 0);
+    player.spawnParticle(Particle.SMOKE, player.getLocation(), 90, 0.5, 1, 0.5, 0);
     stealthedPlayers.remove(player.getUniqueId());
     for (Player p : Bukkit.getOnlinePlayers()) {
       p.showPlayer(plugin, player);
@@ -152,7 +153,7 @@ public class StealthManager {
       return;
     }
     player.spawnParticle(Particle.ASH, player.getEyeLocation(), 60, 12, 12, 12, 0);
-    player.spawnParticle(Particle.SMOKE_NORMAL, player.getEyeLocation(), 40, 7, 7, 7, 0);
+    player.spawnParticle(Particle.SMOKE, player.getEyeLocation(), 40, 7, 7, 7, 0);
     double particles = StrifePlugin.RNG.nextFloat() * BASE_STEALTH_PARTICLES;
     if (MoveUtil.hasMoved(player)) {
       if (!player.isSneaking()) {
@@ -165,10 +166,7 @@ public class StealthManager {
     double sneakSkill = PlayerDataUtil.getSkillLevels(player, LifeSkillType.SNEAK, false).getLevelWithBonus();
     particles -= sneakSkill / SNEAK_SKILL_PARTICLE_REDUCTION;
     particles = Math.min(Math.round(particles), MAX_STEALTH_PARTICLES);
-    for (int i = 0; i < particles; i++) {
-      Location newLoc = player.getLocation().clone()
-          .add(-0.7 + StrifePlugin.RNG.nextFloat() * 1.4, StrifePlugin.RNG.nextFloat() * 2, -0.7 + StrifePlugin.RNG.nextFloat() * 1.4);
-      newLoc.getWorld().spawnParticle(Particle.SPELL_MOB, newLoc, 0, 89, 98, 98, 1);
-    }
+    Location newLoc = player.getLocation().clone().add(-0.7 + StrifePlugin.RNG.nextFloat() * 1.4, StrifePlugin.RNG.nextFloat() * 2, -0.7 + StrifePlugin.RNG.nextFloat() * 1.4);
+    newLoc.getWorld().spawnParticle(Particle.ENTITY_EFFECT, newLoc, (int) particles, 0.5, 0.5, 0.5, Color.DARK_GRAY);
   }
 }

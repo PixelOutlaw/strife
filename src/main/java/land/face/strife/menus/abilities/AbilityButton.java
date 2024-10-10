@@ -70,7 +70,7 @@ public class AbilityButton extends MenuItem {
     }
 
     if (plugin.getAbilityIconManager().playerHasAbility(player, ability)) {
-      stack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+      stack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
     }
     return stack;
   }

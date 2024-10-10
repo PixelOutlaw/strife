@@ -3,13 +3,11 @@ package land.face.strife.util;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
-import com.destroystokyo.paper.Namespaced;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import info.faceland.loot.data.pdc.EquipmentData;
 import info.faceland.loot.utils.PersistHelper;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -193,6 +191,7 @@ public class ItemUtil {
       case CHEST -> equipment.getChestplate();
       case LEGS -> equipment.getLeggings();
       case FEET -> equipment.getBoots();
+      default -> throw new IllegalArgumentException("This is not a horse");
     };
   }
 
@@ -349,7 +348,7 @@ public class ItemUtil {
     try {
       ProtocolLibrary.getProtocolManager().sendServerPacket(player,
           buildPacketContainer(36 + slot, stack, percent, charges, toggled));
-    } catch (InvocationTargetException e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
@@ -366,7 +365,7 @@ public class ItemUtil {
     }
     if (toggled) {
       sentStackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-      sentStack.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+      sentStack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
     }
     PacketContainer packetContainer = new PacketContainer(PacketType.Play.Server.SET_SLOT);
     packetContainer.getIntegers().write(0, 0);

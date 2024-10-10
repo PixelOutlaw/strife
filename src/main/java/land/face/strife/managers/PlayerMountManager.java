@@ -126,6 +126,7 @@ public class PlayerMountManager {
     mob.forceSetStat(StrifeStat.ARMOR, 250);
     mob.forceSetStat(StrifeStat.ALL_RESIST, 80);
     mob.forceSetStat(StrifeStat.DAMAGE_REDUCTION, -5);
+    mob.forceSetStat(StrifeStat.CHARACTER_SIZE, 100);
     plugin.getStatUpdateManager().updateAllAttributes(mob);
 
     ActiveModel model;

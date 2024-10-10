@@ -20,6 +20,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -154,7 +155,7 @@ public class DoubleJumpListener implements Listener {
     if (JumpUtil.isRooted(event.getPlayer())) {
       return;
     }
-    if (event.getPlayer().hasPotionEffect(PotionEffectType.SLOW)) {
+    if (event.getPlayer().hasPotionEffect(PotionEffectType.SLOWNESS)) {
       return;
     }
     int lastSneak = MoveUtil.getLastSneak(event.getPlayer());
@@ -208,7 +209,7 @@ public class DoubleJumpListener implements Listener {
         plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
 
         PotionListener.ignoreFx = true;
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20, 1, true, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 20, 1, true, false));
         player.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, rollLeviTicks, 1, true, false));
         PotionListener.ignoreFx = false;
 
@@ -242,6 +243,12 @@ public class DoubleJumpListener implements Listener {
     }
 
     bonusVelocity.multiply((120 - mob.getStat(StrifeStat.WEIGHT)) / 100);
+    float netGravity = mob.getStat(StrifeStat.INCREASED_GRAVITY) - mob.getStat(StrifeStat.REDUCED_GRAVITY);
+    if (netGravity > 0) {
+      bonusVelocity.setY(bonusVelocity.getY() * (1 + netGravity / 185f));
+    } else if (netGravity < 0) {
+      bonusVelocity.multiply(140f / (-netGravity + 140f));
+    }
 
     velocity.setY(0);
     player.setVelocity(velocity.add(bonusVelocity));

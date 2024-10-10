@@ -74,7 +74,8 @@ public class EntityEquipmentManager {
       String base64 = cs.getString("base64");
       String hdbId = cs.getString("head-db-id");
       if (StringUtils.isNotBlank(base64)) {
-        stack = ItemUtil.withBase64(stack, base64);
+        // TODO: SOMETHING
+        // stack = ItemUtil.withBase64(stack, base64);
       } else if (StringUtils.isNotBlank(hdbId) && headDatabaseAPI != null) {
         try {
           stack = headDatabaseAPI.getItemHead(hdbId);

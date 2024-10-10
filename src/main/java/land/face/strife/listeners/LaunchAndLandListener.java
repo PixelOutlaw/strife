@@ -64,7 +64,7 @@ public class LaunchAndLandListener implements Listener {
         .setY(Math.max(0, event.getPlayer().getVelocity().getY()));
     event.getPlayer().setVelocity(oldVelocity.add(bonusVelocity));
     event.getPlayer().getWorld()
-        .spawnParticle(Particle.CRIT_MAGIC, event.getPlayer().getLocation(), 20, 0, 0, 0, 0.4);
+        .spawnParticle(Particle.CRIT, event.getPlayer().getLocation(), 20, 0, 0, 0, 0.4);
     event.getPlayer().getWorld()
         .playSound(event.getPlayer().getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
 
