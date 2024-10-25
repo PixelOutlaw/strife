@@ -15,7 +15,9 @@ import org.bukkit.inventory.ItemStack;
 @Setter
 public class AbilityIconData {
 
-  private final ItemStack stack;
+  private final ItemStack fullStack;
+  private final ItemStack simpleStack;
+
   private AbilitySlot abilitySlot;
   private int totalSkillRequirement = 0;
   private int levelRequirement = 0;
@@ -23,8 +25,11 @@ public class AbilityIconData {
   private final Map<StrifeAttribute, Integer> attributeRequirement = new HashMap<>();
   private final Map<LifeSkillType, Float> expWeights = new HashMap<>();
 
-  public AbilityIconData(ItemStack stack) {
-    this.stack = stack;
+
+
+  public AbilityIconData(ItemStack fullStack, ItemStack simpleStack) {
+    this.fullStack = fullStack;
+    this.simpleStack = simpleStack;
   }
 
   public boolean isRequirementMet(Champion champion) {

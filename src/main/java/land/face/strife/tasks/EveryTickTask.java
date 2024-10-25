@@ -77,7 +77,7 @@ public class EveryTickTask extends BukkitRunnable {
   );
   private final int arrLen = attackIndication.size();
   private final int arrLen2 = overdrawIndicator.size();
-  private final GUIComponent emptyAttack = new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER);
+  public static final GUIComponent EMPTY_ATTACK = new GUIComponent("attack-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER);
 
   public EveryTickTask(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -104,7 +104,7 @@ public class EveryTickTask extends BukkitRunnable {
     GUI gui = plugin.getGuiManager().getGui(p);
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(p);
 
-    if (mob.isInCombat()) {
+    if (mob.isInCombat() && !plugin.getStealthManager().isStealthed(p)) {
       float chargePercent = plugin.getAttackSpeedManager()
           .getRawMultiplier(p.getUniqueId(), mob.hasTrait(StrifeTrait.OVERDRAW));
       if (chargePercent > 1) {
@@ -114,7 +114,7 @@ public class EveryTickTask extends BukkitRunnable {
           if (attackProgress != arrLen2) {
             gui.update(overdrawIndicator.get(attackProgress));
           } else {
-            gui.update(emptyAttack);
+            gui.update(EMPTY_ATTACK);
           }
         }
       } else {
@@ -124,7 +124,7 @@ public class EveryTickTask extends BukkitRunnable {
           if (attackProgress != arrLen) {
             gui.update(attackIndication.get(attackProgress));
           } else {
-            gui.update(emptyAttack);
+            gui.update(EMPTY_ATTACK);
           }
         }
       }

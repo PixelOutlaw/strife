@@ -21,6 +21,7 @@ package land.face.strife.menus.abilities;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
+import info.faceland.loot.utils.ItemRenderer;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +58,7 @@ public class AbilityButton extends MenuItem {
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    ItemStack stack = ability.getAbilityIconData().getStack().clone();
+    ItemStack stack = ability.getAbilityIconData().getFullStack().clone();
     Champion champ = plugin.getChampionManager().getChampion(player);
     List<String> stackLore = plugin.getAbilityIconManager().buildRequirementsLore(champ, ability.getAbilityIconData());
     stackLore.addAll(stack.getLore() == null ? new ArrayList<>() : stack.getLore());
@@ -72,6 +73,7 @@ public class AbilityButton extends MenuItem {
     if (plugin.getAbilityIconManager().playerHasAbility(player, ability)) {
       stack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
     }
+    ItemRenderer.applyCommonFlags(stack);
     return stack;
   }
 

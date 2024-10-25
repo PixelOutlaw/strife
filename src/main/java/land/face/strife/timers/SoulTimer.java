@@ -28,6 +28,8 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -36,6 +38,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
+@Getter
+@Setter
 public class SoulTimer extends BukkitRunnable {
 
   private final Location location;
@@ -114,58 +118,10 @@ public class SoulTimer extends BukkitRunnable {
     return Bukkit.getPlayer(owner);
   }
 
-  public Location getLocation() {
-    return location;
-  }
-
-  public Set<Player> getViewers() {
-    return viewers;
-  }
-
-  public Hologram getSoulHead() {
-    return soulHead;
-  }
-
-  public double getLostExp() {
-    return lostExp;
-  }
-
-  public void setLostExp(double lostExp) {
-    this.lostExp = lostExp;
-  }
-
   private boolean canSeeSouls(Entity entity) {
     if (entity instanceof Player) {
       return StrifePlugin.getInstance().getSoulManager().canSeeSouls((Player) entity);
     }
     return false;
-  }
-
-  public ItemStack getHead() {
-    return head;
-  }
-
-  public ItemStack getBody() {
-    return body;
-  }
-
-  public ItemStack getLegs() {
-    return legs;
-  }
-
-  public ItemStack getBoots() {
-    return boots;
-  }
-
-  public ItemStack getMainHand() {
-    return mainHand;
-  }
-
-  public ItemStack getOffHand() {
-    return offHand;
-  }
-
-  public Map<StrifeStat, Float> getStatMap() {
-    return statMap;
   }
 }

@@ -51,6 +51,13 @@ public record ProjectileHitListener(StrifePlugin plugin) implements Listener {
     if (event.getHitEntity() == null) {
       return;
     }
+    if (event.getHitEntity().isInvulnerable()) {
+      if (event.getHitEntity() instanceof LivingEntity le) {
+        event.setCancelled(true);
+        ProjectileUtil.disableCollision(event.getEntity(), le);
+      }
+      return;
+    }
     if (event.getHitEntity() instanceof LivingEntity le) {
       UUID projectileUuid = event.getEntity().getUniqueId();
       if (le.getCollidableExemptions().contains(projectileUuid)) {

@@ -10,6 +10,7 @@ import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.OriginLocation;
+import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Particle;
@@ -91,33 +92,33 @@ public class EntityMagicListener implements Listener {
     if ((((Projectile) e.getDamager()).getShooter() instanceof Shulker)) {
       return;
     }
-    if (!(e.getEntity() instanceof LivingEntity)) {
+    if (!(e.getEntity() instanceof LivingEntity t)) {
       return;
     }
-    LivingEntity t = (LivingEntity) e.getEntity();
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
         () -> t.removePotionEffect(PotionEffectType.LEVITATION), 0L);
   }
 
   @EventHandler(priority = EventPriority.HIGH)
   public void onSkeletonSpell(ProjectileLaunchEvent e) {
-    if (e.isCancelled() || (!(e.getEntity().getShooter() instanceof Skeleton))) {
+    if (e.isCancelled() || (!(e.getEntity().getShooter() instanceof Skeleton shooter))) {
       return;
     }
-    if (!((Skeleton) e.getEntity().getShooter()).getEquipment().getItemInMainHand()
-        .isSimilar(skeletonWand)) {
+    if (ProjectileUtil.HANDLED_PROJECTILE.contains(shooter.getUniqueId())) {
+      return;
+    }
+    if (!shooter.getEquipment().getItemInMainHand().isSimilar(skeletonWand)) {
       return;
     }
     if (!(e.getEntity() instanceof Arrow)) {
       return;
     }
     e.setCancelled(true);
-    Skeleton skelly = (Skeleton) e.getEntity().getShooter();
-    skelly.getWorld().playSound(skelly.getLocation(), Sound.ENTITY_ALLAY_ITEM_TAKEN, 1f, 2f);
-    ShulkerBullet magicProj = skelly.getWorld()
-        .spawn(skelly.getEyeLocation().clone().add(0, -0.45, 0), ShulkerBullet.class);
-    magicProj.setShooter(skelly);
-    Vector vec = skelly.getLocation().getDirection();
+    shooter.getWorld().playSound(shooter.getLocation(), Sound.ENTITY_ALLAY_ITEM_TAKEN, 1f, 2f);
+    ShulkerBullet magicProj = shooter.getWorld().spawn(
+        shooter.getEyeLocation().clone().add(0, -0.45, 0), ShulkerBullet.class);
+    magicProj.setShooter(shooter);
+    Vector vec = shooter.getLocation().getDirection();
     magicProj.setVelocity(new Vector(vec.getX() * 1.2, vec.getY() * 1.2 + 0.255, vec.getZ() * 1.2));
   }
 

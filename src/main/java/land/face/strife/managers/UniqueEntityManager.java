@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import land.face.learnin.LearninBooksPlugin;
 import land.face.learnin.objects.LoadedKnowledge;
 import land.face.strife.StrifePlugin;
@@ -231,13 +230,11 @@ public class UniqueEntityManager {
       }
     }
 
-    if (uniqueEntity.isZombificationImmune()) {
-      if (le instanceof Piglin) {
-        ((Piglin) le).setImmuneToZombification(true);
-      }
-      if (le instanceof Hoglin) {
-        ((Hoglin) le).setImmuneToZombification(true);
-      }
+    if (le instanceof Piglin) {
+      ((Piglin) le).setImmuneToZombification(true);
+    }
+    if (le instanceof Hoglin) {
+      ((Hoglin) le).setImmuneToZombification(true);
     }
 
     if (le instanceof Bee) {
@@ -336,7 +333,7 @@ public class UniqueEntityManager {
     mob.setFactions(new HashSet<>(uniqueEntity.getFactions()));
     mob.setAlliedGuild(null);
     ChunkUtil.setDespawnOnUnload(mob.getEntity());
-    mob.setCharmImmune(uniqueEntity.isCharmImmune());
+    mob.setElite(uniqueEntity.isElite());
 
     if (uniqueEntity.getBoundingBonus() != -1) {
       entity.getBoundingBox().expand(uniqueEntity.getBoundingBonus());
@@ -414,7 +411,7 @@ public class UniqueEntityManager {
         uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
         uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
         uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
-        uniqueEntity.setCharmImmune(cs.getBoolean("charm-immune", false));
+        uniqueEntity.setElite(cs.getBoolean("elite", cs.getBoolean("charm-immune", false)));
         uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
         uniqueEntity.setFallImmune(cs.getBoolean("fall-immune", false));
         uniqueEntity.setPushImmune(cs.getBoolean("push-immune", false));
@@ -435,7 +432,6 @@ public class UniqueEntityManager {
         uniqueEntity.getEnemyUniques().addAll(cs.getStringList("enemy-uniques"));
         uniqueEntity.setBaby(cs.getBoolean("baby", false));
         uniqueEntity.setAngry(cs.getBoolean("angry", false));
-        uniqueEntity.setZombificationImmune(cs.getBoolean("zombification-immune", true));
         String color = cs.getString("color", null);
         if (color != null) {
           uniqueEntity.setColor(DyeColor.valueOf(color));

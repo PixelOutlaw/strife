@@ -36,10 +36,11 @@ public class Ability {
   private final Set<Condition> conditions;
   private final Set<Condition> sneakConditions;
   private final Set<Condition> filterConditions = new HashSet<>();
-  private final AbilityIconData abilityIconData;
   private final Map<StrifeStat, Float> passiveStats = new HashMap<>();
   private final Map<StrifeStat, Float> togglePassiveStats = new HashMap<>();
   private TargetingPriority targetingPriority;
+
+  private final AbilityIconData abilityIconData;
 
   @NotNull
   public String getId() {

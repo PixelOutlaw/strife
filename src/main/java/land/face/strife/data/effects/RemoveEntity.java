@@ -8,8 +8,12 @@ public class RemoveEntity extends Effect {
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
     if (target.getEntity() instanceof Player) {
-      target.getEntity().damage(100000000);
+      if (!"Graveyard".equals(target.getEntity().getWorld().getName())) {
+        target.getEntity().damage(100000000);
+      }
+      ((Player) target.getEntity()).kickPlayer("BANISHED BY HOLY MAGIC");
+    } else {
+      target.getEntity().remove();
     }
-    target.getEntity().remove();
   }
 }

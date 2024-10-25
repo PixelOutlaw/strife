@@ -1,16 +1,17 @@
 package land.face.strife.util;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.ticxo.modelengine.api.ModelEngineAPI;
-import com.ticxo.modelengine.api.animation.property.IAnimationProperty;
 import com.ticxo.modelengine.api.entity.Dummy;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
 import com.ticxo.modelengine.api.model.bone.type.HeldItem;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -28,7 +29,6 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -42,6 +42,8 @@ import org.bukkit.util.Vector;
 public class ProjectileUtil {
 
   private static int shotId = 1;
+
+  public static final Set<UUID> HANDLED_PROJECTILE = new HashSet<>();
 
   private static final Map<Projectile, Boolean> CONTACT_TRIGGER = new WeakHashMap<>();
   private static final Map<Projectile, Float> ATTACK_MULT = new WeakHashMap<>();
@@ -249,17 +251,23 @@ public class ProjectileUtil {
       ProjectileUtil.createArrow(mob.getEntity(),
           attackMult, projectileSpeed, pierceChance, randomOffset(projectiles), 0.2);
     }
+    float pitch = 0.95f + (float) Math.random() * 0.1f;
+    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ITEM_CROSSBOW_SHOOT, 1f, pitch);
     shotId++;
   }
 
   public static void createArrow(LivingEntity shooter, double attackMult, float power,
       float pierceChance, double spread, double vertBonus) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, vertBonus);
-    Arrow arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0), Arrow.class, e -> {
+    Location location = shooter.getEyeLocation().clone().add(0, -0.35, 0);
+    location.setDirection(velocity);
+    HANDLED_PROJECTILE.add(shooter.getUniqueId());
+    Arrow arrow = shooter.getWorld().spawn(location, Arrow.class, e -> {
+      e.setShooter(shooter);
       e.setVelocity(velocity);
       e.setPickupStatus(PickupStatus.CREATIVE_ONLY);
     });
-    arrow.setShooter(shooter);
+    HANDLED_PROJECTILE.remove(shooter.getUniqueId());
     arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
     arrow.getBoundingBox().expand(1);
 
@@ -271,16 +279,17 @@ public class ProjectileUtil {
   public static void createMagicMissile(LivingEntity shooter, double attackMult, float power,
       float pierceChance, double spread) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, 0);
+    HANDLED_PROJECTILE.add(shooter.getUniqueId());
     Snowball arrow = shooter.getWorld().spawn(shooter.getEyeLocation().clone().add(0, -0.35, 0), Snowball.class, e -> {
+      e.setShooter(shooter);
       e.setVelocity(velocity);
       //e.setPickupStatus(PickupStatus.CREATIVE_ONLY);
       e.setItem(wandProjectile);
       e.setGravity(false);
       e.setSilent(true);
     });
+    HANDLED_PROJECTILE.remove(shooter.getUniqueId());
     //DisguiseAPI.disguiseToAll(arrow, wandDisguise);
-
-    arrow.setShooter(shooter);
     arrow.getBoundingBox().expand(1);
 
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
@@ -297,18 +306,21 @@ public class ProjectileUtil {
 
   public static void createBullet(LivingEntity shooter, double attackMult, float power, double spread) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, 0);
+    HANDLED_PROJECTILE.add(shooter.getUniqueId());
     Snowball bullet = shooter.getWorld().spawn(shooter.getEyeLocation().clone(), Snowball.class, e -> {
+      e.setShooter(shooter);
       e.setVelocity(velocity);
       e.setItem(bulletProjectile);
       e.setGravity(false);
     });
-    bullet.setShooter(shooter);
+    HANDLED_PROJECTILE.remove(shooter.getUniqueId());
+    bullet.getBoundingBox().expand(1);
+
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
       if (bullet.isValid()) {
         bullet.remove();
       }
     }, 6);
-    bullet.getBoundingBox().expand(1);
 
     setAttackMult(bullet, (float) attackMult);
     setShotId(bullet);
@@ -433,9 +445,9 @@ public class ProjectileUtil {
       }
 
       if (thrownItem) {
-        ItemStack stack = caster.getEntity().getEquipment().getItemInMainHand();
+        ItemStack stack = caster.getEntity().getEquipment().getItemInMainHand().clone();
         if (stack.getType() == Material.AIR) {
-          stack = caster.getEntity().getEquipment().getItemInOffHand();
+          stack = caster.getEntity().getEquipment().getItemInOffHand().clone();
           if (stack.getType() == Material.AIR) {
             stack = new ItemStack(Material.IRON_SWORD);
           }

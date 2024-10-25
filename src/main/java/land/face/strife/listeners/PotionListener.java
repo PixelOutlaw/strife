@@ -197,7 +197,7 @@ public class PotionListener implements Listener {
     CreateModelAnimation effect = new CreateModelAnimation();
     effect.setFriendly(true);
     effect.setModelId(buff ? "fx_buff" : "fx_debuff");
-    effect.setAnimationId("a_skills");
+    effect.getAnimations().add("a_skills");
     effect.setStartAnimation(null);
     effect.setEndAnimation(null);
     effect.setLerpIn(0);

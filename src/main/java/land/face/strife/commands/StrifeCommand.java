@@ -464,7 +464,7 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "&cInvalid ability - No ability slot set");
       return;
     }
-    if (ability.getAbilityIconData().getStack() == null) {
+    if (ability.getAbilityIconData().getFullStack() == null) {
       sendMessage(sender, "&cCannot use this command for an ability without an icon!");
       return;
     }

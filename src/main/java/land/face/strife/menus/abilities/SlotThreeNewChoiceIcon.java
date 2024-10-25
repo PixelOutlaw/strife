@@ -35,7 +35,7 @@ public class SlotThreeNewChoiceIcon extends MenuItem {
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    return menu.getNewAbility().getAbilityIconData().getStack().clone();
+    return menu.getNewAbility().getAbilityIconData().getFullStack().clone();
   }
 
   @Override

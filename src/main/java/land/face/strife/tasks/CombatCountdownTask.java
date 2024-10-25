@@ -77,6 +77,12 @@ public class CombatCountdownTask extends BukkitRunnable {
       return;
     }
 
+    ticks--;
+    if (ticks < 1 && !delayDueToPvpDamageOverTime(mob)) {
+      endTask(mob);
+      return;
+    }
+
     if (ticks % 5 == 0) {
       if (mob.getChampion() != null) {
         if (StrifePlugin.getInstance().getPrayerManager().isPrayerActive(mob.getEntity())) {
@@ -85,12 +91,6 @@ public class CombatCountdownTask extends BukkitRunnable {
           mob.getChampion().getDetailsContainer().incrementPrayer(0, 1);
         }
       }
-    }
-
-    ticks--;
-    if (ticks < 1) {
-      endTask(mob);
-      return;
     }
 
     if (targetMob == null || targetMob.getEntity() == null) {
@@ -221,5 +221,17 @@ public class CombatCountdownTask extends BukkitRunnable {
       return;
     }
     mob.getChampion().getDetailsContainer().award(mob.getChampion());
+  }
+
+  private static boolean delayDueToPvpDamageOverTime(StrifeMob mob) {
+    if (!mob.isInPvp()) {
+      return false;
+    }
+    if (mob.getEntity().isOnGround()) {
+      return true;
+    }
+    return mob.getBleed() > 0 ||
+        mob.getEntity().hasPotionEffect(PotionEffectType.POISON) ||
+        mob.getEntity().getFireTicks() > 0;
   }
 }

@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
  * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
  * <p>
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
  * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.listeners;
 
@@ -83,6 +81,9 @@ public class ShootListener implements Listener {
         || !(event.getEntity() instanceof Arrow)) {
       return;
     }
+    if (ProjectileUtil.HANDLED_PROJECTILE.contains(player.getUniqueId())) {
+      return;
+    }
 
     plugin.getPlayerMountManager().despawn(player);
 
@@ -123,68 +124,66 @@ public class ShootListener implements Listener {
       return;
     }
     ProjectileUtil.shootArrow(mob, attackMultiplier);
-    player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_SHOOT, 1f, 1f);
   }
 
   @EventHandler
   public void onEntitySpell(ProjectileLaunchEvent event) {
-    if (event.getEntity().getShooter() instanceof LivingEntity shooter) {
-      if (shooter instanceof Player) {
-        return;
-      }
-
-      StrifeMob mob = plugin.getStrifeMobManager().getStatMob(shooter);
-
-      if (!ProjectileUtil.isAbilityProjectile(event.getEntity())) {
-        if (!mob.canAttack()) {
-          event.setCancelled(true);
-          return;
-        }
-      }
-
-      if (shooter instanceof Mob && ((Mob) shooter).getTarget() != null) {
-        StrifeMob target = plugin.getStrifeMobManager().getStatMob(((Mob) shooter).getTarget());
-        if (TargetingUtil.isFriendly(mob, target)) {
-          event.setCancelled(true);
-          ((Mob) shooter).setTarget(null);
-          return;
-        }
-      }
-
-      if (plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT)) {
-        event.setCancelled(true);
-        return;
-      }
-
-      ItemStack weapon = shooter.getEquipment().getItemInMainHand();
-      int bowData = ItemUtils.getModelData(weapon);
-      if (weapon.getType() == Material.BOW && bowData > 0 && bowData < 9000) {
-        ((LivingEntity) event.getEntity().getShooter()).swingMainHand();
-        ProjectileUtil.shootWand(mob, 1);
-        event.setCancelled(true);
-        return;
-      } else if (ItemUtil.isPistol(weapon)) {
-        ProjectileUtil.shootBullet(mob, 1f);
-        flintlockSmoke.apply(mob, mob);
-        flintlockFlare.apply(mob, mob);
-        event.setCancelled(true);
-        return;
-      } else if (event.getEntity() instanceof Arrow) {
-        ProjectileUtil.shootArrow(mob, 1f);
-        event.setCancelled(true);
-        return;
-      }
-
-      ProjectileUtil.setShotId(event.getEntity());
-      ProjectileUtil.bumpShotId();
+    if (!(event.getEntity().getShooter() instanceof LivingEntity shooter) || shooter instanceof Player) {
+      return;
     }
+    if (ProjectileUtil.HANDLED_PROJECTILE.contains(shooter.getUniqueId())) {
+      return;
+    }
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(shooter);
+
+    if (!ProjectileUtil.isAbilityProjectile(event.getEntity())) {
+      if (!mob.canAttack()) {
+        event.setCancelled(true);
+        return;
+      }
+    }
+
+    if (shooter instanceof Mob && ((Mob) shooter).getTarget() != null) {
+      StrifeMob target = plugin.getStrifeMobManager().getStatMob(((Mob) shooter).getTarget());
+      if (TargetingUtil.isFriendly(mob, target)) {
+        event.setCancelled(true);
+        ((Mob) shooter).setTarget(null);
+        return;
+      }
+    }
+
+    if (plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT)) {
+      event.setCancelled(true);
+      return;
+    }
+
+    ItemStack weapon = shooter.getEquipment().getItemInMainHand();
+    int bowData = ItemUtils.getModelData(weapon);
+    if (weapon.getType() == Material.BOW && bowData > 0 && bowData < 9000) {
+      ((LivingEntity) event.getEntity().getShooter()).swingMainHand();
+      ProjectileUtil.shootWand(mob, 1);
+      event.setCancelled(true);
+      return;
+    } else if (ItemUtil.isPistol(weapon)) {
+      ProjectileUtil.shootBullet(mob, 1f);
+      flintlockSmoke.apply(mob, mob);
+      flintlockFlare.apply(mob, mob);
+      event.setCancelled(true);
+      return;
+    } else if (event.getEntity() instanceof Arrow) {
+      ProjectileUtil.shootArrow(mob, 1f);
+      event.setCancelled(true);
+      return;
+    }
+
+    ProjectileUtil.setShotId(event.getEntity());
+    ProjectileUtil.bumpShotId();
   }
 
   @EventHandler
   public void onEntitySpell(EntitySpellCastEvent event) {
     Mob entity = event.getEntity();
-    if (event.getSpell() == Spell.DISAPPEAR ||
-        event.getSpell() == Spell.NONE || entity instanceof Player) {
+    if (event.getSpell() == Spell.DISAPPEAR || event.getSpell() == Spell.NONE || entity instanceof Player) {
       return;
     }
 

@@ -18,17 +18,23 @@
  */
 package land.face.strife.managers;
 
+import com.sentropic.guiapi.gui.Alignment;
+import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
-import java.awt.Color;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.StealthData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
+import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
@@ -39,7 +45,7 @@ import org.bukkit.entity.Player;
 public class StealthManager {
 
   private final StrifePlugin plugin;
-  private final Map<UUID, Long> stealthedPlayers = new HashMap<>();
+  private final Map<UUID, StealthData> stealthedPlayers = new HashMap<>();
 
   private final int DISABLE_MS = StrifePlugin.getInstance().getSettings()
       .getInt("config.mechanics.sneak.disable-duration");
@@ -61,6 +67,22 @@ public class StealthManager {
       .getInt("config.mechanics.sneak.max-stealth-particles", 2);
   private final float SNEAK_SKILL_PARTICLE_REDUCTION = (float) StrifePlugin.getInstance()
       .getSettings().getInt("config.mechanics.sneak.stealth-levels-per-removed-particle", 25);
+
+  public static final List<GUIComponent> STEALTH_IND = List.of(
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岓")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岔")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岕")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岖")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岗")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岘")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岙")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岚")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岛")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岜")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岝")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岞")), 45, 0, Alignment.CENTER)
+  );
+  private static final int STEALTH_LEN = STEALTH_IND.size();
 
   public StealthManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -116,10 +138,10 @@ public class StealthManager {
 
   public boolean canSneakAttack(Player player) {
     return stealthedPlayers.containsKey(player.getUniqueId())
-        && stealthedPlayers.get(player.getUniqueId()) < System.currentTimeMillis();
+        && stealthedPlayers.get(player.getUniqueId()).getReadyTime() < System.currentTimeMillis();
   }
 
-  public void stealthPlayer(Player player) {
+  public void stealthPlayer(Player player, float seconds) {
     for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), 70, 70, 70)) {
       if (e instanceof Player) {
         plugin.getIndicatorManager()
@@ -131,7 +153,8 @@ public class StealthManager {
       }
     }
     player.spawnParticle(Particle.SMOKE, player.getLocation(), 90, 0.5, 1, 0.5, 0);
-    stealthedPlayers.put(player.getUniqueId(), System.currentTimeMillis() + DISABLE_MS);
+    int ticks = (int) (seconds * 20f / 3f);
+    stealthedPlayers.put(player.getUniqueId(), new StealthData(ticks, ticks, System.currentTimeMillis() + DISABLE_MS));
     for (Player p : Bukkit.getOnlinePlayers()) {
       p.hidePlayer(plugin, player);
     }
@@ -143,6 +166,7 @@ public class StealthManager {
     }
     player.spawnParticle(Particle.SMOKE, player.getLocation(), 90, 0.5, 1, 0.5, 0);
     stealthedPlayers.remove(player.getUniqueId());
+    plugin.getGuiManager().updateComponent(player, EveryTickTask.EMPTY_ATTACK);
     for (Player p : Bukkit.getOnlinePlayers()) {
       p.showPlayer(plugin, player);
     }
@@ -152,6 +176,19 @@ public class StealthManager {
     if (!isStealthed(player)) {
       return;
     }
+    var data = stealthedPlayers.get(player.getUniqueId());
+
+    if (data.getTicks() < 1) {
+      unstealthPlayer(player);
+      return;
+    }
+
+    var percent = (float) data.getTicks() / data.getMaxTicks();
+    int attackProgress = Math.min((int) Math.floor(percent * STEALTH_LEN), STEALTH_LEN - 1);
+    plugin.getGuiManager().updateComponent(player, STEALTH_IND.get(attackProgress));
+
+    data.setTicks(data.getTicks() - 1);
+
     player.spawnParticle(Particle.ASH, player.getEyeLocation(), 60, 12, 12, 12, 0);
     player.spawnParticle(Particle.SMOKE, player.getEyeLocation(), 40, 7, 7, 7, 0);
     double particles = StrifePlugin.RNG.nextFloat() * BASE_STEALTH_PARTICLES;
@@ -167,6 +204,6 @@ public class StealthManager {
     particles -= sneakSkill / SNEAK_SKILL_PARTICLE_REDUCTION;
     particles = Math.min(Math.round(particles), MAX_STEALTH_PARTICLES);
     Location newLoc = player.getLocation().clone().add(-0.7 + StrifePlugin.RNG.nextFloat() * 1.4, StrifePlugin.RNG.nextFloat() * 2, -0.7 + StrifePlugin.RNG.nextFloat() * 1.4);
-    newLoc.getWorld().spawnParticle(Particle.ENTITY_EFFECT, newLoc, (int) particles, 0.5, 0.5, 0.5, Color.DARK_GRAY);
+    newLoc.getWorld().spawnParticle(Particle.ENTITY_EFFECT, newLoc, (int) particles, 0.5, 0.5, 0.5, Color.GRAY);
   }
 }

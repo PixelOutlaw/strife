@@ -137,6 +137,7 @@ public class ShootProjectile extends Effect {
       ProjectileUtil.setShotId(projectile);
 
       if (maxDuration != -1) {
+        int tick = (int) (((float) maxDuration) * (1 + caster.getStat(StrifeStat.CAST_RANGE) / 100));
         Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
           if (projectile.isValid()) {
             for (Effect effect : hitEffects) {
@@ -146,7 +147,7 @@ public class ShootProjectile extends Effect {
             }
             projectile.remove();
           }
-        }, maxDuration);
+        }, tick);
       }
 
       if (StringUtils.isNotBlank(modelId)) {

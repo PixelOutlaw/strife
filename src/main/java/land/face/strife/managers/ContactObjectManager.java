@@ -148,7 +148,7 @@ public class ContactObjectManager {
 
   public void saveLocations() {
     for (var entry : contactSpawners.entrySet()) {
-      Bukkit.getLogger().info("[Strife] Saving contact object " + entry.getKey());
+      //Bukkit.getLogger().info("[Strife] Saving contact object " + entry.getKey());
       spawnsYaml.set(entry.getKey() + ".cooldown-ticks", entry.getValue().getCooldownTicks());
       spawnsYaml.set(entry.getKey() + ".variables", entry.getValue().getVariables());
       spawnsYaml.set(entry.getKey() + ".prefab", entry.getValue().getPrefab().getId());

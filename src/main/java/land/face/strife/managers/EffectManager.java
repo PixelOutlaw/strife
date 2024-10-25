@@ -376,6 +376,7 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setZeroVerticalAxis(cs.getBoolean("zero-y-axis", false));
         ((CreateWorldSpaceEntity) effect).setDestroyOnContact(cs.getBoolean("destroy-on-contact", false));
         ((CreateWorldSpaceEntity) effect).setDestroyOnSharpAngle(cs.getBoolean("destroy-on-sharp-angle", false));
+        ((CreateWorldSpaceEntity) effect).setReachScaling(cs.getBoolean("scale-lifespan-with-reach", false));
         ((CreateWorldSpaceEntity) effect).setRestoreSpeedOnGroundContact(
             cs.getBoolean("restore-speed-on-ground-contact", true));
 
@@ -564,7 +565,7 @@ public class EffectManager {
         ((ShootProjectile) effect).setAttackMultiplier((float) cs.getDouble("attack-multiplier", 0D));
         ((ShootProjectile) effect).setDisguise(DisguiseUtil.parseDisguise(
             cs.getConfigurationSection("disguise"), key, false));
-        String thrownStackMaterial = cs.getString("thrown-stack-material");
+        String thrownStackMaterial = cs.getString("thrown-stack-material", "SNOWBALL");
         if (StringUtils.isNotBlank(thrownStackMaterial)) {
           ItemStack stack = new ItemStack(Material.valueOf(thrownStackMaterial));
           stack.setAmount(cs.getInt("thrown-stack-amount", 1));
@@ -861,7 +862,10 @@ public class EffectManager {
       case CREATE_MODEL -> {
         effect = new CreateModelAnimation();
         ((CreateModelAnimation) effect).setModelId(cs.getString("model-id"));
-        ((CreateModelAnimation) effect).setAnimationId(cs.getString("animation-id", "idle"));
+        ((CreateModelAnimation) effect).getAnimations().addAll(cs.getStringList("animations"));
+        if (cs.getString("animation-id", null) != null) {
+          ((CreateModelAnimation) effect).getAnimations().add(cs.getString("animation-id"));
+        }
         ((CreateModelAnimation) effect).setStartAnimation(cs.getString("animation-id-start"));
         ((CreateModelAnimation) effect).setEndAnimation(cs.getString("animation-id-end"));
         ((CreateModelAnimation) effect).setLerpIn((float) cs.getDouble("lerp-in", 0));
@@ -878,6 +882,8 @@ public class EffectManager {
         ((CreateModelAnimation) effect).setForceGroundBlocks(
             2 * cs.getInt("force-grounding-blocks", legacyForceGroundBlocks ? 4 : 0));
         ((CreateModelAnimation) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
+        ((CreateModelAnimation) effect).setReachScaling(cs.getBoolean("reach-scaling", false));
+        ((CreateModelAnimation) effect).setAreaScaling(cs.getBoolean("area-scaling", true));
         if (cs.getString("color") != null) {
           java.awt.Color c = java.awt.Color.decode(cs.getString("color"));
           ((CreateModelAnimation) effect).setColor(Color.fromRGB(c.getRed(), c.getGreen(), c.getBlue()));
@@ -908,6 +914,8 @@ public class EffectManager {
       case STEALTH -> {
         effect = new Stealth();
         ((Stealth) effect).setRemoveStealth(cs.getBoolean("remove", false));
+        ((Stealth) effect).setTicks(cs.getInt("duration", 20 * 30));
+        ((Stealth) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
       }
       case CHANGE_SIZE -> {
         effect = new ChangeSize();
@@ -948,6 +956,10 @@ public class EffectManager {
         try {
           potionType = PotionEffectType.getByName(cs.getString("effect"));
         } catch (Exception e) {
+          LogUtil.printWarning("Invalid potion effect type in effect " + key + ". Skipping.");
+          return;
+        }
+        if (potionType == null) {
           LogUtil.printWarning("Invalid potion effect type in effect " + key + ". Skipping.");
           return;
         }
@@ -1180,6 +1192,9 @@ public class EffectManager {
       case LORE:
         String loreId = cs.getString("lore-id", "");
         condition = new LoreCondition(loreId);
+        break;
+      case LESSER:
+        condition = new LesserCondition();
         break;
       case ENDLESS_EFFECT:
         boolean state = cs.getBoolean("state", true);

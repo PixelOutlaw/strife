@@ -71,8 +71,7 @@ public class VagabondManager {
 
   private void vagabondSetup(Skeleton entity, String className, int level) {
 
-    PlayerDisguise playerDisguise = new PlayerDisguise("vagabond1", vagabondNames
-        .get(StrifePlugin.RNG.nextInt(vagabondNames.size())));
+    PlayerDisguise playerDisguise = new PlayerDisguise("vagabond1", vagabondNames.get(StrifePlugin.RNG.nextInt(vagabondNames.size())));
     playerDisguise.setReplaceSounds(true);
     playerDisguise.setName(vagabond);
     playerDisguise.setDynamicName(false);
@@ -114,7 +113,7 @@ public class VagabondManager {
 
     SpecialStatusUtil.setMobLevel(entity, level);
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(entity);
-    mob.setCharmImmune(true);
+    mob.setElite(true);
 
     Map<StrifeAttribute, Integer> vagabondAttributes = new HashMap<>();
     for (String attr : mobClass.getLevelsPerAttribute().keySet()) {

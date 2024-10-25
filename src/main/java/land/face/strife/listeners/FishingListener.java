@@ -122,7 +122,7 @@ public class FishingListener implements Listener {
   private void applyWaitTime(StrifeMob mob, ItemStack fishingRod, FishHook hook) {
 
     boolean damaged = (fishingRod == null || fishingRod.getType() != Material.FISHING_ROD
-        || fishingRod.getDurability() == 63);
+        || fishingRod.getDurability() == 999);
 
     float speedBonus = mob.getStat(StrifeStat.FISHING_SPEED) +
         mob.getChampion().getLifeSkillLevel(LifeSkillType.FISHING);
@@ -176,7 +176,7 @@ public class FishingListener implements Listener {
   }
 
   private void degradeRod(ItemStack stack) {
-    if (stack == null || stack.getType() != Material.FISHING_ROD || stack.getDurability() == 63) {
+    if (stack == null || stack.getType() != Material.FISHING_ROD || stack.getDurability() == 999) {
       return;
     }
     double repairMod = 100;

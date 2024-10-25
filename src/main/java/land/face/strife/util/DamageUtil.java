@@ -433,10 +433,9 @@ public class DamageUtil {
     SkillLevelData data = PlayerDataUtil.getSkillLevels(player, LifeSkillType.SNEAK, true);
     float sneakSkill = data.getLevelWithBonus();
     float sneakDamage = sneakSkill;
-    sneakDamage += (float) (defender.getEntity().getMaxHealth() * (0.1 + 0.002 * sneakSkill));
+    sneakDamage += defender.getMaxLife() * (0.1f + 0.002f * sneakSkill);
 
-    SneakAttackEvent sneakEvent = DamageUtil
-        .callSneakAttackEvent(attacker, defender, sneakSkill, sneakDamage);
+    SneakAttackEvent sneakEvent = DamageUtil.callSneakAttackEvent(attacker, defender, sneakSkill, sneakDamage);
 
     if (sneakEvent.isCancelled()) {
       return 0f;
@@ -1194,8 +1193,7 @@ public class DamageUtil {
 
   public static SneakAttackEvent callSneakAttackEvent(StrifeMob attacker, StrifeMob victim,
       float sneakSkill, float sneakDamage) {
-    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill,
-        sneakDamage);
+    SneakAttackEvent sneakAttackEvent = new SneakAttackEvent(attacker, victim, sneakSkill, sneakDamage);
     Bukkit.getPluginManager().callEvent(sneakAttackEvent);
     return sneakAttackEvent;
   }

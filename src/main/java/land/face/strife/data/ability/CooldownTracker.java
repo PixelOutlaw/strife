@@ -119,17 +119,26 @@ public class CooldownTracker extends BukkitRunnable {
     if (ability.getAbilityIconData() == null) {
       return;
     }
-    if (slot == AbilitySlot.SLOT_A || slot == AbilitySlot.SLOT_B || slot == AbilitySlot.SLOT_C
-        || slot == AbilitySlot.SLOT_D) {
-      if (toggleState) {
-        ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(),
-            player, slot.getSlotIndex(),
-            1, 1, toggleState);
+    switch (slot) {
+      case SLOT_A, SLOT_B, SLOT_C, SLOT_D -> {
+        // yay
+      }
+      default -> {
         return;
       }
-      double percent = (double) duration / maxDuration;
-      ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getStack(), player, slot.getSlotIndex(),
-          percent, 1, toggleState);
     }
+    if (toggleState) {
+      ItemUtil.sendAbilityIconPacket(ability.getAbilityIconData().getSimpleStack(),
+          player, slot.getSlotIndex(), 1, 1, 1, toggleState
+      );
+      return;
+    }
+    double percent = (double) duration / maxDuration;
+    percent = Math.max(0, Math.min(percent, 1));
+    var stack = percent < 0.02 ?
+        ability.getAbilityIconData().getFullStack() : ability.getAbilityIconData().getSimpleStack();
+    ItemUtil.sendAbilityIconPacket(stack,
+        player, slot.getSlotIndex(), percent, chargesLeft, ability.getMaxCharges(), toggleState
+    );
   }
 }

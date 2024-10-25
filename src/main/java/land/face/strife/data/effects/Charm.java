@@ -18,7 +18,7 @@ public class Charm extends Effect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    if (target.isCharmImmune() || !(target.getEntity() instanceof Mob)
+    if (target.isElite() || !(target.getEntity() instanceof Mob)
         || target.getEntity() instanceof Player) {
       return;
     }

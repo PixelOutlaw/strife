@@ -68,7 +68,7 @@ public class DisplayFrame {
     if (translation != null) {
       ((DisplayHologramData) hologram.getData()).getTranslation().set(translation.x, translation.y, translation.z);
     }
-    hologram.updateHologram();
-    hologram.refreshHologram(Bukkit.getOnlinePlayers());
+    hologram.queueUpdate();
+    //hologram.refreshForViewers();
   }
 }

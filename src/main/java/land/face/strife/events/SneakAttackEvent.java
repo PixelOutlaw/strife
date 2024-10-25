@@ -19,10 +19,15 @@
 package land.face.strife.events;
 
 import land.face.strife.data.StrifeMob;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
 
+@Getter
+@Setter
 public class SneakAttackEvent extends Event implements Cancellable {
 
   private static final HandlerList HANDLER_LIST = new HandlerList();
@@ -37,8 +42,7 @@ public class SneakAttackEvent extends Event implements Cancellable {
   private float sneakAttackDamage;
   private boolean cancel;
 
-  public SneakAttackEvent(StrifeMob attacker, StrifeMob victim, float sneakSkill,
-      float sneakDamage) {
+  public SneakAttackEvent(StrifeMob attacker, StrifeMob victim, float sneakSkill, float sneakDamage) {
     this.attacker = attacker;
     this.victim = victim;
     this.sneakSkill = sneakSkill;
@@ -46,28 +50,8 @@ public class SneakAttackEvent extends Event implements Cancellable {
   }
 
   @Override
-  public HandlerList getHandlers() {
+  public @NotNull HandlerList getHandlers() {
     return HANDLER_LIST;
-  }
-
-  public StrifeMob getAttacker() {
-    return attacker;
-  }
-
-  public StrifeMob getVictim() {
-    return victim;
-  }
-
-  public float getSneakSkill() {
-    return sneakSkill;
-  }
-
-  public float getSneakAttackDamage() {
-    return sneakAttackDamage;
-  }
-
-  public void setSneakAttackDamage(float sneakAttackDamage) {
-    this.sneakAttackDamage = sneakAttackDamage;
   }
 
   public void setCancelled(boolean cancel) {

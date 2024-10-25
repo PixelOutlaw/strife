@@ -11,63 +11,39 @@ import org.bukkit.DyeColor;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 
 @Getter
+@Setter
 public class UniqueEntity {
 
-  @Setter String id;
-  @Setter EntityType type;
-  @Setter String name;
-  @Setter int bonusExperience;
-  @Setter float experienceMultiplier;
-  @Setter float minLevelClampMult;
-  @Setter Map<StrifeStat, Float> attributeMap;
-  final Set<String> factions = new HashSet<>();
-  final Set<String> enemyUniques = new HashSet<>();
-  @Setter EntityAbilitySet abilitySet;
-  @Setter int baseLevel;
-  @Setter boolean showName;
-  @Setter boolean baby;
-  @Setter boolean angry;
-  @Setter boolean zombificationImmune;
-  @Setter boolean armsRaised;
-  @Setter boolean hasAI;
-  @Setter boolean gravity;
-  @Setter boolean collidable;
-  @Setter boolean ignoreTargetLevel;
-  @Setter boolean guildMob;
-  @Setter Profession profession;
-  @Setter boolean invisible;
-  @Setter boolean invulnerable;
-  @Setter boolean silent;
-  @Setter int size;
-  @Setter int followRange = -1;
-  @Setter DyeColor color;
-  @Setter boolean pushImmune;
-  @Setter boolean charmImmune;
-  @Setter boolean burnImmune;
-  @Setter boolean fallImmune;
-  @Setter boolean knockbackImmune;
-  @Setter boolean ignoreSneak;
-  @Setter boolean saddled;
-  @Setter boolean canTarget;
-  @Setter int maxMods;
-  @Setter boolean removeFollowMods;
-  @Setter boolean powered;
-  @Setter boolean attackDisabledOnGlobalCooldown;
-  @Setter boolean alwaysRunTimer;
-  @Setter double displaceMultiplier;
-  @Setter double boundingBonus;
-  @Setter String mount;
-  @Setter Map<EquipmentSlot, String> equipment = new HashMap<>();
-  @Setter StrifeParticle strifeParticle;
-  @Setter boolean customAi;
-  @Setter boolean aggressiveAi;
-  @Setter List<String> removeGoals;
-  @Setter List<String> addGoals;
-  final List<String> bonusKnowledge = new ArrayList<>();
-  @Setter String modelId;
-  @Setter boolean vagabondAllowed;
+  private String id;
+  private EntityType type;
+  private String name;
+  private int bonusExperience;
+  private float experienceMultiplier;
+  private float minLevelClampMult;
+  private Map<StrifeStat, Float> attributeMap;
+  private final Set<String> factions = new HashSet<>();
+  private final Set<String> enemyUniques = new HashSet<>();
+  private EntityAbilitySet abilitySet;
+  private boolean showName, baby, angry, armsRaised, hasAI, gravity, collidable, ignoreTargetLevel,guildMob, pushImmune,
+      elite, burnImmune, fallImmune, knockbackImmune, ignoreSneak, saddled, canTarget, removeFollowMods, powered,
+      attackDisabledOnGlobalCooldown, alwaysRunTimer, vagabondAllowed, aggressiveAi, customAi, invisible, invulnerable,
+      silent;
+  private int baseLevel;
+  private Profession profession;
+  private int size;
+  private int followRange = -1;
+  private DyeColor color;
+  private int maxMods;
+  private double displaceMultiplier;
+  private double boundingBonus;
+  private String mount;
+  private Map<EquipmentSlot, String> equipment = new HashMap<>();
+  private StrifeParticle strifeParticle;
+  private List<String> removeGoals;
+  private List<String> addGoals;
+  private final List<String> bonusKnowledge = new ArrayList<>();
+  private String modelId;
 
 }

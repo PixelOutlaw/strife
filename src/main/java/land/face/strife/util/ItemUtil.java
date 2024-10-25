@@ -338,31 +338,31 @@ public class ItemUtil {
     return true;
   }
 
-  public static short getPercentageDamage(ItemStack stack, double percent) {
-    double maxDura = stack.getType().getMaxDurability();
-    return (short) Math.min(maxDura, maxDura * percent);
-  }
-
   public static void sendAbilityIconPacket(ItemStack stack, Player player, int slot,
-      double percent, int charges, boolean toggled) {
+      double percent, int charges, int maxCharges, boolean toggled) {
     try {
       ProtocolLibrary.getProtocolManager().sendServerPacket(player,
-          buildPacketContainer(36 + slot, stack, percent, charges, toggled));
+          buildPacketContainer(36 + slot, stack, percent, charges, maxCharges, toggled));
     } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
   private static PacketContainer buildPacketContainer(int slot, ItemStack stack, double percent,
-      int charges, boolean toggled) {
+      int charges, int maxCharge, boolean toggled) {
     ItemStack sentStack = stack.clone();
     ItemStackExtensionsKt.setUnbreakable(sentStack, false);
-    sentStack.setAmount(charges);
     ItemMeta sentStackMeta = sentStack.getItemMeta();
-    if (sentStackMeta instanceof Damageable && percent < 1) {
-      ((Damageable) sentStackMeta).setDamage(getPercentageDamage(sentStack, percent));
-      sentStack.setItemMeta(sentStackMeta);
+    int damage;
+    if (percent > 0.02) {
+      damage = (int) (percent * 1000D);
+    } else {
+      damage = 0;
     }
+    sentStack.editMeta(m -> {
+      ((Damageable) m).setDamage(damage);
+      m.setMaxStackSize(maxCharge * 10 + charges);
+    });
     if (toggled) {
       sentStackMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
       sentStack.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);

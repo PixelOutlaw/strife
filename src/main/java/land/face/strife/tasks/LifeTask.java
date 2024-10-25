@@ -74,9 +74,6 @@ public class LifeTask extends BukkitRunnable {
           mob.getEntity().setHealth(Math.min(mob.getEntity().getHealth() + lifeAmount, maxLife));
         }
       } else {
-        if (mob.isInCombat()) {
-          mob.bumpCombat(null);
-        }
         if (!mob.isInvincible()) {
           DamageUtil.dealRawDamage(mob, StrifePlugin.getInstance().getDamageManager().doEnergyAbsorb(mob, -lifeAmount));
         }

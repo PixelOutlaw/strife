@@ -18,9 +18,15 @@ public class WSEManager {
   public void createAtTarget(StrifeMob caster, Location location, CreateWorldSpaceEntity cse) {
     LogUtil.printDebug(" Creating world space entity with effects " + cse.getCachedEffectSchedule());
     double newLifeSpan = cse.getLifespan();
+    double extension = 0;
     if (!cse.isStrictDuration()) {
-      newLifeSpan *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
+      extension += caster.getStat(StrifeStat.EFFECT_DURATION);
     }
+    if (cse.isReachScaling()) {
+      extension += caster.getStat(StrifeStat.ATTACK_RANGE);
+    }
+    newLifeSpan *= 1 + extension / 100;
+
     var direction = location.getDirection();
     direction.multiply(cse.getVelocity());
 

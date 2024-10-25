@@ -85,10 +85,8 @@ public class PopoffUtil {
     }
     ((DisplayHologramData) hologram.getData()).getTranslation().add((float) velocity.getX(), (float) velocity.getY(), 0);
     ((DisplayHologramData) hologram.getData()).getScale().set(new Vector3f(scale));
-    Bukkit.getScheduler().runTaskAsynchronously(LootPlugin.getInstance(), () -> {
-      hologram.refreshForViewers();
-      //hologram.forceShowHologram(indicator.getViewer());
-    });
+    //hologram.forceShowHologram(indicator.getViewer());
+    Bukkit.getScheduler().runTaskAsynchronously(LootPlugin.getInstance(), hologram::refreshForViewers);
     return false;
   }
 

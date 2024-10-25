@@ -53,25 +53,24 @@ public class StrifeParticle extends LocationEffect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
-    if (tickDuration > 0) {
-      if (isFriendly() == TargetingUtil.isFriendly(caster, target)) {
-        double duration = tickDuration;
-        if (!strictDuration) {
-          duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
-        }
-        StrifePlugin.getInstance().getParticleTask().addContinuousParticle(target.getEntity(), this, (int) duration);
+    if (tickDuration > 0 && isFriendly() == TargetingUtil.isFriendly(caster, target)) {
+      double duration = tickDuration;
+      if (!strictDuration) {
+        duration *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
       }
-    } else {
-      playAtLocation(caster, getLoc(target.getEntity()), target.getEntity().getEyeLocation().getDirection());
+      StrifePlugin.getInstance().getParticleTask().addContinuousParticle(target.getEntity(), this, (int) duration);
+      return;
     }
+    playAtLocation(caster, target.getEntity(), getLoc(target.getEntity()),
+        target.getEntity().getEyeLocation().getDirection());
   }
 
   @Override
   public void applyAtLocation(StrifeMob caster, Location location) {
-    playAtLocation(caster, location, location.getDirection());
+    playAtLocation(caster, null, location, location.getDirection());
   }
 
-  private void playAtLocation(StrifeMob attacker, Location location, Vector direction) {
+  private void playAtLocation(StrifeMob attacker, LivingEntity le, Location location, Vector direction) {
     Particle particleInUse = particle;
     if (attacker != null && attacker.hasTrait(StrifeTrait.SOUL_FLAME) && particleInUse == Particle.FLAME) {
       particleInUse = Particle.SOUL_FIRE_FLAME;
@@ -94,6 +93,9 @@ public class StrifeParticle extends LocationEffect {
         return;
       case CLAW:
         spawnParticleClaw(particleInUse, direction, location, size, arcAngle, arcOffset);
+        return;
+      case BOUNDING_BOX:
+        spawnParticleBounding(particleInUse, le, location, quantity);
         return;
       case NORMAL:
       default:
@@ -216,19 +218,44 @@ public class StrifeParticle extends LocationEffect {
     }
   }
 
+  private void spawnParticleBounding(Particle particle, LivingEntity le, Location center, int density) {
+    if (le == null) {
+      return;
+    }
+    var bb = le.getBoundingBox();
+    double volume = bb.getVolume();
+    int amount = (int) (density * volume);
+    spawnParticle(particle, amount, bb.getWidthX() / 2, bb.getHeight() / 2, bb.getWidthZ() / 2, center);
+  }
+
   private void spawnParticle(Particle particle, Location location) {
+    spawnParticle(particle, quantity, spread, location);
+  }
+
+  private void spawnParticle(Particle particle, int quantity, Location location) {
+    spawnParticle(particle, quantity, spread, location);
+  }
+
+  private void spawnParticle(Particle particle, int quantity, double spread, Location location) {
+    spawnParticle(particle, quantity, spread, spread, spread, location);
+  }
+
+  private void spawnParticle(Particle particle, int quantity, double spreadX, double spreadY, double spreadZ,
+      Location location) {
     if (particle == Particle.ENTITY_EFFECT) {
-      location.getWorld().spawnParticle(Particle.ENTITY_EFFECT, location, quantity, spread, spread, spread, speed, color);
+      location.getWorld()
+          .spawnParticle(Particle.ENTITY_EFFECT, location, quantity, spreadX, spreadY, spreadZ, speed, color);
     } else if (particle == Particle.DUST) {
-      location.getWorld().spawnParticle(Particle.DUST, location, quantity, spread, spread, spread, speed, dustOptions);
+      location.getWorld()
+          .spawnParticle(Particle.DUST, location, quantity, spreadX, spreadY, spreadZ, speed, dustOptions);
     } else if (itemData != null) {
       if (particle == Particle.FALLING_DUST) {
-        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed, blockData);
-      } else  {
-        location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed, itemData);
+        location.getWorld().spawnParticle(particle, location, quantity, spreadX, spreadY, spreadZ, speed, blockData);
+      } else {
+        location.getWorld().spawnParticle(particle, location, quantity, spreadX, spreadY, spreadZ, speed, itemData);
       }
     } else {
-      location.getWorld().spawnParticle(particle, location, quantity, spread, spread, spread, speed);
+      location.getWorld().spawnParticle(particle, location, quantity, spreadX, spreadY, spreadZ, speed);
     }
   }
 
@@ -238,6 +265,7 @@ public class StrifeParticle extends LocationEffect {
     ORBIT,
     LINE,
     ARC,
-    CLAW
+    CLAW,
+    BOUNDING_BOX
   }
 }

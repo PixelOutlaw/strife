@@ -4,6 +4,9 @@ import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.entity.Dummy;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
@@ -21,7 +24,7 @@ import org.bukkit.util.Vector;
 public class CreateModelAnimation extends LocationEffect {
 
   private String modelId;
-  private String animationId;
+  private List<String> animations = new ArrayList<>();
   private String startAnimation;
   private String endAnimation;
   private float lerpIn;
@@ -35,6 +38,8 @@ public class CreateModelAnimation extends LocationEffect {
   private boolean entityLock;
   private boolean rotationLock;
   private boolean strictDuration;
+  private boolean areaScaling;
+  private boolean reachScaling;
   private Color color = null;
 
   public static Location TEMP_LOC;
@@ -148,7 +153,14 @@ public class CreateModelAnimation extends LocationEffect {
       dummy.setYHeadRot(loc.getYaw());
       dummy.setWalking(true);
     }
-    model.setScale(scale);
+
+    float finalScale = scale;
+    float extension = caster.getStat(StrifeStat.AREA_OF_EFFECT) + caster.getStat(StrifeStat.ATTACK_RANGE);
+    if (Math.round(extension) != 0) {
+      //extension /= (float) Math.PI;
+      finalScale *= (1 + extension / 100);
+    }
+    model.setScale(finalScale);
     if (color != null) {
       model.setDefaultTint(color);
     }
@@ -162,9 +174,11 @@ public class CreateModelAnimation extends LocationEffect {
     float realSpeed = speed / effectDuration;
 
     int realLifespan = lifespan;
-    if (animationId != null) {
+    if (!animations.isEmpty()) {
       if (lifespan == -1) {
-        double animationDuration = model.getBlueprint().getAnimations().get(animationId).getLength() / realSpeed;
+        Collections.shuffle(animations);
+        double animationDuration = model.getBlueprint().getAnimations()
+            .get(animations.getFirst()).getLength() / realSpeed;
         realLifespan = (int) Math.floor(20 * animationDuration) + 1;
       } else {
         realLifespan = (int) (lifespan * effectDuration);
@@ -175,9 +189,10 @@ public class CreateModelAnimation extends LocationEffect {
           "[Strife] You screwed up effect " + getId() + " only supply -1 lifespan if an animation-id is defined!");
       realLifespan = 20;
     }
-    if (animationId != null) {
+    if (!animations.isEmpty()) {
+      Collections.shuffle(animations);
       model.getAnimationHandler().forceStopAllAnimations();
-      model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, realSpeed, true);
+      model.getAnimationHandler().playAnimation(animations.getFirst(), lerpIn, lerpOut, realSpeed, true);
     }
     if (startAnimation != null) {
       model.getAnimationHandler().playAnimation(startAnimation, 0, 0, 1, true);

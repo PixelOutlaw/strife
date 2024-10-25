@@ -8,6 +8,7 @@ import java.util.Objects;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
+import lombok.Getter;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -16,6 +17,7 @@ public class MinionTask extends BukkitRunnable {
 
   private final WeakReference<StrifeMob> minion;
   private final WeakReference<StrifeMob> master;
+  @Getter
   private int lifespan;
 
   public MinionTask(StrifeMob minion, StrifeMob master, int lifespanSeconds) {
@@ -68,10 +70,6 @@ public class MinionTask extends BukkitRunnable {
 
   public StrifeMob getMaster() {
     return master.get();
-  }
-
-  public int getLifespan() {
-    return lifespan;
   }
 
   public void forceStartDeath() {

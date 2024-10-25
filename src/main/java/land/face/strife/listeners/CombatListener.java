@@ -272,6 +272,12 @@ public class CombatListener implements Listener {
       return;
     }
 
+    boolean mobAbility = plugin.getAbilityManager().abilityCast(attacker, defender, TriggerAbilityType.ON_HIT);
+    if (mobAbility) {
+      event.setCancelled(true);
+      return;
+    }
+
     float onHitChance = 1.0f;
     float attackMultiplier = 1.0f;
     float healMultiplier = 1f;

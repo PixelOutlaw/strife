@@ -1,6 +1,9 @@
 package land.face.strife.util;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.keys.WolfVariantKeys;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,6 +13,7 @@ import me.libraryaddict.disguise.DisguiseAPI;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
+import me.libraryaddict.disguise.disguisetypes.MetaIndex;
 import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
 import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
@@ -31,6 +35,8 @@ import me.libraryaddict.disguise.disguisetypes.watchers.ZombieWatcher;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Display.Billboard;
 import org.bukkit.entity.Display.Brightness;
@@ -40,6 +46,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.MushroomCow.Variant;
 import org.bukkit.entity.Panda.Gene;
 import org.bukkit.entity.Parrot;
+import org.bukkit.entity.Rabbit;
+import org.bukkit.entity.Wolf;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -47,6 +55,18 @@ public class DisguiseUtil {
 
   private static final Map<LivingEntity, Long> tempDisguiseMap = new ConcurrentHashMap<>();
   private static BukkitTask task;
+
+  private static Map<String, Wolf.Variant> killYourselfKyori = Map.of(
+      "ASHEN", Wolf.Variant.ASHEN,
+      "BLACK", Wolf.Variant.BLACK,
+      "CHESTNUT", Wolf.Variant.CHESTNUT,
+      "PALE", Wolf.Variant.PALE,
+      "RUSTY", Wolf.Variant.RUSTY,
+      "SNOWY", Wolf.Variant.SNOWY,
+      "SPOTTED", Wolf.Variant.SPOTTED,
+      "STRIPED", Wolf.Variant.STRIPED,
+      "WOODS", Wolf.Variant.WOODS
+  );
 
   public static void refresh() {
     if (task != null && !task.isCancelled()) {
@@ -114,6 +134,7 @@ public class DisguiseUtil {
       disguise = playerDisguise;
     } else if (type.isMob()) {
       String typeData = section.getString("disguise-type-data", "");
+      boolean angryData = section.getBoolean("angry", false);
       boolean babyData = section.getBoolean("baby", false);
       MobDisguise mobDisguise = new MobDisguise(type);
       FlagWatcher watcher = mobDisguise.getWatcher();
@@ -140,7 +161,10 @@ public class DisguiseUtil {
               Fox.Type foxType = Fox.Type.valueOf(typeData);
               ((FoxWatcher) watcher).setType(foxType);
             }
-            case WOLF -> ((WolfWatcher) watcher).setAngry(Boolean.parseBoolean(typeData));
+            case WOLF -> {
+              ((WolfWatcher) watcher).setVariant(killYourselfKyori.getOrDefault(typeData, Wolf.Variant.PALE));
+              ((WolfWatcher) watcher).setAngry(angryData);
+            }
             case PARROT -> {
               Parrot.Variant parrotType = Parrot.Variant.valueOf(typeData);
               ((ParrotWatcher) watcher).setVariant(parrotType);
@@ -150,7 +174,7 @@ public class DisguiseUtil {
               ((SheepWatcher) watcher).setColor(color);
             }
             case RABBIT -> {
-              RabbitType rabbitType = RabbitType.valueOf(typeData);
+              Rabbit.Type rabbitType = Rabbit.Type.valueOf(typeData);
               ((RabbitWatcher) watcher).setType(rabbitType);
             }
             case FROG -> {

@@ -80,6 +80,7 @@ public abstract class Condition {
     WEAPONS,
     BUFF,
     LORE,
+    LESSER,
     ENDLESS_EFFECT,
     BLOCKING,
     MOVING,

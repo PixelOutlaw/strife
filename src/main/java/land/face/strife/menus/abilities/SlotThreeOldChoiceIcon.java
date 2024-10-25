@@ -52,7 +52,7 @@ public class SlotThreeOldChoiceIcon extends MenuItem {
       TextUtils.setLore(stack, List.of(FaceColor.LIGHT_GRAY + "You should probably pick this one!"), false);
       return stack;
     }
-    return ability.getAbilityIconData().getStack().clone();
+    return ability.getAbilityIconData().getFullStack().clone();
   }
 
   @Override

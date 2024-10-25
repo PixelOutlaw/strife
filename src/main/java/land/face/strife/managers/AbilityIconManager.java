@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
+import land.face.strife.data.ability.Ability.TargetType;
 import land.face.strife.data.ability.AbilityIconData;
 import land.face.strife.data.ability.CooldownTracker;
 import land.face.strife.data.champion.Champion;
@@ -30,6 +31,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -94,7 +96,7 @@ public class AbilityIconManager {
       return;
     }
     ItemStack displacedItem = player.getInventory().getItem(slot.getSlotIndex());
-    player.getInventory().setItem(slot.getSlotIndex(), abilityIconData.getStack());
+    player.getInventory().setItem(slot.getSlotIndex(), abilityIconData.getFullStack());
     if (displacedItem != null && !isAbilityIcon(displacedItem)) {
       HashMap<Integer, ItemStack> excessItems = player.getInventory().addItem(displacedItem);
       for (ItemStack extraStack : excessItems.values()) {
@@ -166,18 +168,21 @@ public class AbilityIconManager {
     }, 0L);
     //Bukkit.getScheduler().runTaskLater(plugin, () -> setIconDamage(mob.getChampion(), ability), 1L);
     boolean toggledOn = false;
-    CooldownTracker cooldownTracker = plugin.getAbilityManager()
-        .getCooldownTracker(player, ability.getId());
+    CooldownTracker cooldownTracker = plugin.getAbilityManager().getCooldownTracker(player, ability.getId());
     if (cooldownTracker != null) {
       toggledOn = cooldownTracker.isToggleState();
     }
     if (!toggledOn && player.getCooldown(ability.getCastType().getMaterial()) > 3) {
       return;
     }
+    StrifeMob target = null;
+    if (ability.getTargetType() == TargetType.SINGLE_OTHER) {
+      target = plugin.getAbilityManager().getSingleTarget(ability, mob);
+    }
     boolean abilitySucceeded = plugin.getAbilityManager().execute(
         ability,
         plugin.getStrifeMobManager().getStatMob(player),
-        null,
+        target,
         AbilitySlot.cachedValues[slotNumber],
         toggledOn
     );

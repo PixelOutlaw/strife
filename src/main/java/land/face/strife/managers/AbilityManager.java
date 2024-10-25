@@ -7,6 +7,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import info.faceland.loot.utils.ItemRenderer;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,6 +58,7 @@ import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.jetbrains.annotations.NotNull;
 
 public class AbilityManager {
@@ -87,8 +89,7 @@ public class AbilityManager {
     return execute(ability, caster, target, slot, false);
   }
 
-  public boolean execute(final Ability ability, final StrifeMob caster,
-      final StrifeMob target, AbilitySlot slot, boolean ignoreReqs) {
+  public boolean execute(Ability ability, StrifeMob caster, StrifeMob target, AbilitySlot slot, boolean ignoreReqs) {
     if (!ignoreReqs) {
       float cooldown = caster.getEntity().isSneaking() ? ability.getSneakCooldown() : ability.getCooldown();
       if (cooldown != 0 && !canBeCast(caster, ability)) {
@@ -376,24 +377,18 @@ public class AbilityManager {
 
   public void setGlobalCooldown(Player player, Ability ability, int ticks) {
     if (ability.getCastType() == AbilityType.SPELL) {
-      player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player
-          .getCooldown(Material.GOLDEN_CHESTPLATE), ticks));
-      player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player
-          .getCooldown(Material.DIAMOND_CHESTPLATE), ability.getGlobalCooldownTicks()));
+      player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player.getCooldown(Material.GOLDEN_CHESTPLATE), ticks));
+      player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player.getCooldown(Material.DIAMOND_CHESTPLATE), ability.getGlobalCooldownTicks()));
     } else if (ability.getCastType() == AbilityType.ATTACK) {
       int amount = Math.max(ability.getGlobalCooldownTicks(), ticks);
-      player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player
-          .getCooldown(Material.DIAMOND_CHESTPLATE), amount));
-      player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player
-          .getCooldown(Material.GOLDEN_CHESTPLATE), ability.getGlobalCooldownTicks()));
+      player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player.getCooldown(Material.DIAMOND_CHESTPLATE), amount));
+      player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player.getCooldown(Material.GOLDEN_CHESTPLATE), ability.getGlobalCooldownTicks()));
     }
   }
 
   public void setGlobalCooldown(Player player, int ticks) {
-    player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player
-        .getCooldown(Material.GOLDEN_CHESTPLATE), ticks));
-    player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player
-        .getCooldown(Material.DIAMOND_CHESTPLATE), ticks));
+    player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player.getCooldown(Material.GOLDEN_CHESTPLATE), ticks));
+    player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player.getCooldown(Material.DIAMOND_CHESTPLATE), ticks));
   }
 
   private void coolDownAbility(StrifeMob caster, Ability ability, AbilitySlot slot) {
@@ -489,7 +484,7 @@ public class AbilityManager {
         return new TargetResponse(targets, true);
       }
       case NEARBY_ENEMIES -> {
-        float range = ability.getRange() + (1 + caster.getStat(StrifeStat.CAST_RANGE) / 125f);
+        float range = ability.getRange() * (1 + caster.getStat(StrifeStat.CAST_RANGE) / 120f);
         targets = HitDetectionUtil.getEntitiesInArea(caster.getEntity().getLocation(), range);
         TargetingUtil.filterFriendlyEntities(targets, caster, false);
         TargetingUtil.filterByTargetPriority(targets, ability.getTargetingPriority(), caster, ability.getMaxTargets());
@@ -512,28 +507,22 @@ public class AbilityManager {
           targets.add(target.getEntity());
           return new TargetResponse(targets);
         }
-        if (ability.isSneakSelfTarget() && caster.getEntity().getType() == EntityType.PLAYER &&
-            caster.getEntity().isSneaking()) {
-          targets.add(caster.getEntity());
-          return new TargetResponse(targets, true);
-        }
-        float range = ability.getRange() + (1 + caster.getStat(StrifeStat.CAST_RANGE) / 125f);
-        LivingEntity t = TargetingUtil.selectFirstEntityInSight(caster.getEntity(), range, ability.isFriendly());
+        var t = getSingleTarget(ability, caster);
         if (t != null) {
-          targets.add(t);
+          targets.add(t.getEntity());
         }
         return new TargetResponse(targets, true);
       }
       case TARGET_AREA -> {
         LivingEntity targetEntity = (target == null || target.getEntity() == null)
             ? null : target.getEntity();
-        float range = ability.getRange() + (1 + caster.getStat(StrifeStat.CAST_RANGE) / 125f);
+        float range = ability.getRange() * (1 + caster.getStat(StrifeStat.CAST_RANGE) / 120f);
         Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), targetEntity, range,
             ability.isRaycastsTargetEntities(), ability.isFriendly());
         return new TargetResponse(loc);
       }
       case TARGET_GROUND -> {
-        float range = ability.getRange() + (1 + caster.getStat(StrifeStat.CAST_RANGE) / 125f);
+        float range = ability.getRange() * (1 + caster.getStat(StrifeStat.CAST_RANGE) / 120f);
         LivingEntity targetEntity = (target == null || target.getEntity() == null) ? null : target.getEntity();
         Location loc2 = TargetingUtil.getTargetLocation(caster.getEntity(),
             targetEntity, range, ability.isRaycastsTargetEntities(), ability.isFriendly());
@@ -541,7 +530,7 @@ public class AbilityManager {
         return new TargetResponse(loc2);
       }
       case NEAREST_SOUL -> {
-        float range = ability.getRange() + (1 + caster.getStat(StrifeStat.CAST_RANGE) / 125f);
+        float range = ability.getRange() * (1 + caster.getStat(StrifeStat.CAST_RANGE) / 120f);
         SoulTimer soul = plugin.getSoulManager().getNearestSoul(caster.getEntity(), range);
         if (soul != null) {
           targets.add(soul.getOwner());
@@ -552,6 +541,19 @@ public class AbilityManager {
       }
     }
     return new TargetResponse(new HashSet<>());
+  }
+
+  public StrifeMob getSingleTarget(Ability ability, StrifeMob caster) {
+    if (ability.isSneakSelfTarget() && caster.getEntity().getType() == EntityType.PLAYER &&
+        caster.getEntity().isSneaking()) {
+      return caster;
+    }
+    float range = ability.getRange() * (1 + caster.getStat(StrifeStat.CAST_RANGE) / 120f);
+    LivingEntity t = TargetingUtil.selectFirstEntityInSight(caster.getEntity(), range, ability.isFriendly());
+    if (t != null) {
+      return plugin.getStrifeMobManager().getStatMob(t);
+    }
+    return null;
   }
 
   private boolean isAbilityCastReady(StrifeMob caster, StrifeMob target, Ability ability) {
@@ -672,8 +674,7 @@ public class AbilityManager {
       }
       sneakConditions.add(plugin.getEffectManager().getConditions().get(s));
     }
-    AbilityIconData abilityIconData = buildIconData(key, abilityType,
-        cs.getConfigurationSection("icon"));
+    AbilityIconData abilityIconData = buildIconData(key, abilityType, cs.getConfigurationSection("icon"), maxCharges);
 
     Ability ability = Ability.builder()
         .id(key)
@@ -726,31 +727,47 @@ public class AbilityManager {
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 
-  private AbilityIconData buildIconData(String key, AbilityType castType,
-      ConfigurationSection iconSection) {
-    if (iconSection == null) {
+  private AbilityIconData buildIconData(String key, AbilityType castType, ConfigurationSection config, int charges) {
+    if (config == null) {
       return null;
     }
     LogUtil.printDebug("Ability " + key + " has icon!");
-    String format = PaletteUtil.loadString(iconSection, "format", "|white||b|");
+    String format = PaletteUtil.loadString(config, "format", "|white||b|");
+
     Material material = castType.getMaterial();
-    List<String> lore = UnicodeUtil.unicodePlacehold(PaletteUtil.loadStrings(iconSection, "lore"));
+    var strs = PaletteUtil.loadStrings(config, "lore");
+    var summary = UnicodeUtil.unicodePlacehold(PaletteUtil.loadStrings(config, "summary"));
+    List<String> lore = new ArrayList<>();
+    for (var s : strs) {
+      if ("{summary}".equals(s)) {
+        lore.addAll(summary);
+      } else {
+        lore.add(UnicodeUtil.unicodePlacehold(s));
+      }
+    }
     ItemStack icon = new ItemStack(material);
     ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
-    TextUtils.setLore(icon, lore);
     ItemStackExtensionsKt.setUnbreakable(icon, true);
-    ItemStackExtensionsKt.setCustomModelData(icon, iconSection.getInt("custom-model-data", 7999));
+    ItemStackExtensionsKt.setCustomModelData(icon, config.getInt("custom-model-data", 7999));
     ItemRenderer.applyCommonFlags(icon);
+    icon.editMeta(m -> {
+      ((Damageable) m).setMaxDamage(1000);
+      m.setMaxStackSize(charges);
+    });
 
-    AbilityIconData data = new AbilityIconData(icon);
+    ItemStack simpleIcon = icon.clone();
 
-    data.setAbilitySlot(AbilitySlot.valueOf(iconSection.getString("trigger-slot")));
-    data.setLevelRequirement(iconSection.getInt("level-requirement", -1));
-    data.setTotalSkillRequirement(iconSection.getInt("total-skill-requirement", -1));
+    TextUtils.setLore(icon, lore, false);
+    TextUtils.setLore(simpleIcon, summary, false);
+
+    AbilityIconData data = new AbilityIconData(icon, simpleIcon);
+
+    data.setAbilitySlot(AbilitySlot.valueOf(config.getString("trigger-slot")));
+    data.setLevelRequirement(config.getInt("level-requirement", -1));
+    data.setTotalSkillRequirement(config.getInt("total-skill-requirement", -1));
 
     Map<StrifeAttribute, Integer> attrReqs = new HashMap<>();
-    ConfigurationSection attrSection = iconSection
-        .getConfigurationSection("attribute-requirements");
+    ConfigurationSection attrSection = config.getConfigurationSection("attribute-requirements");
     if (attrSection != null) {
       for (String s : attrSection.getKeys(false)) {
         StrifeAttribute attr = plugin.getAttributeManager().getAttribute(s);
@@ -759,7 +776,7 @@ public class AbilityManager {
       }
     }
     Map<LifeSkillType, Integer> skillReqs = new HashMap<>();
-    ConfigurationSection skillSecion = iconSection.getConfigurationSection("skill-requirements");
+    ConfigurationSection skillSecion = config.getConfigurationSection("skill-requirements");
     if (skillSecion != null) {
       for (String s : skillSecion.getKeys(false)) {
         LifeSkillType skill = LifeSkillType.valueOf(s);
@@ -768,7 +785,7 @@ public class AbilityManager {
       }
     }
     Map<LifeSkillType, Float> expWeight = new HashMap<>();
-    ConfigurationSection weightSection = iconSection.getConfigurationSection("exp-weights");
+    ConfigurationSection weightSection = config.getConfigurationSection("exp-weights");
     if (weightSection != null) {
       for (String s : weightSection.getKeys(false)) {
         LifeSkillType skill = LifeSkillType.valueOf(s);

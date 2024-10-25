@@ -51,51 +51,40 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 
+@Getter
+@Setter
 @SuppressWarnings("unused")
 public class StrifeMob {
 
-  @Getter
   private final EquipmentCache equipmentCache = new EquipmentCache();
-  @Getter
   private final Map<StrifeStat, Float> baseStats = new HashMap<>();
-  @Getter
   private final Map<StrifeStat, Float> statCache = new HashMap<>();
 
-  @Getter @Setter
   private int expiryAge = 0;
 
-  private Champion champion;
   private final WeakReference<LivingEntity> livingEntity;
-  private WeakReference<UniqueEntity> uniqueEntity = null;
-  private WeakReference<Spawner> spawner = new WeakReference<>(null);
-  private WeakReference<ModeledEntity> modelEntity = null;
   private WeakReference<StrifeMob> owner = new WeakReference<>(null);
 
-  @Setter
-  @Getter
+  private Champion champion;
+  private UniqueEntity uniqueEntity = null;
+  private Spawner spawner = null;
+  private ModeledEntity modelEntity = null;
+
   private EntityAbilitySet abilitySet;
-  @Getter
   private final Set<String> mods = new HashSet<>();
-  @Getter @Setter
   private Set<String> factions = new HashSet<>();
-  @Getter @Setter
   private UUID alliedGuild;
-  @Getter @Setter
-  private boolean charmImmune = false;
+  private boolean elite = false;
   private final Set<Buff> runningBuffs = new HashSet<>();
   private final Map<UUID, Float> takenDamage = new HashMap<>();
   private final Set<UUID> reflectedTargets = new HashSet<>();
   private final List<Shielding> shielding = new ArrayList<>();
-  @Getter
+
   private final Map<UUID, Float> threatTargets = new HashMap<>();
 
-  @Getter @Setter
   private float maxPrayer, energy = 0, maxEnergy = 0, maxRage = 0, barrier = 0, maxLife = 1, maxBarrier = 0, block = 0,
       maxBlock = 1000, frost, frostGraceTicks, corruption, bleed;
-  @Getter @Setter
   private int maxEarthRunes = 3, earthRunes = 0, maxAirJumps = 0, airJumps = 0;
-  @Setter
-  @Getter
   private boolean useEquipment;
 
   private CombatCountdownTask combatCountdownTask = null;
@@ -104,14 +93,12 @@ public class StrifeMob {
   private LifeTask lifeTask = new LifeTask(this);
   private EnergyTask energyTask = new EnergyTask(this);
   private FrostTask frostTask = new FrostTask(this);
-  @Getter
   private RageTask rageTask = null;
   private InvincibleTask invincibleTask = null;
   private MinionTask minionTask = null;
 
   private final Set<StrifeMob> minions = new HashSet<>();
 
-  @Setter
   private boolean reCache = false;
   private long lastEquipmentUpdate = 100L;
   private long lastChampionUpdate = 100L;
@@ -138,18 +125,17 @@ public class StrifeMob {
   }
 
   public boolean canAttack() {
-    if (uniqueEntity == null || uniqueEntity.get() == null) {
+    if (uniqueEntity == null) {
       return true;
     }
-    //noinspection DataFlowIssue
-    if (!uniqueEntity.get().isAttackDisabledOnGlobalCooldown()) {
+    if (!uniqueEntity.isAttackDisabledOnGlobalCooldown()) {
       return true;
     }
     return isGlobalCooldownReady();
   }
 
   public void setUniqueEntity(UniqueEntity uniqueEntity) {
-    this.uniqueEntity = new WeakReference<>(uniqueEntity);
+    this.uniqueEntity = uniqueEntity;
   }
 
   public void bumpGlobalCooldown(int millis) {
@@ -471,25 +457,6 @@ public class StrifeMob {
     return StatUtil.getStat(this, stat);
   }
 
-  public Spawner getSpawner() {
-    return spawner.get();
-  }
-
-  public void setSpawner(Spawner spawner) {
-    this.spawner = new WeakReference<>(spawner);
-  }
-
-  public ModeledEntity getModelEntity() {
-    if (modelEntity == null) {
-      return null;
-    }
-    return modelEntity.get();
-  }
-
-  public void setModelEntity(ModeledEntity modelEntity) {
-    this.modelEntity = new WeakReference<>(modelEntity);
-  }
-
   public StrifeMob getOwner() {
     if (owner == null) {
       return null;
@@ -514,11 +481,7 @@ public class StrifeMob {
     if (uniqueEntity == null) {
       return null;
     }
-    return uniqueEntity.get().getId();
-  }
-
-  public UniqueEntity getUniqueEntity() {
-    return uniqueEntity == null ? null : uniqueEntity.get();
+    return uniqueEntity.getId();
   }
 
   public Champion getChampion() {
