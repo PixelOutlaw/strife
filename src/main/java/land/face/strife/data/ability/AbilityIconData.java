@@ -25,8 +25,6 @@ public class AbilityIconData {
   private final Map<StrifeAttribute, Integer> attributeRequirement = new HashMap<>();
   private final Map<LifeSkillType, Float> expWeights = new HashMap<>();
 
-
-
   public AbilityIconData(ItemStack fullStack, ItemStack simpleStack) {
     this.fullStack = fullStack;
     this.simpleStack = simpleStack;

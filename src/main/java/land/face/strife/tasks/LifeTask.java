@@ -13,7 +13,6 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.DOTUtil;
 import land.face.strife.util.DamageUtil;
-import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -41,7 +40,7 @@ public class LifeTask extends BukkitRunnable {
       return;
     }
 
-    float maxLife = (float) mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+    float maxLife = (float) mob.getEntity().getAttribute(Attribute.MAX_HEALTH).getBaseValue();
     DamageUtil.restoreHealth(mob.getEntity(), getBonusHealth(), false, false);
     float lifeAmount = StatUtil.getLifeRegen(mob);
 
@@ -55,7 +54,7 @@ public class LifeTask extends BukkitRunnable {
       if (mob.hasTrait(StrifeTrait.BARRIER_NO_BURN) && mob.getBarrier() > 0.1) {
         // Do nothing
       } else {
-        damage += mob.damageBarrier(DOTUtil.getFireDamage(mob));
+        damage += mob.damageBarrier(null, DOTUtil.getFireDamage(mob));
       }
     }
     if (mob.isBleeding()) {

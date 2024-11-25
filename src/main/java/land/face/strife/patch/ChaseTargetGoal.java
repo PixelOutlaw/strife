@@ -46,7 +46,7 @@ public class ChaseTargetGoal implements Goal<Mob> {
     if (mob == null) {
       return;
     }
-    followRange = (float) mob.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getValue();
+    followRange = (float) mob.getAttribute(Attribute.FOLLOW_RANGE).getValue();
     followRange *= followRange;
   }
 

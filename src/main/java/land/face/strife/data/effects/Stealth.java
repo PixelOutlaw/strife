@@ -21,7 +21,7 @@ public class Stealth extends Effect {
       return;
     }
     if (removeStealth) {
-      StrifePlugin.getInstance().getStealthManager().unstealthPlayer((Player) target.getEntity());
+      StrifePlugin.getInstance().getStealthManager().unstealthPlayer((Player) target.getEntity(), false);
     } else {
       float seconds = (float) ticks / 20f;
       if (!strictDuration) {

@@ -18,9 +18,6 @@
  */
 package land.face.strife.managers;
 
-import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
-import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
-
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
@@ -34,7 +31,6 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.StatUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -107,15 +103,22 @@ public class StatUpdateManager {
       return;
     }
     double health = mob.getEntity().getHealth();
-    double oldMaxHealth = mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).getBaseValue();
+    double oldMaxHealth = mob.getEntity().getAttribute(Attribute.MAX_HEALTH).getBaseValue();
     double maxHealth = Math.max(StatUtil.getStat(mob, StrifeStat.HEALTH), 1);
-    mob.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(maxHealth);
+    mob.getEntity().getAttribute(Attribute.MAX_HEALTH).setBaseValue(maxHealth);
     mob.getEntity().setHealth(Math.min(maxHealth, health * (maxHealth / oldMaxHealth)));
   }
 
   public void updateWeight(StrifeMob mob) {
-    float value = 1 - 40 / (40 + mob.getStat(StrifeStat.WEIGHT));
-    mob.getEntity().getAttribute(Attribute.GENERIC_KNOCKBACK_RESISTANCE).setBaseValue(value);
+    float amount = 0.15f;
+    float weight = mob.getStat(StrifeStat.WEIGHT);
+    if (weight >= 100) {
+      amount += 0.75f * ((weight-100) / 100);
+      amount = Math.min(0.9f, amount);
+    } else {
+      amount *= weight / 100;
+    }
+    mob.getEntity().getAttribute(Attribute.KNOCKBACK_RESISTANCE).setBaseValue(amount);
   }
 
   public void updateSize(StrifeMob mob) {
@@ -124,22 +127,22 @@ public class StatUpdateManager {
       return;
     }
     value = mob.getStat(StrifeStat.CHARACTER_SIZE) / 100f;
-    mob.getEntity().getAttribute(Attribute.GENERIC_SCALE).setBaseValue(value);
+    mob.getEntity().getAttribute(Attribute.SCALE).setBaseValue(value);
   }
 
   public void updateRange(StrifeMob mob) {
     float multiplier = 1f + (mob.getStat(StrifeStat.ATTACK_RANGE) / 100);
     float value = 2.75f * multiplier;
-    mob.getEntity().getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE).setBaseValue(0.4f + value);
-    mob.getEntity().getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE).setBaseValue(1.5f + value);
+    mob.getEntity().getAttribute(Attribute.ENTITY_INTERACTION_RANGE).setBaseValue(0.4f + value);
+    mob.getEntity().getAttribute(Attribute.BLOCK_INTERACTION_RANGE).setBaseValue(1.5f + value);
   }
 
   public void updateBreak(StrifeMob mob) {
-    mob.getEntity().getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED).setBaseValue(0.005);
+    mob.getEntity().getAttribute(Attribute.BLOCK_BREAK_SPEED).setBaseValue(0.005);
   }
 
   public void updateLeg(StrifeMob mob) {
-    mob.getEntity().getAttribute(Attribute.GENERIC_STEP_HEIGHT).setBaseValue(1.07);
+    mob.getEntity().getAttribute(Attribute.STEP_HEIGHT).setBaseValue(1.07);
   }
 
   public void updateJump(StrifeMob mob) {
@@ -147,32 +150,32 @@ public class StatUpdateManager {
     float gravityRatio;
     if (netGravity == 0) {
       gravityRatio = 1;
-      mob.getEntity().getAttribute(Attribute.GENERIC_GRAVITY).setBaseValue(0.08f);
+      mob.getEntity().getAttribute(Attribute.GRAVITY).setBaseValue(0.08f);
     } else if (netGravity > 0) {
       gravityRatio = 1 + netGravity / 185f;
       float multiplier = 1 + (netGravity / 100);
-      mob.getEntity().getAttribute(Attribute.GENERIC_GRAVITY).setBaseValue(0.08f * multiplier);
+      mob.getEntity().getAttribute(Attribute.GRAVITY).setBaseValue(0.08f * multiplier);
     } else {
       gravityRatio = 155f / (-netGravity + 155f);
       float multiplier = 1 + (-netGravity / 100);
-      mob.getEntity().getAttribute(Attribute.GENERIC_GRAVITY).setBaseValue(0.08f / multiplier);
+      mob.getEntity().getAttribute(Attribute.GRAVITY).setBaseValue(0.08f / multiplier);
     }
     float value = (1f + mob.getStat(StrifeStat.JUMP_HEIGHT) / 100) * gravityRatio;
     if (value <= 0) {
-      mob.getEntity().getAttribute(Attribute.GENERIC_JUMP_STRENGTH).setBaseValue(0);
+      mob.getEntity().getAttribute(Attribute.JUMP_STRENGTH).setBaseValue(0);
     } else {
-      mob.getEntity().getAttribute(Attribute.GENERIC_JUMP_STRENGTH).setBaseValue(value * 0.41f);
+      mob.getEntity().getAttribute(Attribute.JUMP_STRENGTH).setBaseValue(value * 0.41f);
     }
   }
 
   public void updateMovementSpeed(StrifeMob strifeMob) {
     LivingEntity entity = strifeMob.getEntity();
     float speed = strifeMob.getStat(StrifeStat.MOVEMENT_SPEED) / 100f;
-    if (entity.getAttribute(GENERIC_MOVEMENT_SPEED) != null) {
-      entity.getAttribute(GENERIC_MOVEMENT_SPEED).setBaseValue(0.1 * speed);
+    if (entity.getAttribute(Attribute.MOVEMENT_SPEED) != null) {
+      entity.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(0.1 * speed);
     }
-    if (entity.getAttribute(GENERIC_FLYING_SPEED) != null) {
-      entity.getAttribute(GENERIC_FLYING_SPEED).setBaseValue(0.1 * speed);
+    if (entity.getAttribute(Attribute.FLYING_SPEED) != null) {
+      entity.getAttribute(Attribute.FLYING_SPEED).setBaseValue(0.1 * speed);
     }
     if (entity instanceof Player) {
       ((Player) entity).setFlySpeed(0.1f * speed);

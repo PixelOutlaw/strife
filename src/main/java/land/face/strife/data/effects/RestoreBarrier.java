@@ -31,7 +31,7 @@ public class RestoreBarrier extends Effect {
 
     restoreAmount = DamageUtil.applyDamageScale(caster, target, bonusDamage);
     restoreAmount += flatBonus;
-    target.changeBarrier(restoreAmount);
+    target.changeBarrier(caster, restoreAmount);
     if (newDelayTicks >= 0) {
       target.setBarrierDelayTicks(newDelayTicks);
     }

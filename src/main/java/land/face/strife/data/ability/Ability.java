@@ -29,7 +29,7 @@ public class Ability {
       friendly, deathUntoggle, showMessages, healthCost;
   private boolean hidden = true;
   private final float range, cost, sneakCost, cooldown, sneakCooldown, minCooldown, weightScaling;
-  private final int maxCharges, globalCooldownTicks, maxTargets;
+  private final int maxCharges, globalCooldownTicks, sneakGlobalCooldownTicks, maxTargets;
   private final List<Effect> effects;
   private final List<Effect> sneakEffects;
   private final List<Effect> toggleOffEffects;
@@ -59,19 +59,9 @@ public class Ability {
       cost = resource * percentCost + flatCost;
     }
     if (weightScaling != 0) {
-      float weightDiff = mob.getStat(StrifeStat.WEIGHT) - 30;
-      //mob.getEntity().sendMessage("og cost: " + cost);
-      //mob.getEntity().sendMessage("weight: " + weightDiff);
-      if (weightDiff > 0) {
-        float ratio = weightDiff / 30;
-        cost *= 1f + (weightScaling * ratio);
-        //mob.getEntity().sendMessage("ratio: " + ratio);
-        //mob.getEntity().sendMessage("heavy scaling: " + cost);
-      } else {
-        float ratio = -weightDiff / 30;
-        cost *= 1f - Math.min(0.75f, (weightScaling * ratio));
-        //mob.getEntity().sendMessage("light scaling: " + cost);
-      }
+      float weightRatio = mob.getStat(StrifeStat.WEIGHT) / 100;
+      float difference = cost - (cost * weightRatio);
+      cost += difference * weightScaling;
     }
     return cost;
   }

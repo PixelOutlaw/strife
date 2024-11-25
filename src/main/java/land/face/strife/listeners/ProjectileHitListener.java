@@ -17,9 +17,7 @@
 package land.face.strife.listeners;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -40,24 +38,28 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 public record ProjectileHitListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.LOW)
-  public void onProjectileHit(ProjectileHitEvent event) {
+  public void onProjectileHitEntity(ProjectileHitEvent event) {
     if (event.isCancelled()) {
       return;
     }
-    if (ProjectileUtil.getHitEffects(event.getEntity()) != null) {
-      doHitEffects(event);
-      return;
-    }
-    if (event.getHitEntity() == null) {
-      return;
-    }
-    if (event.getHitEntity().isInvulnerable()) {
+    // Just ignore invulnerable things entirely
+    if (event.getHitEntity() != null && event.getHitEntity().isInvulnerable()) {
       if (event.getHitEntity() instanceof LivingEntity le) {
         event.setCancelled(true);
         ProjectileUtil.disableCollision(event.getEntity(), le);
       }
       return;
     }
+    // Process hit effects including location effects
+    if (ProjectileUtil.getHitEffects(event.getEntity()) != null) {
+      doHitEffects(event);
+      return;
+    }
+    // Entity only (not location) after this point
+    if (event.getHitEntity() == null) {
+      return;
+    }
+
     if (event.getHitEntity() instanceof LivingEntity le) {
       UUID projectileUuid = event.getEntity().getUniqueId();
       if (le.getCollidableExemptions().contains(projectileUuid)) {
@@ -96,6 +98,7 @@ public record ProjectileHitListener(StrifePlugin plugin) implements Listener {
   }
 
   private void doHitEffects(ProjectileHitEvent event) {
+
     TargetResponse response = buildFromEvent(event);
 
     if (response == null) {

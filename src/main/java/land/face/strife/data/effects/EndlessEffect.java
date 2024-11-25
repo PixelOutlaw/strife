@@ -9,8 +9,12 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.conditions.Condition;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.timers.EndlessEffectTimer;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.entity.LivingEntity;
 
+@Getter
+@Setter
 public class EndlessEffect extends Effect {
 
   private final List<Effect> runEffects = new ArrayList<>();
@@ -83,41 +87,5 @@ public class EndlessEffect extends Effect {
       }
       it.remove();
     }
-  }
-
-  public Set<Condition> getCancelConditions() {
-    return cancelConditions;
-  }
-
-  public void setReducerStat(StrifeStat reducerStat) {
-    this.reducerStat = reducerStat;
-  }
-
-  public void setReducerValue(float reducerValue) {
-    this.reducerValue = reducerValue;
-  }
-
-  public List<Effect> getRunEffects() {
-    return runEffects;
-  }
-
-  public List<Effect> getExpiryEffects() {
-    return expiryEffects;
-  }
-
-  public List<Effect> getCancelEffects() {
-    return cancelEffects;
-  }
-
-  public void setMaxDuration(float maxDuration) {
-    this.maxDuration = maxDuration;
-  }
-
-  public void setTickRate(int tickRate) {
-    this.tickRate = tickRate;
-  }
-
-  public void setStrictDuration(boolean strictDuration) {
-    this.strictDuration = strictDuration;
   }
 }

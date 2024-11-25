@@ -70,6 +70,9 @@ public class AbilityManager {
   private final Map<LivingEntity, Set<CooldownTracker>> cdMap = new WeakHashMap<>();
   private final Map<UUID, Set<CooldownTracker>> savedCooldowns = new ConcurrentHashMap<>();
 
+  @Getter
+  private Map<String, String> tooltips = new HashMap<>();
+
   public AbilityManager(StrifePlugin plugin) {
     this.plugin = plugin;
   }
@@ -147,7 +150,7 @@ public class AbilityManager {
 
     if (caster.getEntity() instanceof Player) {
       if (ability.isCancelStealth()) {
-        plugin.getStealthManager().unstealthPlayer((Player) caster.getEntity());
+        plugin.getStealthManager().unstealthPlayer((Player) caster.getEntity(), false);
       }
     }
     playChatMessages(caster, ability);
@@ -375,17 +378,6 @@ public class AbilityManager {
     return execute(ability, caster, target, null, true);
   }
 
-  public void setGlobalCooldown(Player player, Ability ability, int ticks) {
-    if (ability.getCastType() == AbilityType.SPELL) {
-      player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player.getCooldown(Material.GOLDEN_CHESTPLATE), ticks));
-      player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player.getCooldown(Material.DIAMOND_CHESTPLATE), ability.getGlobalCooldownTicks()));
-    } else if (ability.getCastType() == AbilityType.ATTACK) {
-      int amount = Math.max(ability.getGlobalCooldownTicks(), ticks);
-      player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player.getCooldown(Material.DIAMOND_CHESTPLATE), amount));
-      player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player.getCooldown(Material.GOLDEN_CHESTPLATE), ability.getGlobalCooldownTicks()));
-    }
-  }
-
   public void setGlobalCooldown(Player player, int ticks) {
     player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player.getCooldown(Material.GOLDEN_CHESTPLATE), ticks));
     player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player.getCooldown(Material.DIAMOND_CHESTPLATE), ticks));
@@ -602,7 +594,13 @@ public class AbilityManager {
         .playSound(caster.getEntity().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 1.5f);
   }
 
-  public void loadAbility(String key, ConfigurationSection cs) {
+  public void loadTooltips(ConfigurationSection cs) {
+    for (String s : cs.getKeys(false)) {
+      //iconFormats.put(s, PaletteUtil.color(cs.getString(s + ".format", "|white||i|")));
+    }
+  }
+
+  public void loadAbility(String fileName, String key, ConfigurationSection cs) {
     if (cs == null) {
       return;
     }
@@ -648,6 +646,7 @@ public class AbilityManager {
     float minCooldown = (float) cs.getDouble("min-cooldown", 0);
     int maxCharges = cs.getInt("max-charges", 1);
     int globalCooldownTicks = cs.getInt("global-cooldown-ticks", 5);
+    int sneakGlobalCooldownTicks = cs.getInt("sneak-global-cooldown-ticks", globalCooldownTicks);
     float range = (float) cs.getDouble("range", 0);
     float cost = (float) cs.getDouble("cost", 0);
     float sneakCost = (float) cs.getDouble("sneak-cost", cost);
@@ -674,7 +673,7 @@ public class AbilityManager {
       }
       sneakConditions.add(plugin.getEffectManager().getConditions().get(s));
     }
-    AbilityIconData abilityIconData = buildIconData(key, abilityType, cs.getConfigurationSection("icon"), maxCharges);
+    AbilityIconData abilityIconData = buildIconData(fileName, key, abilityType, cs.getConfigurationSection("icon"), maxCharges);
 
     Ability ability = Ability.builder()
         .id(key)
@@ -727,10 +726,11 @@ public class AbilityManager {
     LogUtil.printDebug("Loaded ability " + key + " successfully.");
   }
 
-  private AbilityIconData buildIconData(String key, AbilityType castType, ConfigurationSection config, int charges) {
+  private AbilityIconData buildIconData(String fileName, String key, AbilityType castType, ConfigurationSection config, int charges) {
     if (config == null) {
       return null;
     }
+    fileName = fileName.replace(".yml", "");
     LogUtil.printDebug("Ability " + key + " has icon!");
     String format = PaletteUtil.loadString(config, "format", "|white||b|");
 
@@ -745,7 +745,11 @@ public class AbilityManager {
         lore.add(UnicodeUtil.unicodePlacehold(s));
       }
     }
+
     ItemStack icon = new ItemStack(material);
+
+    // todo: tooltips here
+
     ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
     ItemStackExtensionsKt.setUnbreakable(icon, true);
     ItemStackExtensionsKt.setCustomModelData(icon, config.getInt("custom-model-data", 7999));

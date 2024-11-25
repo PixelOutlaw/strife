@@ -19,7 +19,9 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import land.face.strife.StrifePlugin;
+import land.face.strife.util.ItemUtil;
 import org.bukkit.Material;
 import org.bukkit.entity.Cow;
 import org.bukkit.event.EventHandler;
@@ -51,6 +53,15 @@ public class ConsumeItemListener implements Listener {
           case 2002 -> plugin.getBigBottleMenu().open(event.getPlayer());
           case 2003 -> plugin.getGiantBottleMenu().open(event.getPlayer());
         }
+        return;
+      }
+      if (stack.getType() == Material.BOW &&
+          event.getPlayer().getEquipment().getItemInOffHand().getType() != Material.ARROW) {
+        if (ItemUtil.isFlintlock(stack)) {
+          MessageUtils.sendMessage(event.getPlayer(), ShootListener.pistolTip);
+          return;
+        }
+        MessageUtils.sendMessage(event.getPlayer(), ShootListener.quiverTip);
       }
     }
   }

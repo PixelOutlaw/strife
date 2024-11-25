@@ -132,6 +132,7 @@ public abstract class Effect {
     MODIFY_PROJECTILE,
     ORDER_ENTITY,
     POTION,
+    POISON,
     TARGET,
     LOOK,
     FORCE_STAT,

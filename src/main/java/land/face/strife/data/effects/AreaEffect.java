@@ -89,7 +89,7 @@ public class AreaEffect extends LocationEffect {
   private Set<LivingEntity> getAreaEffectTargets(StrifeMob caster, Location location) {
     if (range < 0.1) {
       if (caster.getEntity() instanceof Mob) {
-        range = (float) caster.getEntity().getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getBaseValue();
+        range = (float) caster.getEntity().getAttribute(Attribute.FOLLOW_RANGE).getBaseValue();
       } else {
         range = 16;
       }

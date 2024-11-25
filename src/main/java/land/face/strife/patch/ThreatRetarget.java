@@ -90,7 +90,7 @@ public class ThreatRetarget implements Goal<Mob> {
     if (mob == null || strifeMob == null || mob.getTarget() == null) {
       return null;
     }
-    double range = mob.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getValue();
+    double range = mob.getAttribute(Attribute.FOLLOW_RANGE).getValue();
     Collection<LivingEntity> nearbyTargets = mob.getWorld()
         .getNearbyEntitiesByType(LivingEntity.class, mob.getLocation(), range);
     if (nearbyTargets.isEmpty()) {

@@ -2,13 +2,11 @@ package land.face.strife.listeners;
 
 import static land.face.strife.data.champion.LifeSkillType.AGILITY;
 
-import com.tealcube.minecraft.bukkit.facecore.event.LandEvent;
 import com.tealcube.minecraft.bukkit.facecore.event.LaunchEvent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.SkillRank;
-import land.face.strife.data.effects.Riptide;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.JumpUtil;
@@ -45,12 +43,14 @@ public class LaunchAndLandListener implements Listener {
       return;
     }
     if (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE) {
-      if (mob.getEnergy() < 12) {
+      float cost = AgilityListener.LONG_JUMP_COST_FLAT + AgilityListener.LONG_JUMP_COST_PERCENT * mob.getMaxEnergy();
+      cost *= (50 + mob.getStat(StrifeStat.WEIGHT)) / 150;
+      if (mob.getEnergy() < cost) {
         plugin.getGuiManager().postNotice(event.getPlayer(), GuiManager.NOTICE_ENERGY, 10);
         event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
         return;
       }
-      StatUtil.changeEnergy(mob, -12);
+      StatUtil.changeEnergy(mob, -cost);
     }
     Vector bonusVelocity = event.getPlayer().getLocation().getDirection();
     bonusVelocity.setY(Math.max(0.06, bonusVelocity.getY()));
@@ -58,7 +58,7 @@ public class LaunchAndLandListener implements Listener {
     bonusVelocity.normalize().multiply(0.28);
     bonusVelocity.setX(bonusVelocity.getX() * moveMult);
     bonusVelocity.setZ(bonusVelocity.getZ() * moveMult);
-    bonusVelocity.multiply((120 - mob.getStat(StrifeStat.WEIGHT)) / 100);
+    bonusVelocity.multiply(1 / ((50 + mob.getStat(StrifeStat.WEIGHT)) / 115));
 
     Vector oldVelocity = event.getPlayer().getVelocity().clone()
         .setY(Math.max(0, event.getPlayer().getVelocity().getY()));
@@ -67,11 +67,5 @@ public class LaunchAndLandListener implements Listener {
         .spawnParticle(Particle.CRIT, event.getPlayer().getLocation(), 20, 0, 0, 0, 0.4);
     event.getPlayer().getWorld()
         .playSound(event.getPlayer().getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
-
-  }
-
-  @EventHandler
-  public void onLand(LandEvent event) {
-    Riptide.sendCancelPacket(event.getPlayer());
   }
 }

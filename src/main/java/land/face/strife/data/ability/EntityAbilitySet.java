@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 
@@ -15,6 +17,8 @@ public class EntityAbilitySet {
   public static final Phase[] PHASES = Phase.values();
 
   private final Map<TriggerAbilityType, Map<Phase, Set<Ability>>> abilityMegaMap;
+  @Setter
+  @Getter
   private Phase phase = Phase.PHASE_ONE;
 
   public EntityAbilitySet() {
@@ -30,14 +34,6 @@ public class EntityAbilitySet {
 
   public EntityAbilitySet(ConfigurationSection configurationSection) {
     abilityMegaMap = buildAbilityMap(configurationSection);
-  }
-
-  public Phase getPhase() {
-    return phase;
-  }
-
-  public void setPhase(Phase phase) {
-    this.phase = phase;
   }
 
   public Map<Phase, Set<Ability>> getAbilities(TriggerAbilityType type) {

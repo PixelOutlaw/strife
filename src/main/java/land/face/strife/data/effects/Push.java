@@ -17,7 +17,7 @@ import org.bukkit.util.Vector;
 public class Push extends Effect {
 
   private PushType pushType;
-  private double power, height, weightRatio;
+  private double power, height, weightRatio, verticalMultiplier;
   private boolean zeroFall, horizontalClamp, verticalClamp, cancelHorizontal, applyToCaster, useTrueDirection;
 
   public static Location TEMP_ORIGIN;
@@ -33,38 +33,38 @@ public class Push extends Effect {
         return;
       }
     }
-    Vector direction;
-    switch (pushType) {
-      case AWAY_FROM_CASTER ->
-          direction = getLocationDiff(caster.getEntity().getLocation().toVector(), target.getEntity());
-      case TARGET_DIRECTION -> direction = target.getEntity().getEyeLocation().getDirection();
-      case AWAY_FROM_CENTER -> direction = getLocationDiff(TEMP_ORIGIN.toVector(), target.getEntity());
-      case CASTER_DIRECTION -> direction = caster.getEntity().getEyeLocation().getDirection();
-      case TEMP_DIRECTION -> direction = TEMP_DIRECTION.clone();
-      default -> {
-        return;
-      }
+    Vector dir = switch (pushType) {
+      case AWAY_FROM_CASTER -> getLocationDiff(caster.getEntity().getLocation().toVector(), target.getEntity());
+      case TARGET_DIRECTION -> target.getEntity().getEyeLocation().getDirection();
+      case AWAY_FROM_CENTER -> getLocationDiff(TEMP_ORIGIN.toVector(), target.getEntity());
+      case CASTER_DIRECTION -> caster.getEntity().getEyeLocation().getDirection();
+      case TEMP_DIRECTION -> TEMP_DIRECTION.clone();
+    };
+
+    Vector push = dir.clone();
+    if (useTrueDirection) {
+      var powerMult = power / 10;
+      push.multiply(powerMult);
+      push.setY(push.getY() + height / 10);
+    } else {var horizontalMult = power / 10;
+      push.setX(push.getX() * horizontalMult);
+      push.setY(push.getY() * horizontalMult);
+      push.setY(push.getY() + height / 10);
     }
+
+    double weightMult;
+    if (applyToCaster) {
+      weightMult = caster.getStat(StrifeStat.WEIGHT) / 100;
+      double difference = 1 - weightMult;
+      weightMult = 1 + difference * weightRatio;
+    } else {
+      weightMult = target.getStat(StrifeStat.WEIGHT) / 100;
+      double difference = 1 - weightMult;
+      weightMult = 1 + difference * weightRatio;
+    }
+    push.multiply(weightMult);
 
     Vector currentVelocity = MoveUtil.getVelocity(target.getEntity());
-
-    Vector push = direction.clone();
-    if (!useTrueDirection) {
-      push.setY(0.0001);
-    }
-    push.normalize().multiply(power / 10);
-    push.setY(push.getY() + height / 10);
-
-    if (weightRatio != 1) {
-      double weightDenominator = 30 / Math.max(0.2, weightRatio);
-      double weightMult;
-      if (applyToCaster) {
-        weightMult = 1 / (Math.max(0.5, caster.getStat(StrifeStat.WEIGHT) / weightDenominator));
-      } else {
-        weightMult = 1 / (Math.max(0.5, target.getStat(StrifeStat.WEIGHT) / weightDenominator));
-      }
-      push.multiply(weightMult);
-    }
 
     if (cancelHorizontal) {
       currentVelocity.setX(0);
@@ -88,15 +88,17 @@ public class Push extends Effect {
       newVelocity.setZ(clampRay(currentVelocity.getZ(), push.getZ()));
     }
 
+    newVelocity.setY(newVelocity.getY() * verticalMultiplier);
+
     if (applyToCaster) {
       caster.getEntity().setVelocity(newVelocity);
       if (caster.isPlayer()) {
-        MoveUtil.setVelocity((Player) caster.getEntity());
+        MoveUtil.setVelocity((Player) caster.getEntity(), newVelocity);
       }
     } else {
       target.getEntity().setVelocity(newVelocity);
       if (target.isPlayer()) {
-        MoveUtil.setVelocity((Player) target.getEntity());
+        MoveUtil.setVelocity((Player) target.getEntity(), newVelocity);
       }
     }
   }

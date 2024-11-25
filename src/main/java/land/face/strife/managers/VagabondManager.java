@@ -1,7 +1,5 @@
 package land.face.strife.managers;
 
-import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
-
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +30,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.ConfigurationSection;
@@ -87,7 +86,7 @@ public class VagabondManager {
 
     SpecialStatusUtil.setWeakAggro(entity);
 
-    AttributeInstance attributeInstance = entity.getAttribute(GENERIC_FOLLOW_RANGE);
+    AttributeInstance attributeInstance = entity.getAttribute(Attribute.FOLLOW_RANGE);
     if (attributeInstance != null) {
       attributeInstance.setBaseValue(27);
       for (AttributeModifier mod : attributeInstance.getModifiers()) {

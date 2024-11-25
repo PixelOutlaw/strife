@@ -116,7 +116,7 @@ public class CombatListener implements Listener {
     //backAttack = angle < 1;
 
     if (event.getAttacker() != null && event.getAttacker().getEntity() instanceof Player) {
-      plugin.getStealthManager().unstealthPlayer((Player) event.getAttacker().getEntity());
+      plugin.getStealthManager().unstealthPlayer((Player) event.getAttacker().getEntity(), false);
     }
 
     boolean blocked = false;
@@ -310,7 +310,7 @@ public class CombatListener implements Listener {
         .canSneakAttack((Player) attackEntity);
 
     if (attackEntity instanceof Player) {
-      plugin.getStealthManager().unstealthPlayer((Player) attackEntity);
+      plugin.getStealthManager().unstealthPlayer((Player) attackEntity, false);
     }
 
     DamageModifiers mods = new DamageModifiers();
@@ -371,10 +371,10 @@ public class CombatListener implements Listener {
     if (defender.getBarrier() > 0) {
       float dmgVsBarrier = 1 + attacker.getStat(StrifeStat.DAMAGE_TO_BARRIERS) / 100;
       eventDamage *= dmgVsBarrier;
-      eventDamage = defender.damageBarrier(eventDamage);
+      eventDamage = defender.damageBarrier(attacker, eventDamage);
       eventDamage /= dmgVsBarrier;
     } else {
-      defender.damageBarrier(0);
+      defender.damageBarrier(attacker, 0);
     }
 
     if (eventDamage > 0) {

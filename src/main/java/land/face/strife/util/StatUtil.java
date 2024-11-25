@@ -1,5 +1,6 @@
 package land.face.strife.util;
 
+import static org.bukkit.potion.PotionEffectType.HERO_OF_THE_VILLAGE;
 import static org.bukkit.potion.PotionEffectType.REGENERATION;
 import static org.bukkit.potion.PotionEffectType.WITHER;
 
@@ -54,6 +55,7 @@ public class StatUtil {
       return 0;
     }
     float amount = mob.getStatRaw(StrifeStat.REGENERATION) * (1 + mob.getStatRaw(StrifeStat.REGEN_MULT) / 100);
+
     if (mob.getEntity().hasPotionEffect(REGENERATION)) {
       int potionIntensity = mob.getEntity().getPotionEffect(REGENERATION).getAmplifier() + 1;
       amount += potionIntensity * POTION_REGEN_FLAT_PER_LEVEL;
@@ -67,6 +69,9 @@ public class StatUtil {
       if (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.THREE)) {
         amount += 10;
       }
+    }
+    if (mob.getEntity().hasPotionEffect(HERO_OF_THE_VILLAGE)) {
+      amount += 2;
     }
     if (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.SIX)) {
       amount += 50;
@@ -89,6 +94,9 @@ public class StatUtil {
         float amount = stats.getOrDefault(StrifeStat.ENERGY_REGEN, 0f);
         if (!mob.isInCombat() && plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.THREE)) {
           amount += 10;
+        }
+        if (mob.getEntity().hasPotionEffect(HERO_OF_THE_VILLAGE)) {
+          amount += 2;
         }
         return amount;
       }
@@ -146,6 +154,13 @@ public class StatUtil {
       case ATTACK_SPEED -> {
         return stats.getOrDefault(StrifeStat.ATTACK_SPEED, 0F) +
             (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.NINE) ? 10 : 0);
+      }
+      case XP_GAIN, SKILL_XP_GAIN -> {
+        var amount = stats.getOrDefault(stat, 0F);
+        if (mob.getEntity().hasPotionEffect(HERO_OF_THE_VILLAGE)) {
+          amount += 5;
+        }
+        return amount;
       }
       case COOLDOWN_REDUCTION -> {
         return Math.min(70, stats.getOrDefault(StrifeStat.COOLDOWN_REDUCTION, 0F) +

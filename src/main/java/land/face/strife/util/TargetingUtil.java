@@ -1,7 +1,6 @@
 package land.face.strife.util;
 
 import static land.face.strife.util.HitDetectionUtil.getFirstEntityInLine;
-import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
 
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.ticxo.modelengine.api.ModelEngineAPI;
@@ -29,6 +28,7 @@ import org.bukkit.FluidCollisionMode;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -53,9 +53,9 @@ public class TargetingUtil {
     }
     LivingEntity target = ((Mob) victim).getTarget();
     if (target == null || !target.isValid()) {
-      AttributeInstance attr = victim.getAttribute(GENERIC_FOLLOW_RANGE);
+      AttributeInstance attr = victim.getAttribute(Attribute.FOLLOW_RANGE);
       double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 80);
-      victim.getAttribute(GENERIC_FOLLOW_RANGE).setBaseValue(newVal);
+      victim.getAttribute(Attribute.FOLLOW_RANGE).setBaseValue(newVal);
       ((Mob) victim).setTarget(attacker);
     }
   }
@@ -182,7 +182,7 @@ public class TargetingUtil {
       return false;
     }
     Vector direction = target.toVector().subtract(start.toVector());
-    if (direction.length() < 0.05) {
+    if (direction.length() < 0.15) {
       return true;
     }
     direction.normalize();

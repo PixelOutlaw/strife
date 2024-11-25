@@ -154,6 +154,7 @@ public class LoreAbilityManager {
     ON_COMBAT_START,
     ON_COMBAT_END,
     ON_AIR_JUMP,
+    ON_BARRIER_BREAK,
     TIMER,
     NONE
   }

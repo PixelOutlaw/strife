@@ -1,6 +1,5 @@
 package land.face.strife.util;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Shulker;
@@ -30,6 +29,21 @@ public class DirectionUtil {
       return HitDirection.FRONT;
     }
     return HitDirection.NORMAL;
+  }
+
+  public static Vector getDodgeRollVelocity(Player player) {
+    var input = player.getCurrentInput();
+    var vec = new Vector(
+        (input.isRight() ? 0 : 1) - (input.isLeft() ? 0 : 1),
+        0,
+        (input.isForward() ? 1 : 0) - (input.isBackward() ? 1 : 0)
+    );
+    if (vec.getX() == 0 && vec.getZ() == 0) {
+      vec.setZ(-1);
+    }
+    vec.normalize();
+    vec.rotateAroundY(Math.toRadians(-player.getYaw()));
+    return vec;
   }
 
   public enum HitDirection {

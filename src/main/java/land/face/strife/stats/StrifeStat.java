@@ -140,7 +140,7 @@ public enum StrifeStat {
 
   ITEM_DISCOVERY("Loot Bonus"),
   ITEM_RARITY("Loot Rarity"),
-  GOLD_FIND("Gold Bonus"),
+  GOLD_FIND("Bits Dropped"),
 
   FISHING_SPEED("Fishing Speed"),
   FISHING_TREASURE("Fishing Treasures"),
@@ -149,10 +149,10 @@ public enum StrifeStat {
 
   CRAFT_SKILL("Crafting Skill"),
   ENCHANT_SKILL("Enchanting Skill"),
-  SNEAK_SKILL("Sneak Skill"),
+  SNEAK_SKILL("Sneak Skill"), // DEPRECATED
 
-  SNEAK_SPEED("Sneaking Speed"),
   STEALTH_BONUS("Stealthiness"),
+  SNEAK_ATTACK_BONUS("Sneak Attack Damage"),
 
   MINING_SPEED("Mining Speed"),
   MINING_GEMS("Mining Gems"),

@@ -181,7 +181,7 @@ public class FishPatcher {
       if (mob == null) {
         return null;
       }
-      double range = mob.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getBaseValue();
+      double range = mob.getAttribute(Attribute.FOLLOW_RANGE).getBaseValue();
 
       Collection<LivingEntity> nearbyTargets = mob.getWorld().getNearbyEntitiesByType(
           LivingEntity.class, mob.getLocation(), range, filterTargets(mob));

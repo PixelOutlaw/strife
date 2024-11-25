@@ -3,13 +3,11 @@ package land.face.strife.managers;
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang.WordUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.Ability;
@@ -17,7 +15,6 @@ import land.face.strife.data.ability.Ability.TargetType;
 import land.face.strife.data.ability.AbilityIconData;
 import land.face.strife.data.ability.CooldownTracker;
 import land.face.strife.data.champion.Champion;
-import land.face.strife.data.champion.ChampionSaveData;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.events.AbilityChangeEvent;
@@ -31,7 +28,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -191,14 +187,15 @@ public class AbilityIconManager {
       plugin.getAbilityManager().setGlobalCooldown(player, 5);
       return;
     }
+    int cooldownTicks = player.isSneaking() ? ability.getSneakGlobalCooldownTicks() : ability.getGlobalCooldownTicks();
     if (ability.getCastType() == AbilityType.ATTACK) {
-      if (ability.getGlobalCooldownTicks() > 5) {
-        plugin.getAttackSpeedManager().resetAttack(mob, 0.25f, (float) ability.getGlobalCooldownTicks() / 20f, false);
+      if (cooldownTicks > 5) {
+        plugin.getAttackSpeedManager().resetAttack(mob, 0.25f, (float) cooldownTicks / 20f, false);
       } else {
         plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
       }
     }
-    plugin.getAbilityManager().setGlobalCooldown(player, ability.getGlobalCooldownTicks());
+    plugin.getAbilityManager().setGlobalCooldown(player, cooldownTicks);
     player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1);
     updateIconProgress(player, ability);
   }

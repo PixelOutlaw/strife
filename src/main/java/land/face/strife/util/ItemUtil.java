@@ -24,7 +24,6 @@ import land.face.strife.stats.StrifeTrait;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -124,7 +123,7 @@ public class ItemUtil {
       return (offItem.getType() == Material.SHIELD || offItem.getType() == Material.BOOK);
     }
     if (mainItem.getType() == Material.BOW) {
-      if (isPistol(mainItem)) {
+      if (isFlintlock(mainItem)) {
         return isBullets(offItem);
       }
       return offItem.getType() == Material.ARROW;
@@ -132,9 +131,12 @@ public class ItemUtil {
     return !isArmor(offItem.getType());
   }
 
-  public static boolean isPistol(ItemStack stack) {
+  public static boolean isFlintlock(ItemStack stack) {
     int itemData = getCustomData(stack);
-    return stack.getType() == Material.BOW && itemData > 10999 && itemData < 12000;
+    if (stack.getType() != Material.BOW) {
+      return false;
+    }
+    return itemData > 10999 && itemData < 13000;
   }
 
   public static boolean isQuiver(ItemStack stack) {
@@ -296,7 +298,9 @@ public class ItemUtil {
     EquipmentData data = PersistHelper.getEquipmentData(stack);
     if (data != null) {
       if (data.getTier() != null) {
-        int itemLevel = data.getLevel();
+        int itemLevel = data.getCustomLevel() - data.getUpgradeLevel() / 3;
+        itemLevel += data.getLevelMod();
+        itemLevel = Math.max(1, itemLevel);
         if (data.getTier().isSkillRequirement()) {
           String mat = stack.getType().toString();
           if (stack.getType() == Material.FISHING_ROD) {

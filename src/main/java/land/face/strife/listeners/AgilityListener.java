@@ -3,10 +3,10 @@ package land.face.strife.listeners;
 import static land.face.strife.data.champion.LifeSkillType.AGILITY;
 
 import com.tealcube.minecraft.bukkit.facecore.event.LandEvent;
+import com.tealcube.minecraft.bukkit.facecore.event.ToggleJumpEvent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.SkillRank;
@@ -14,13 +14,13 @@ import land.face.strife.events.AirJumpEvent;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.DirectionUtil;
 import land.face.strife.util.JumpUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,22 +31,22 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
-public class DoubleJumpListener implements Listener {
+public class AgilityListener implements Listener {
 
   private final StrifePlugin plugin;
   private final Map<Integer, Vector> cachedJumpAnimation = new HashMap<>();
 
-  private final Map<Player, Float> dodgeCost = new WeakHashMap<>();
-  private final Map<Player, Long> lastDodge = new WeakHashMap<>();
+  public static float ROLL_COST_FLAT;
+  public static float ROLL_COST_PERCENT;
+  public static float AIR_JUMP_COST_FLAT;
+  public static float AIR_JUMP_COST_PERCENT;
+  public static float LONG_JUMP_COST_FLAT;
+  public static float LONG_JUMP_COST_PERCENT;
 
   private final float rollPower;
   private final float rollAscent;
-  private final float baseRollCost;
-  private final float rollCostMult;
-  private final float rollCostFlat;
-  private final float rollCostDecay;
+
   private final int rollLeviTicks;
-  private final float maxRollCost;
 
   private final float airDashAscent;
   private final float airDashPower;
@@ -55,27 +55,32 @@ public class DoubleJumpListener implements Listener {
   private final float longParticleSpeed;
   private final Particle particle;
 
-  public DoubleJumpListener(StrifePlugin plugin) {
+  public AgilityListener(StrifePlugin plugin) {
     this.plugin = plugin;
     for (int step = 0; step < 21; step++) {
       double radian = Math.toRadians(360 * (step * 0.05));
       Vector vector = new Vector(Math.cos(radian), 0, Math.sin(radian));
       cachedJumpAnimation.put(step, vector);
     }
+    ROLL_COST_FLAT = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.base-roll-cost", 6f);
+    ROLL_COST_PERCENT = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.percent-roll-cost", 0.12f);
+
+    AIR_JUMP_COST_FLAT = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.air-jump-cost", 6f);
+    AIR_JUMP_COST_PERCENT = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.air-jump-percent-cost", 0.12f);
+
+    LONG_JUMP_COST_FLAT = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.long-jump-cost", 6f);
+    LONG_JUMP_COST_PERCENT = (float) plugin.getSettings()
+        .getDouble("config.mechanics.agility.long-jump-percent-cost", 0.12f);
+
     rollPower = (float) plugin.getSettings()
         .getDouble("config.mechanics.agility.roll-power", 1f);
     rollAscent = (float) plugin.getSettings()
         .getDouble("config.mechanics.agility.roll-ascent", 0.12f);
-    baseRollCost = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.base-roll-cost", 6f);
-    rollCostMult = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.roll-cost-mult", 1.5f);
-    rollCostFlat = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.roll-cost-flat-increase", 1f);
-    rollCostDecay = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.roll-cost-decay", 3f) / 1000;
-    maxRollCost = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.max-roll-cost", 45);
     rollLeviTicks = plugin.getSettings()
         .getInt("config.mechanics.agility.roll-levitation-ticks", 2);
 
@@ -115,9 +120,11 @@ public class DoubleJumpListener implements Listener {
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
-  public void airJump(PlayerToggleSneakEvent event) {
-    if (event.isSneaking() || event.getPlayer().isOnGround() || event.getPlayer().isFlying() ||
-        MoveUtil.getLastSneak(event.getPlayer()) > 200) {
+  public void airJump(ToggleJumpEvent event) {
+    if (!event.isState()) {
+      return;
+    }
+    if (event.getPlayer().isOnGround() || event.getPlayer().isFlying()) {
       return;
     }
     if (MoveUtil.timeOffGround(event.getPlayer()) < 200) {
@@ -128,13 +135,17 @@ public class DoubleJumpListener implements Listener {
     if (jumps < 1) {
       return;
     }
-    if (mob.getEnergy() < 20) {
+
+    float cost = AIR_JUMP_COST_FLAT + mob.getMaxEnergy() * AIR_JUMP_COST_PERCENT;
+    cost *= (50 + mob.getStat(StrifeStat.WEIGHT)) / 150;
+
+    if (mob.getEnergy() < cost) {
       plugin.getGuiManager().postNotice(event.getPlayer(), GuiManager.NOTICE_ENERGY, 10);
       event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_FIRE_EXTINGUISH, 0.5f, 2.0f);
       return;
     }
 
-    doAirJump(mob, event.getPlayer(), jumps);
+    doAirJump(mob, event.getPlayer(), jumps, cost);
 
     mob.setAirJumps(mob.getAirJumps() - 1);
 
@@ -153,6 +164,9 @@ public class DoubleJumpListener implements Listener {
       return;
     }
     if (JumpUtil.isRooted(event.getPlayer())) {
+      return;
+    }
+    if (event.getPlayer().getCurrentInput().isJump()) {
       return;
     }
     if (event.getPlayer().hasPotionEffect(PotionEffectType.SLOWNESS)) {
@@ -176,12 +190,13 @@ public class DoubleJumpListener implements Listener {
     if (!mob.checkSkill(AGILITY, SkillRank.APPRENTICE)) {
       return;
     }
-
-    float currentCost = dodgeCost.getOrDefault(player, baseRollCost);
-    if (lastDodge.containsKey(player)) {
-      float msSinceDodge = System.currentTimeMillis() - lastDodge.get(player);
-      currentCost = Math.max(baseRollCost, currentCost - (msSinceDodge * rollCostDecay));
+    if (!player.getCurrentInput().isForward() && !player.getCurrentInput().isBackward() &&
+        !player.getCurrentInput().isLeft() && !player.getCurrentInput().isRight()) {
+      return;
     }
+
+    float currentCost = ROLL_COST_FLAT + mob.getMaxEnergy() * ROLL_COST_PERCENT;
+    currentCost *= (50 + mob.getStat(StrifeStat.WEIGHT)) / 150;
 
     if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
       if (mob.getEnergy() < currentCost) {
@@ -190,39 +205,28 @@ public class DoubleJumpListener implements Listener {
         return;
       }
     }
-    Vector currentVelocity = MoveUtil.getVelocity(player).clone();
-    Vector horizontalMovement = currentVelocity.clone().setY(0.0001);
-    if (horizontalMovement.lengthSquared() < 0.001) {
-      return;
-    }
 
-    float finalCurrentCost = currentCost;
-    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      if (MoveUtil.getVelocity(player).getY() < 0.001) {
+    Vector dodgeVector = DirectionUtil.getDodgeRollVelocity(player);
 
-        StatUtil.changeEnergy(mob, -finalCurrentCost);
+    StatUtil.changeEnergy(mob, -currentCost);
 
-        lastDodge.put(player, System.currentTimeMillis());
-        dodgeCost.put(player, Math.min(maxRollCost, finalCurrentCost * rollCostMult + rollCostFlat));
+    plugin.getAbilityManager().setGlobalCooldown(player, 16);
+    plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
 
-        plugin.getAbilityManager().setGlobalCooldown(player, 16);
-        plugin.getAttackSpeedManager().resetAttack(mob, 1f, false);
+    PotionListener.ignoreFx = true;
+    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 18, 1, true, false));
+    player.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, rollLeviTicks, 1, true, false));
+    player.addPotionEffect(new PotionEffect(PotionEffectType.WIND_CHARGED, rollLeviTicks, 2, true, false));
+    PotionListener.ignoreFx = false;
 
-        PotionListener.ignoreFx = true;
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 20, 1, true, false));
-        player.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, rollLeviTicks, 1, true, false));
-        PotionListener.ignoreFx = false;
-
-        player.setVelocity(currentVelocity.add(horizontalMovement.normalize().multiply(rollPower)).setY(rollAscent));
-        player.getWorld().spawnParticle(particle, player.getLocation(), 10, 0, 0, 0, longParticleSpeed);
-        player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
-      }
-    }, 2L);
+    player.setVelocity(dodgeVector.multiply(rollPower).setY(rollAscent));
+    player.getWorld().spawnParticle(particle, player.getLocation(), 10, 0, 0, 0, longParticleSpeed);
+    player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
   }
 
-  private void doAirJump(StrifeMob mob, Player player, int jumps) {
+  private void doAirJump(StrifeMob mob, Player player, int jumps, float cost) {
     if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
-      StatUtil.changeEnergy(mob, -20);
+      StatUtil.changeEnergy(mob, -cost);
     }
 
     player.setFallDistance(0);
@@ -242,7 +246,7 @@ public class DoubleJumpListener implements Listener {
       bonusVelocity.setY(bonusY);
     }
 
-    bonusVelocity.multiply((120 - mob.getStat(StrifeStat.WEIGHT)) / 100);
+    bonusVelocity.multiply(1 / ((50 + mob.getStat(StrifeStat.WEIGHT)) / 115));
     float netGravity = mob.getStat(StrifeStat.INCREASED_GRAVITY) - mob.getStat(StrifeStat.REDUCED_GRAVITY);
     if (netGravity > 0) {
       bonusVelocity.setY(bonusVelocity.getY() * (1 + netGravity / 185f));

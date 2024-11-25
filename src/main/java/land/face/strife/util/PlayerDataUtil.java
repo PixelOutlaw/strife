@@ -252,8 +252,6 @@ public class PlayerDataUtil {
     SkillLevelData data = new SkillLevelData();
     data.setLevel(mob.getChampion().getLifeSkillLevel(type));
     switch (type) {
-      case SNEAK -> data.setLevelWithBonus(
-          (int) (data.getLevel() + StatUtil.getStat(mob, StrifeStat.SNEAK_SKILL)));
       case CRAFTING -> data.setLevelWithBonus(
           (int) (data.getLevel() + StatUtil.getStat(mob, StrifeStat.CRAFT_SKILL)));
       case ENCHANTING -> data.setLevelWithBonus(

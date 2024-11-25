@@ -90,7 +90,7 @@ public class TargetPlayersGoal implements Goal<Mob> {
       return null;
     }
     retargetTimestamp = System.currentTimeMillis() + 800;
-    double range = mob.getAttribute(Attribute.GENERIC_FOLLOW_RANGE).getValue();
+    double range = mob.getAttribute(Attribute.FOLLOW_RANGE).getValue();
 
     Collection<LivingEntity> nearbyTargets = mob.getWorld().getNearbyEntitiesByType(
         LivingEntity.class, mob.getLocation(), range, filterTargets(mob));

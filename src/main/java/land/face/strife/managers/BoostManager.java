@@ -160,11 +160,11 @@ public class BoostManager {
     if (dailyBoost != null) {
       statMap.putAll(StatUpdateManager.combineMaps(statMap, dailyBoost.getStats()));
     }
-    if (discordBoosters.size() > 0) {
+    if (!discordBoosters.isEmpty()) {
       statMap.put(StrifeStat.SKILL_XP_GAIN, discordBoosters.size() *
           2 + statMap.getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
     }
-    if (contributors.size() > 0) {
+    if (!contributors.isEmpty()) {
       statMap.put(StrifeStat.XP_GAIN, contributors.size() + statMap.getOrDefault(StrifeStat.XP_GAIN, 0f));
     }
     return statMap;

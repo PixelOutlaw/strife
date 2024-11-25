@@ -19,9 +19,6 @@
 package land.face.strife.commands;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
-import static org.bukkit.attribute.Attribute.GENERIC_FLYING_SPEED;
-import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
-import static org.bukkit.attribute.Attribute.GENERIC_MOVEMENT_SPEED;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
@@ -70,6 +67,7 @@ import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
@@ -349,14 +347,14 @@ public class StrifeCommand extends BaseCommand {
           .append(Math.round(targetMob.getFinalStats().get(strifeStat))).append("&f] ");
     }
     sendMessage(sender, statDump.toString());
-    if (targets.get(0).getAttribute(GENERIC_MOVEMENT_SPEED) != null) {
-      sendMessage(sender, "&9MoveAttr: " + targets.get(0).getAttribute(GENERIC_MOVEMENT_SPEED).getBaseValue());
+    if (targets.get(0).getAttribute(Attribute.MOVEMENT_SPEED) != null) {
+      sendMessage(sender, "&9MoveAttr: " + targets.get(0).getAttribute(Attribute.MOVEMENT_SPEED).getBaseValue());
     }
-    if (targets.get(0).getAttribute(GENERIC_FLYING_SPEED) != null) {
-      sendMessage(sender, "&9FlyAttr: " + targets.get(0).getAttribute(GENERIC_FLYING_SPEED).getBaseValue());
+    if (targets.get(0).getAttribute(Attribute.FLYING_SPEED) != null) {
+      sendMessage(sender, "&9FlyAttr: " + targets.get(0).getAttribute(Attribute.FLYING_SPEED).getBaseValue());
     }
-    if (targets.get(0).getAttribute(GENERIC_FOLLOW_RANGE) != null) {
-      sendMessage(sender, "&9FollowATTR: " + targets.get(0).getAttribute(GENERIC_FOLLOW_RANGE).getBaseValue());
+    if (targets.get(0).getAttribute(Attribute.FOLLOW_RANGE) != null) {
+      sendMessage(sender, "&9FollowATTR: " + targets.get(0).getAttribute(Attribute.FOLLOW_RANGE).getBaseValue());
     }
   }
 

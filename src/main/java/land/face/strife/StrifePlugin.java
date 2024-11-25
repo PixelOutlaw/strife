@@ -16,13 +16,7 @@
  */
 package land.face.strife;
 
-import static com.comphenix.protocol.PacketType.Play.Server.ENTITY_METADATA;
-
 import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.reflect.StructureModifier;
-import com.comphenix.protocol.wrappers.WrappedWatchableObject;
 import com.comphenix.xp.lookup.LevelingRate;
 import com.tealcube.minecraft.bukkit.facecore.logging.PluginLogger;
 import com.tealcube.minecraft.bukkit.facecore.plugin.FacePlugin;
@@ -54,6 +48,7 @@ import land.face.learnin.LearninBooksPlugin;
 import land.face.learnin.objects.LoadedKnowledge;
 import land.face.strife.commands.AbilityMacroCommand;
 import land.face.strife.commands.ContactObjectCommand;
+import land.face.strife.commands.CurseCommand;
 import land.face.strife.commands.GodCommand;
 import land.face.strife.commands.InspectCommand;
 import land.face.strife.commands.LevelUpCommand;
@@ -72,7 +67,6 @@ import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.effects.Effect;
-import land.face.strife.data.effects.Riptide;
 import land.face.strife.data.effects.TriggerLoreAbility;
 import land.face.strife.data.effects.Wait;
 import land.face.strife.hooks.SnazzyPartiesHook;
@@ -88,7 +82,7 @@ import land.face.strife.listeners.DataListener;
 import land.face.strife.listeners.DeathListener;
 import land.face.strife.listeners.DeluxeEquipListener;
 import land.face.strife.listeners.DogeListener;
-import land.face.strife.listeners.DoubleJumpListener;
+import land.face.strife.listeners.AgilityListener;
 import land.face.strife.listeners.EndermanListener;
 import land.face.strife.listeners.EntityMagicListener;
 import land.face.strife.listeners.ExperienceListener;
@@ -191,10 +185,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse.Color;
 import org.bukkit.entity.Horse.Style;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.scheduler.BukkitTask;
@@ -489,6 +481,7 @@ public class StrifePlugin extends FacePlugin {
     commandManager.registerCommand(new MountCommand(this));
     commandManager.registerCommand(new PrayerCommand(this));
     commandManager.registerCommand(new GodCommand(this));
+    commandManager.registerCommand(new CurseCommand(this));
     commandManager.registerCommand(new StrifeCommand(this));
     commandManager.registerCommand(new ToggleXpCommand(this));
     commandManager.registerCommand(new ToggleInspectCommand(this));
@@ -599,7 +592,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new PlayerInputListener(this), this);
     Bukkit.getPluginManager().registerEvents(new PotionListener(this), this);
     Bukkit.getPluginManager().registerEvents(new LaunchAndLandListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new DoubleJumpListener(this), this);
+    Bukkit.getPluginManager().registerEvents(new AgilityListener(this), this);
     Bukkit.getPluginManager().registerEvents(new FishingListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DogeListener(strifeMobManager), this);
     Bukkit.getPluginManager().registerEvents(new LoreAbilityListener(strifeMobManager, guiManager), this);
@@ -682,38 +675,6 @@ public class StrifePlugin extends FacePlugin {
     StatUtil.refreshPlugin(this);
     DOTUtil.refresh(this);
     ThreatEngine.start(this);
-
-    Riptide.buildNMSEnum();
-    Riptide.startTask(this);
-
-    ProtocolLibrary.getProtocolManager()
-        .addPacketListener(new PacketAdapter(this, ENTITY_METADATA) {
-          public void onPacketSending(PacketEvent event) {
-            try {
-              int entityId = event.getPacket().getIntegers().read(0);
-              if (entityId < 0) {
-                return;
-              }
-              Entity entity = event.getPacket()
-                  .getEntityModifier(event.getPlayer().getWorld()).read(0);
-              if (entity instanceof LivingEntity && Riptide
-                  .isRiptideAnimationPlaying((LivingEntity) entity)) {
-                StructureModifier<List<WrappedWatchableObject>> watcher = event.getPacket()
-                    .getWatchableCollectionModifier();
-                for (WrappedWatchableObject watch : watcher.read(0)) {
-                  if (watch.getIndex() == 5) {
-                    watch.setValue(Riptide.RIPTIDE_POSE_ENUM);
-                  }
-                  if (watch.getIndex() == 7) {
-                    watch.setValue((byte) 4);
-                  }
-                }
-              }
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
-          }
-        });
 
     LogUtil.printInfo("[Strife] Loaded " + uniqueEntityManager.getLoadedUniquesMap().size() + " mobs");
     LogUtil.printInfo("[Strife] Loaded " + effectManager.getLoadedEffects().size() + " effects");
@@ -800,6 +761,12 @@ public class StrifePlugin extends FacePlugin {
   }
 
   private void buildAbilities() {
+    try {
+      File pickerFile = new File(getDataFolder(), "ability-picker");
+      var pickerCs = new SmartYamlConfiguration(pickerFile);
+      abilityManager.loadTooltips(Objects.requireNonNull(pickerCs.getConfigurationSection("file-formats")));
+    } catch (Exception ignored) {}
+
     List<SmartYamlConfiguration> abilityConfigs = new ArrayList<>();
     File folder = new File(getDataFolder(), "abilities");
     File[] listOfFiles = folder.listFiles();
@@ -813,7 +780,7 @@ public class StrifePlugin extends FacePlugin {
         }
         ConfigurationSection cs = abilityYAML.getConfigurationSection(key);
         try {
-          abilityManager.loadAbility(key, cs);
+          abilityManager.loadAbility(abilityYAML.getFileName(), key, cs);
         } catch (Exception e) {
           Bukkit.getLogger().warning("[Strife] Failed to load ability " + key);
           Bukkit.getLogger().warning(e.toString());

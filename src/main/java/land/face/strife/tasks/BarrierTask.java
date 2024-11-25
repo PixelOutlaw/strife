@@ -6,6 +6,8 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -19,6 +21,8 @@ public class BarrierTask extends BukkitRunnable {
 
   private final WeakReference<StrifeMob> parentMob;
   private int delayTicks = 0;
+  @Getter @Setter
+  private boolean canBreak = true;
 
   private final float tickMultiplier;
 
@@ -35,17 +39,28 @@ public class BarrierTask extends BukkitRunnable {
       cancel();
       return;
     }
-    if (mob.getMaxBarrier() < 0.1 || mob.getBarrier() >= mob.getMaxBarrier()) {
+    if (mob.getMaxBarrier() < 0.1) {
       delayTicks = 10;
+      canBreak = false;
+      return;
+    }
+    if (mob.getBarrier() >= mob.getMaxBarrier()) {
+      mob.setBarrier(mob.getMaxBarrier());
+      delayTicks = 10;
+      canBreak = true;
       return;
     }
     if (delayTicks > 0) {
       delayTicks--;
       mob.restoreBarrier(StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN) * tickMultiplier * 0.1f);
+      if (mob.getBarrier() > mob.getMaxBarrier() / 25) {
+        canBreak = true;
+      }
       return;
     }
     float barrierGain = DamageUtil.TICK_RATE * StatUtil.getBarrierPerSecond(mob) / 20;
     barrierGain += StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN) * tickMultiplier * 0.1f;
+    canBreak = true;
     mob.restoreBarrier(barrierGain);
   }
 

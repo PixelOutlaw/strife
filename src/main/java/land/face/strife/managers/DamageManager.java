@@ -59,10 +59,10 @@ public class DamageManager {
     if (!modifiers.isBypassBarrier() && defender.getBarrier() > 0) {
       float dmgVsBarrier = 1 + attacker.getStat(StrifeStat.DAMAGE_TO_BARRIERS) / 100;
       damage *= dmgVsBarrier;
-      damage = defender.damageBarrier(damage);
+      damage = defender.damageBarrier(attacker, damage);
       damage /= dmgVsBarrier;
     } else {
-      defender.damageBarrier(0);
+      defender.damageBarrier(attacker, 0);
     }
 
     damage = doEnergyAbsorb(defender, damage);
@@ -90,6 +90,11 @@ public class DamageManager {
         attacker.getEntity() != defender.getEntity()) {
       attacker.flagPvp();
       defender.flagPvp();
+    }
+    if (defender.getEntity() instanceof Player && attacker.getMaster() != null &&
+        attacker.getMaster().getEntity() instanceof Player) {
+      defender.flagPvp();
+      attacker.getMaster().flagPvp();
     }
     if (damage >= defender.getEntity().getHealth() && defender.isPlayer()) {
       sourceOfDeath.put(defender.getEntity().getUniqueId(), PlayerDataUtil.getName(attacker.getEntity()));

@@ -1,7 +1,5 @@
 package land.face.strife.listeners;
 
-import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED;
-
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
@@ -96,8 +94,8 @@ public class JoinAndLeaveListener implements Listener {
       }
     }, 20L);
 
-    event.getPlayer().getAttribute(Attribute.GENERIC_ATTACK_DAMAGE).setBaseValue(200);
-    event.getPlayer().getAttribute(GENERIC_ATTACK_SPEED).setBaseValue(1000);
+    event.getPlayer().getAttribute(Attribute.ATTACK_DAMAGE).setBaseValue(200);
+    event.getPlayer().getAttribute(Attribute.ATTACK_SPEED).setBaseValue(1000);
 
     champion.recombineCache(plugin);
     plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());

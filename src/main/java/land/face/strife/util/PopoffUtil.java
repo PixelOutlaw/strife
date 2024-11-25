@@ -37,6 +37,7 @@ public class PopoffUtil {
     textData.setBackground(Hologram.TRANSPARENT);
     textData.setBillboard(Billboard.CENTER);
     textData.setBrightness(new Brightness(13, 13));
+    //textData.setIn(2);
     textData.setTextShadow(false);
     textData.setPersistent(false);
 
@@ -45,9 +46,7 @@ public class PopoffUtil {
     Hologram holo = manager.create(textData);
     holo.createHologram();
 
-    Bukkit.getScheduler().runTaskAsynchronously(LootPlugin.getInstance(), () -> {
-      holo.forceShowHologram(player);
-    });
+    Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () -> holo.forceShowHologram(player));
 
     DamagePopoff indicator = new DamagePopoff();
 

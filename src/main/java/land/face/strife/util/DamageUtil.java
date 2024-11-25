@@ -41,6 +41,7 @@ import land.face.strife.data.LoreAbility;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.champion.SkillRank;
 import land.face.strife.data.effects.Ignite;
 import land.face.strife.data.pojo.SkillLevelData;
 import land.face.strife.events.CriticalEvent;
@@ -166,7 +167,6 @@ public class DamageUtil {
     }
     if (defender.isUseEquipment()) {
       plugin.getStrifeMobManager().updateEquipmentStats(defender);
-      plugin.getStealthManager().unstealthPlayer((Player) defender.getEntity());
     }
 
     if (attacker != defender) {
@@ -178,6 +178,10 @@ public class DamageUtil {
 
     if (plugin.getCounterManager().executeCounters(attacker.getEntity(), defender.getEntity())) {
       return false;
+    }
+
+    if (defender instanceof Player) {
+      plugin.getStealthManager().unstealthPlayer((Player) defender.getEntity(), true);
     }
 
     if (!mods.isSneakAttack()) {
@@ -247,12 +251,24 @@ public class DamageUtil {
         damageMap.getOrDefault(DamageType.EARTH, 0f) +
         damageMap.getOrDefault(DamageType.LIGHT, 0f);
 
-    float potionMult = 1;
     float critMult = 0;
     boolean criticalHit = false;
+    boolean isSneakAttack = false;
+
+    if (mods.getAttackType() != AttackType.BONUS) {
+      if (mods.isSneakAttack()) {
+        if (!SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
+          damageMap.put(DamageType.TRUE_DAMAGE,
+              damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) + doSneakAttack(attacker, defender, mods));
+          isSneakAttack = true;
+        }
+        plugin.getStealthManager().unstealthPlayer((Player) attacker.getEntity(), false);
+      }
+    }
+
+    float potionMult = DamageUtil.getPotionMult(attacker.getEntity(), defender.getEntity());
 
     if (mods.isCanCrit()) {
-      potionMult = DamageUtil.getPotionMult(attacker.getEntity(), defender.getEntity());
       criticalHit = isCriticalHit(attacker, defender, mods) && !attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2);
       if (criticalHit && !attacker.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
         critMult = (attacker.getStat(StrifeStat.CRITICAL_DAMAGE) +
@@ -322,17 +338,6 @@ public class DamageUtil {
           mods.getHealMultiplier(),
           mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL, 0f)
       );
-      if (mods.isSneakAttack()) {
-        if (!SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
-          rawDamage += doSneakAttack(attacker, defender, mods);
-          boolean finishingBlow = rawDamage > defender.getEntity().getHealth() + defender.getBarrier();
-          float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
-              attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
-          plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
-              LifeSkillType.SNEAK, gainedXp, false, false);
-        }
-        plugin.getStealthManager().unstealthPlayer((Player) attacker.getEntity());
-      }
     }
 
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
@@ -389,6 +394,15 @@ public class DamageUtil {
       plugin.getIndicatorManager().addIndicator(attacker.getMaster().getEntity(),
           defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "<gray>" + damageString, 0.6f, 1.1f, 0.3f);
     }
+
+    if (isSneakAttack) {
+      boolean finishingBlow = rawDamage > defender.getEntity().getHealth() + defender.getBarrier();
+      float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
+          attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
+      plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
+          LifeSkillType.SNEAK, gainedXp, false, false);
+    }
+
     return rawDamage;
   }
 
@@ -431,14 +445,24 @@ public class DamageUtil {
   private static float doSneakAttack(StrifeMob attacker, StrifeMob defender, DamageModifiers mods) {
     Player player = (Player) attacker.getEntity();
     SkillLevelData data = PlayerDataUtil.getSkillLevels(player, LifeSkillType.SNEAK, true);
-    float sneakSkill = data.getLevelWithBonus();
-    float sneakDamage = sneakSkill;
-    sneakDamage += defender.getMaxLife() * (0.1f + 0.002f * sneakSkill);
-
-    SneakAttackEvent sneakEvent = DamageUtil.callSneakAttackEvent(attacker, defender, sneakSkill, sneakDamage);
+    SkillRank rank = SkillRank.getRank(attacker, LifeSkillType.SNEAK);
+    float hpPercent = switch (rank) {
+      case NOVICE -> 0.1f;
+      case APPRENTICE -> 0.125f;
+      case JOURNEYMAN -> 0.15f;
+      case EXPERT -> 0.175f;
+      case MASTER -> 0.2f;
+    };
+    float damage = (defender.getMaxLife() * hpPercent) + data.getLevelWithBonus();
+    damage *= 1 + attacker.getStat(StrifeStat.SNEAK_ATTACK_BONUS) / 100;
+    SneakAttackEvent sneakEvent = DamageUtil.callSneakAttackEvent(attacker, defender, data.getLevel(), damage);
 
     if (sneakEvent.isCancelled()) {
       return 0f;
+    }
+
+    if (SkillRank.isRank(rank, SkillRank.EXPERT)) {
+      defender.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.UNLUCK, 40, 1, false));
     }
 
     if (!(defender.getEntity() instanceof Player)) {
@@ -448,9 +472,9 @@ public class DamageUtil {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
           defender.getEntity(), IndicatorStyle.FLOAT_UP_MEDIUM, 5, "彤", 1.0f, 1.1f, 0.75f);
     }
-    defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
-        Sound.ENTITY_PHANTOM_BITE, 1f, 1f);
-    plugin.getStealthManager().unstealthPlayer(player);
+    defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_PHANTOM_BITE, 1f, 1f);
+
+    plugin.getStealthManager().unstealthPlayer(player, false);
     return sneakEvent.getSneakAttackDamage();
   }
 
@@ -564,7 +588,9 @@ public class DamageUtil {
     if (attacker.hasTrait(StrifeTrait.WEAK_LINK)) {
       abilityMods.put(AbilityMod.CAPPED_RESIST, calcWeakLinkResist(defender));
     }
-    damageMap.replaceAll((t, v) -> damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods) * resistTraitMult(defender, t));
+    damageMap.replaceAll(
+        (t, v) -> damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods) * resistTraitMult(defender,
+            t));
   }
 
   public static float resistTraitMult(StrifeMob mob, DamageType type) {
@@ -922,6 +948,23 @@ public class DamageUtil {
   }
 
   public static boolean isEvaded(StrifeMob attacker, StrifeMob defender, Map<AbilityMod, Float> attackModifiers) {
+    if (defender.getEntity().hasPotionEffect(PotionEffectType.WIND_CHARGED)) {
+      int windLevel = defender.getEntity().getPotionEffect(PotionEffectType.WIND_CHARGED).getAmplifier() + 1;
+      if (windLevel >= 10) {
+        // Do not use DamageUtil.doEvasion here, to skip all notices and sounds!
+        callEvadeEvent(defender, attacker);
+        return true;
+      }
+      if (StrifePlugin.RNG.nextDouble() < 0.1f * windLevel) {
+        // Do not use DamageUtil.doEvasion here, to skip all notices and sounds!
+        callEvadeEvent(defender, attacker);
+        if (attacker.getEntity() instanceof Player) {
+          StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
+              defender.getEntity(), IndicatorStyle.BOUNCE, 6, "彥", 3.5f, 3f, 2f);
+        }
+        return true;
+      }
+    }
     if (StrifePlugin.RNG.nextFloat() < defender.getStat(StrifeStat.DODGE_CHANCE) / 100) {
       DamageUtil.doEvasion(attacker, defender);
       if (defender.getEntity() instanceof Player) {
@@ -1061,45 +1104,47 @@ public class DamageUtil {
     if (defender.getStat(StrifeStat.POISON_RESIST) > 99) {
       return false;
     }
-    float chance = (attacker.getStat(StrifeStat.POISON_CHANCE) +
-        mods.getAbilityMods().getOrDefault(AbilityMod.POISON_CHANCE, 0f)) / 100;
+    float chance = attacker.getStat(StrifeStat.POISON_CHANCE);
+    chance *= 1 + mods.getAbilityMods().getOrDefault(AbilityMod.POISON_CHANCE_MULTIPLIER, 0f) / 100;
+    chance += mods.getAbilityMods().getOrDefault(AbilityMod.POISON_CHANCE, 0f);
+    chance /= 100;
     if (mods.isScaleChancesWithAttack()) {
       chance *= mods.getDamageReductionRatio();
     }
-    if (chance >= rollDouble()) {
-      PotionEffect potionEffect = defender.getEntity().getPotionEffect(PotionEffectType.POISON);
-      int amp;
-      if (potionEffect == null) {
-        amp = 0;
-      } else {
-        int maxAmount = attacker.hasTrait(StrifeTrait.DEADLY_POISON) ? 6 : 4;
-        int currentAmount = potionEffect.getAmplifier();
-        if (currentAmount > maxAmount) {
-          return false;
-        }
-        amp = Math.min(maxAmount, potionEffect.getAmplifier() + 1);
-      }
-      float totalTicks = 100;
-      float durationBonus = attacker.getStat(StrifeStat.EFFECT_DURATION) +
-          attacker.getStat(StrifeStat.POISON_DURATION) +
-          mods.getAbilityMods().getOrDefault(AbilityMod.POISON_DURATION, 0f);
-      totalTicks *= (1 + durationBonus / 100);
-      PotionEffect newPoisonEffect = new PotionEffect(
-          PotionEffectType.POISON,
-          (int) totalTicks,
-          amp,
-          false,
-          true
-      );
-      defender.getEntity().removePotionEffect(PotionEffectType.POISON);
-      defender.getEntity().addPotionEffect(newPoisonEffect);
-      plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-          IndicatorStyle.FLOAT_UP_MEDIUM, 5, POISON_TEXT, 1.0f, 1.0f, 1.0f);
-      attacker.getEntity().getWorld().playSound(defender.getEntity().getLocation(),
-          Sound.ENTITY_SILVERFISH_DEATH, 1, 2.0f);
-      return true;
+    if (chance < rollDouble()) {
+      return false;
     }
-    return false;
+    PotionEffect potionEffect = defender.getEntity().getPotionEffect(PotionEffectType.POISON);
+    int amp;
+    if (potionEffect == null) {
+      amp = 0;
+    } else {
+      int maxAmount = attacker.hasTrait(StrifeTrait.DEADLY_POISON) ? 6 : 4;
+      int currentAmount = potionEffect.getAmplifier();
+      if (currentAmount > maxAmount) {
+        return false;
+      }
+      amp = Math.min(maxAmount, potionEffect.getAmplifier() + 1);
+    }
+    float totalTicks = 100;
+    float durationBonus = attacker.getStat(StrifeStat.EFFECT_DURATION) +
+        attacker.getStat(StrifeStat.POISON_DURATION) +
+        mods.getAbilityMods().getOrDefault(AbilityMod.POISON_DURATION, 0f);
+    totalTicks *= (1 + durationBonus / 100);
+    PotionEffect newPoisonEffect = new PotionEffect(
+        PotionEffectType.POISON,
+        (int) totalTicks,
+        amp,
+        false,
+        true
+    );
+    defender.getEntity().removePotionEffect(PotionEffectType.POISON);
+    defender.getEntity().addPotionEffect(newPoisonEffect);
+    plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
+        IndicatorStyle.FLOAT_UP_MEDIUM, 5, POISON_TEXT, 1.0f, 1.0f, 1.0f);
+    attacker.getEntity().getWorld().playSound(defender.getEntity().getLocation(),
+        Sound.ENTITY_SILVERFISH_DEATH, 1, 2.0f);
+    return true;
   }
 
   public static void applyBleed(StrifeMob attacker, StrifeMob defender, float amount,
@@ -1222,7 +1267,7 @@ public class DamageUtil {
       return;
     }
     livingEntity.setHealth(Math.min(livingEntity.getHealth() + amount,
-        livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue()));
+        livingEntity.getAttribute(Attribute.MAX_HEALTH).getValue()));
   }
 
   public static AttackType getAttackType(EntityDamageByEntityEvent event) {
@@ -1390,6 +1435,7 @@ public class DamageUtil {
     BLEED_CHANCE,
     BLEED_DAMAGE,
     POISON_CHANCE,
+    POISON_CHANCE_MULTIPLIER,
     POISON_DURATION,
     STATUS_CHANCE,
     BACK_ATTACK,

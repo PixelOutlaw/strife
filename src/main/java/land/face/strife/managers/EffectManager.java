@@ -804,6 +804,7 @@ public class EffectManager {
         ((Push) effect).setPower(cs.getDouble("power", 10));
         ((Push) effect).setHeight(cs.getDouble("height", 10));
         ((Push) effect).setWeightRatio(cs.getDouble("weight-ratio", 1));
+        ((Push) effect).setVerticalMultiplier(cs.getDouble("vertical-mult", 1));
         ((Push) effect).setZeroFall(cs.getBoolean("zero-fall", false));
         ((Push) effect).setCancelHorizontal(cs.getBoolean("cancel-horizontal", false));
         ((Push) effect).setUseTrueDirection(cs.getBoolean("use-true-direction", false));
@@ -970,6 +971,12 @@ public class EffectManager {
         ((PotionEffectAction) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
         ((PotionEffectAction) effect).setIgnoreFx(cs.getBoolean("ignore-fx", false));
         ((PotionEffectAction) effect).setBumpUpToIntensity(cs.getBoolean("bump-up-to-intensity", false));
+      }
+      case POISON -> {
+        effect = new Poison();
+        ((Poison) effect).setChanceMultiplier(cs.getInt("chance-multiplier", 0));
+        ((Poison) effect).setFlatChanceBonus(cs.getInt("chance-bonus", 0));
+        ((Poison) effect).setDurationBonus(cs.getInt("duration-bonus", 0));
       }
       case SOUND -> {
         effect = new PlaySound();

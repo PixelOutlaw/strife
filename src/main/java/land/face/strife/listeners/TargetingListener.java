@@ -180,7 +180,8 @@ public class TargetingListener implements Listener {
     }
     if (event.getReason() == CLOSEST_PLAYER && event.getEntity() instanceof LivingEntity mob) {
       Player player = (Player) event.getTarget();
-      if (!plugin.getStealthManager().isStealthed(player)) {
+      var stealthData = plugin.getStealthManager().getStealthedPlayers().get(player.getUniqueId());
+      if (stealthData == null) {
         return;
       }
       String sneakKey = event.getEntity().getUniqueId() + "-" + event.getTarget().getUniqueId();
@@ -202,24 +203,25 @@ public class TargetingListener implements Listener {
       Vector playerDifferenceVector = playerLoc.toVector().subtract(entityLoc.toVector());
       Vector entitySightVector = entityLoc.getDirection();
 
-      StrifeMob strifeMob = plugin.getStrifeMobManager().getStatMob(player);
       float angle = entitySightVector.angle(playerDifferenceVector);
-      SkillLevelData data = PlayerDataUtil.getSkillLevels(strifeMob, LifeSkillType.SNEAK, true);
       float distanceMult = (MAX_DIST_SQUARED - (float) distSquared) / MAX_DIST_SQUARED;
       float lightMult = (float) Math.max(0.15,
           (1D + 0.2 * (playerLoc.getBlock().getLightLevel() - entityLoc.getBlock()
               .getLightLevel())));
 
-      float stealthSkill = data.getLevelWithBonus();
-      float stealthLevel = data.getLevel();
-      stealthSkill = Math.max(stealthSkill, 10);
+      float stealthLevel = Math.max(stealthData.getInitialLevel(), 10);
 
-      if (!player.isSneaking()) {
-        stealthSkill *= 0.75F;
+      if (!MoveUtil.hasMoved(player, 2000)) {
+        stealthLevel *= 1.2f;
+      } else {
+        if (MoveUtil.hasMoved(player) && !player.isSneaking()) {
+          stealthLevel *= 0.75F;
+        }
+        if (player.isSprinting()) {
+          stealthLevel *= 0.5F;
+        }
       }
-      if (player.isSprinting()) {
-        stealthSkill *= 0.5F;
-      }
+      stealthLevel *= stealthData.getInitialStealthBonus();
 
       float awareness;
       if (angle > SEEN_MAX_ANGLE || mob.hasPotionEffect(BLINDNESS)) {
@@ -229,7 +231,7 @@ public class TargetingListener implements Listener {
       }
       awareness *= distanceMult;
       awareness *= lightMult;
-      awareness -= stealthSkill * SNEAK_EFFECTIVENESS;
+      awareness -= stealthLevel * SNEAK_EFFECTIVENESS;
 
       if (StrifePlugin.RNG.nextDouble() > awareness / DETECTION_THRESHOLD) {
         event.setCancelled(true);

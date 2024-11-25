@@ -4,6 +4,8 @@ import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.entity.Dummy;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
+import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
+import com.ticxo.modelengine.api.model.bone.type.HeldItem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +18,8 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -41,6 +45,8 @@ public class CreateModelAnimation extends LocationEffect {
   private boolean areaScaling;
   private boolean reachScaling;
   private Color color = null;
+  private boolean hasCheckedEquipBones = false;
+  private boolean hasEquipBones = false;
 
   public static Location TEMP_LOC;
 
@@ -155,7 +161,13 @@ public class CreateModelAnimation extends LocationEffect {
     }
 
     float finalScale = scale;
-    float extension = caster.getStat(StrifeStat.AREA_OF_EFFECT) + caster.getStat(StrifeStat.ATTACK_RANGE);
+    float extension = 0;
+    if (areaScaling) {
+      extension += caster.getStat(StrifeStat.AREA_OF_EFFECT);
+    }
+    if (reachScaling) {
+      extension += caster.getStat(StrifeStat.ATTACK_RANGE);
+    }
     if (Math.round(extension) != 0) {
       //extension /= (float) Math.PI;
       finalScale *= (1 + extension / 100);
@@ -177,8 +189,7 @@ public class CreateModelAnimation extends LocationEffect {
     if (!animations.isEmpty()) {
       if (lifespan == -1) {
         Collections.shuffle(animations);
-        double animationDuration = model.getBlueprint().getAnimations()
-            .get(animations.getFirst()).getLength() / realSpeed;
+        double animationDuration = model.getBlueprint().getAnimations().get(animations.getFirst()).getLength() / realSpeed;
         realLifespan = (int) Math.floor(20 * animationDuration) + 1;
       } else {
         realLifespan = (int) (lifespan * effectDuration);
@@ -202,6 +213,11 @@ public class CreateModelAnimation extends LocationEffect {
       Bukkit.getScheduler().runTaskLater(getPlugin(), () ->
               model.getAnimationHandler().playAnimation(endAnimation, 0, 0, 1, true),
           Math.max(1, 1 + realLifespan - endTicks));
+    }
+
+    if (hasEquipBones || ! hasCheckedEquipBones) {
+      equipModel(caster, model);
+      hasCheckedEquipBones = true;
     }
 
     if (entityLock && target != null) {
@@ -231,5 +247,21 @@ public class CreateModelAnimation extends LocationEffect {
     }
 
     Bukkit.getScheduler().runTaskLater(getPlugin(), () -> dummy.setRemoved(true), 1 + realLifespan);
+  }
+
+  public static void equipModel(StrifeMob caster, ActiveModel model) {
+    ItemStack stack = caster.getEntity().getEquipment().getItemInMainHand().clone();
+    if (stack.getType() == Material.AIR) {
+      stack = caster.getEntity().getEquipment().getItemInOffHand().clone();
+      if (stack.getType() == Material.AIR) {
+        stack = new ItemStack(Material.IRON_SWORD);
+      }
+    }
+    var provider = new HeldItem.StaticItemStackSupplier(stack);
+    model.getBones().forEach((s, modelBone) ->
+        modelBone.getBoneBehavior(BoneBehaviorTypes.ITEM).ifPresent(heldItem ->
+            heldItem.setItemProvider(provider)
+        )
+    );
   }
 }

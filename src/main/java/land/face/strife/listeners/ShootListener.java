@@ -19,28 +19,18 @@ package land.face.strife.listeners;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 import land.face.dinvy.DeluxeInvyPlugin;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
-import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
-import land.face.strife.data.effects.Effect;
 import land.face.strife.data.effects.StrifeParticle;
-import land.face.strife.data.effects.StrifeParticle.ParticleStyle;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.ItemUtil;
-import land.face.strife.util.LogUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
@@ -54,6 +44,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntitySpellCastEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
@@ -63,8 +54,8 @@ public class ShootListener implements Listener {
   private final StrifeParticle flintlockSmoke;
   private final StrifeParticle flintlockFlare;
 
-  private final String quiverTip;
-  private final String pistolTip;
+  public static String quiverTip;
+  public static String pistolTip;
 
   public ShootListener(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -106,7 +97,7 @@ public class ShootListener implements Listener {
     EquipmentSlot slot = mainHand.getType() == Material.BOW ||
         mainHand.getType() == Material.CROSSBOW ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
 
-    if (ItemUtil.isPistol(slot == EquipmentSlot.HAND ? mainHand : offHand)) {
+    if (ItemUtil.isFlintlock(slot == EquipmentSlot.HAND ? mainHand : offHand)) {
       if (!ItemUtil.isBullets(slot == EquipmentSlot.HAND ? offHand : mainHand)) {
         MessageUtils.sendMessage(player, pistolTip);
         event.setCancelled(true);
@@ -124,6 +115,27 @@ public class ShootListener implements Listener {
       return;
     }
     ProjectileUtil.shootArrow(mob, attackMultiplier);
+  }
+
+  @EventHandler(priority = EventPriority.HIGH)
+  public void onPlayerNoRangedOffhand(PlayerInteractEvent event) {
+    if (event.getHand() != EquipmentSlot.HAND) {
+      return;
+    }
+    ItemStack mainHand = event.getPlayer().getEquipment().getItemInMainHand();
+    if (mainHand.getType() != Material.BOW) {
+      return;
+    }
+    ItemStack offHand = DeluxeInvyPlugin.getInstance().getPlayerManager()
+        .getPlayerData(event.getPlayer()).getEquipmentItem(DeluxeSlot.OFF_HAND);
+    if (offHand.getType() == Material.ARROW) {
+      return;
+    }
+    if (ItemUtil.isFlintlock(mainHand)) {
+      MessageUtils.sendMessage(event.getPlayer(), pistolTip);
+      return;
+    }
+    MessageUtils.sendMessage(event.getPlayer(), quiverTip);
   }
 
   @EventHandler
@@ -164,7 +176,7 @@ public class ShootListener implements Listener {
       ProjectileUtil.shootWand(mob, 1);
       event.setCancelled(true);
       return;
-    } else if (ItemUtil.isPistol(weapon)) {
+    } else if (ItemUtil.isFlintlock(weapon)) {
       ProjectileUtil.shootBullet(mob, 1f);
       flintlockSmoke.apply(mob, mob);
       flintlockFlare.apply(mob, mob);
@@ -209,7 +221,7 @@ public class ShootListener implements Listener {
       entity.swingMainHand();
       ProjectileUtil.shootWand(mob, 1);
       event.setCancelled(true);
-    } else if (ItemUtil.isPistol(weapon)) {
+    } else if (ItemUtil.isFlintlock(weapon)) {
       ProjectileUtil.shootBullet(mob, 1f);
       flintlockSmoke.apply(mob, mob);
       flintlockFlare.apply(mob, mob);

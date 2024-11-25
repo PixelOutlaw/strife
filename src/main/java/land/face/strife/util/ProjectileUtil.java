@@ -4,8 +4,6 @@ import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.entity.Dummy;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
-import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
-import com.ticxo.modelengine.api.model.bone.type.HeldItem;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +13,7 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.effects.CreateModelAnimation;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.stats.StrifeStat;
 import me.libraryaddict.disguise.disguisetypes.Disguise;
@@ -221,17 +220,17 @@ public class ProjectileUtil {
       ((Player) mob.getEntity()).setCooldown(Material.BOW,
           (int) (StatUtil.getAttackTime(mob) * 20));
     }
-    // Divided by 50 instead of 4.5f*X/100, because TOO MUCH SPEED
-    float projectileSpeed = 4.5f + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 50;
+    float speedMult = 1 + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
+    float projectileSpeed = 2.0f + 2.25f * speedMult;
     int projectiles = ProjectileUtil.getTotalProjectiles(
         1, mob.getStat(StrifeStat.MULTISHOT) * attackMult, mob.getStat(StrifeStat.EXTRA_PROJECTILES));
+    float pierceChance = mob.getStat(StrifeStat.PIERCE_CHANCE) / 100;
 
-    ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed, 0.03);
+    ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed, speedMult, pierceChance, 0.03);
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
-      ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed,
-          randomBulletOffset(projectiles));
+      ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed, speedMult, pierceChance, randomBulletOffset(projectiles));
     }
     mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
     shotId++;
@@ -304,26 +303,31 @@ public class ProjectileUtil {
     setShotId(arrow);
   }
 
-  public static void createBullet(LivingEntity shooter, double attackMult, float power, double spread) {
+  public static void createBullet(LivingEntity shooter, double attackMult, float power, float speedMult, float pierce, double spread) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, 0);
+    Location location = shooter.getEyeLocation().clone().add(0, -0.35, 0);
+    location.setDirection(velocity);
     HANDLED_PROJECTILE.add(shooter.getUniqueId());
-    Snowball bullet = shooter.getWorld().spawn(shooter.getEyeLocation().clone(), Snowball.class, e -> {
+    Arrow arrow = shooter.getWorld().spawn(location, Arrow.class, e -> {
       e.setShooter(shooter);
       e.setVelocity(velocity);
-      e.setItem(bulletProjectile);
-      e.setGravity(false);
+      e.setSilent(true);
+      e.setVisibleByDefault(false);
+      e.setPickupStatus(PickupStatus.CREATIVE_ONLY);
     });
     HANDLED_PROJECTILE.remove(shooter.getUniqueId());
-    bullet.getBoundingBox().expand(1);
+    arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+    arrow.getBoundingBox().expand(1);
 
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-      if (bullet.isValid()) {
-        bullet.remove();
+      if (arrow.isValid()) {
+        arrow.remove();
       }
-    }, 6);
+    }, 4 + (int) (3f * speedMult));
 
-    setAttackMult(bullet, (float) attackMult);
-    setShotId(bullet);
+    setAttackMult(arrow, (float) attackMult);
+    setPierce(arrow, pierce);
+    setShotId(arrow);
   }
 
   public static Vector getProjectileVelocity(LivingEntity shooter, float speed, double spread, double verticalBonus) {
@@ -445,19 +449,7 @@ public class ProjectileUtil {
       }
 
       if (thrownItem) {
-        ItemStack stack = caster.getEntity().getEquipment().getItemInMainHand().clone();
-        if (stack.getType() == Material.AIR) {
-          stack = caster.getEntity().getEquipment().getItemInOffHand().clone();
-          if (stack.getType() == Material.AIR) {
-            stack = new ItemStack(Material.IRON_SWORD);
-          }
-        }
-        var provider = new HeldItem.StaticItemStackSupplier(stack);
-        model.getBones().forEach((s, modelBone) ->
-            modelBone.getBoneBehavior(BoneBehaviorTypes.ITEM).ifPresent(heldItem ->
-                heldItem.setItemProvider(provider)
-            )
-        );
+        CreateModelAnimation.equipModel(caster, model);
       }
     }
   }

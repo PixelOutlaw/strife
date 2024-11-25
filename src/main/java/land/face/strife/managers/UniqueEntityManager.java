@@ -1,7 +1,5 @@
 package land.face.strife.managers;
 
-import static org.bukkit.attribute.Attribute.GENERIC_FOLLOW_RANGE;
-
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
@@ -43,6 +41,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.configuration.ConfigurationSection;
@@ -268,7 +267,7 @@ public class UniqueEntityManager {
     }
 
     if (uniqueEntity.getFollowRange() != -1) {
-      AttributeInstance attributeInstance = le.getAttribute(GENERIC_FOLLOW_RANGE);
+      AttributeInstance attributeInstance = le.getAttribute(Attribute.FOLLOW_RANGE);
       if (attributeInstance != null) {
         attributeInstance.setBaseValue(uniqueEntity.getFollowRange());
         for (AttributeModifier mod : attributeInstance.getModifiers()) {

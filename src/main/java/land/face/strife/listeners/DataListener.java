@@ -291,7 +291,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       return;
     }
     if (ItemUtils.getModelData(stack) == 1975) {
-      event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.BAD_OMEN, -1, 0, false));
+      event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.RAID_OMEN, -1, 0, false));
     }
   }
 
@@ -308,7 +308,6 @@ public record DataListener(StrifePlugin plugin) implements Listener {
   @EventHandler(priority = EventPriority.LOWEST)
   public void onPlayerTeleport(PlayerTeleportEvent event) {
     plugin.getPlayerMountManager().despawn(event.getPlayer());
-    Riptide.sendCancelPacket(event.getPlayer());
     if (event.getTo().getWorld() != event.getTo().getWorld()) {
       ensureAbilitiesDontInstantCast(event.getPlayer());
       return;
@@ -375,7 +374,6 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.LOW)
   public void onRespawn(PlayerRespawnEvent event) {
-    Riptide.sendCancelPacket(event.getPlayer());
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     plugin.getAttackSpeedManager().wipeAttackRecord(event.getPlayer());
     mob.endCombat();

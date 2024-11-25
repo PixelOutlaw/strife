@@ -26,6 +26,8 @@ import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.SkillRank;
 import land.face.strife.data.pojo.Shielding;
+import land.face.strife.events.AirJumpEvent;
+import land.face.strife.events.BarrierBreakEvent;
 import land.face.strife.events.BlockChangeEvent;
 import land.face.strife.events.RuneChangeEvent;
 import land.face.strife.managers.GuiManager;
@@ -214,11 +216,11 @@ public class StrifeMob {
     setBlock(Math.min(block, maxBlock));
   }
 
-  public void changeBarrier(float amount) {
+  public void changeBarrier(StrifeMob source, float amount) {
     if (amount > 0) {
       restoreBarrier(amount);
     } else {
-      damageBarrier(-amount);
+      damageBarrier(source, -amount);
     }
   }
 
@@ -229,14 +231,14 @@ public class StrifeMob {
     barrier = Math.min(barrier + amount, maxBarrier);
   }
 
-  public float damageBarrier(float amount) {
+  public float damageBarrier(StrifeMob source, float amount) {
     float barrierDelayMultiplier = 1 + getStat(StrifeStat.BARRIER_START_SPEED) / 100;
     barrierTask.bumpBarrierTime(barrierDelayMultiplier);
     if (amount < 0.01) {
       return amount;
     }
     while (!shielding.isEmpty() && amount > 0) {
-      var currentShield = shielding.get(0);
+      var currentShield = shielding.getFirst();
       if (currentShield.getAmount() > amount) {
         currentShield.setAmount(currentShield.getAmount() - amount);
         return 0;
@@ -254,6 +256,11 @@ public class StrifeMob {
         BarrierTask.spawnBarrierParticles(getEntity(), barrier);
       }
       barrier = 0;
+      if (barrierTask.isCanBreak()) {
+        BarrierBreakEvent bbe = new BarrierBreakEvent(source == null ? this : source, this);
+        Bukkit.getPluginManager().callEvent(bbe);
+      }
+      barrierTask.setCanBreak(false);
       return -1 * diff;
     }
   }
@@ -709,7 +716,7 @@ public class StrifeMob {
     minion.forceSetStat(StrifeStat.HEALTH_MULT, 0);
     minion.setMaxLife(newMaxLife);
     //noinspection DataFlowIssue
-    minion.getEntity().getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(newMaxLife);
+    minion.getEntity().getAttribute(Attribute.MAX_HEALTH).setBaseValue(newMaxLife);
     minion.getEntity().setHealth(newMaxLife);
     minion.forceSetStat(StrifeStat.ACCURACY_MULT, 0f);
     minion.forceSetStat(StrifeStat.ACCURACY, getStat(StrifeStat.ACCURACY));

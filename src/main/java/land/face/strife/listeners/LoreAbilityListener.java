@@ -3,6 +3,7 @@ package land.face.strife.listeners;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.EARLY_ON_HIT;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.EARLY_WHEN_HIT;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_AIR_JUMP;
+import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_BARRIER_BREAK;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_BASIC_HIT;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_BASIC_MELEE_HIT;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_BASIC_RANGED_HIT;
@@ -30,6 +31,7 @@ import land.face.strife.data.buff.Buff;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.events.AbilityCastEvent;
 import land.face.strife.events.AirJumpEvent;
+import land.face.strife.events.BarrierBreakEvent;
 import land.face.strife.events.BlockEvent;
 import land.face.strife.events.CombatChangeEvent;
 import land.face.strife.events.CombatChangeEvent.NewCombatState;
@@ -71,6 +73,12 @@ public class LoreAbilityListener implements Listener {
   public void onAirJump(AirJumpEvent event) {
     executeBoundEffects(event.getJumper(), event.getJumper(), event.getJumper().getLoreAbilities(ON_AIR_JUMP));
     executeFiniteEffects(event.getJumper(), event.getJumper(), new HashSet<>(List.of(ON_AIR_JUMP)));
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onBarrierBreak(BarrierBreakEvent event) {
+    executeBoundEffects(event.getVictim(), event.getAttacker(), event.getVictim().getLoreAbilities(ON_BARRIER_BREAK));
+    executeFiniteEffects(event.getVictim(), event.getAttacker(), new HashSet<>(List.of(ON_BARRIER_BREAK)));
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

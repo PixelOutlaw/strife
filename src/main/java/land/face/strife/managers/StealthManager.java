@@ -28,10 +28,13 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StealthData;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.champion.SkillRank;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
+import land.face.strife.stats.StrifeStat;
 import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
+import lombok.Getter;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -41,10 +44,13 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 public class StealthManager {
 
   private final StrifePlugin plugin;
+  @Getter
   private final Map<UUID, StealthData> stealthedPlayers = new HashMap<>();
 
   private final int DISABLE_MS = StrifePlugin.getInstance().getSettings()
@@ -153,17 +159,37 @@ public class StealthManager {
       }
     }
     player.spawnParticle(Particle.SMOKE, player.getLocation(), 90, 0.5, 1, 0.5, 0);
+    var mob = plugin.getStrifeMobManager().getStatMob(player);
+    var rank = SkillRank.getRank(mob, LifeSkillType.SNEAK);
+    var skillLevel = PlayerDataUtil.getSkillLevels(mob, LifeSkillType.SNEAK, true);
     int ticks = (int) (seconds * 20f / 3f);
-    stealthedPlayers.put(player.getUniqueId(), new StealthData(ticks, ticks, System.currentTimeMillis() + DISABLE_MS));
+    stealthedPlayers.put(player.getUniqueId(), new StealthData(
+        ticks,
+        ticks,
+        System.currentTimeMillis() + DISABLE_MS,
+        rank,
+        skillLevel.getLevel(),
+        1 + mob.getStat(StrifeStat.STEALTH_BONUS) / 100,
+        SkillRank.isRank(rank, SkillRank.MASTER)
+    ));
     for (Player p : Bukkit.getOnlinePlayers()) {
       p.hidePlayer(plugin, player);
     }
+    player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, ticks * 3, 0, false, false));
   }
 
-  public void unstealthPlayer(Player player) {
+  public void unstealthPlayer(Player player, boolean fromHit) {
     if (!stealthedPlayers.containsKey(player.getUniqueId())) {
       return;
     }
+    if (fromHit) {
+      var data = stealthedPlayers.get(player.getUniqueId());
+      if (data.isCanBlock()) {
+        data.setCanBlock(false);
+        return;
+      }
+    }
+    player.removePotionEffect(PotionEffectType.INVISIBILITY);
     player.spawnParticle(Particle.SMOKE, player.getLocation(), 90, 0.5, 1, 0.5, 0);
     stealthedPlayers.remove(player.getUniqueId());
     plugin.getGuiManager().updateComponent(player, EveryTickTask.EMPTY_ATTACK);
@@ -179,7 +205,7 @@ public class StealthManager {
     var data = stealthedPlayers.get(player.getUniqueId());
 
     if (data.getTicks() < 1) {
-      unstealthPlayer(player);
+      unstealthPlayer(player, false);
       return;
     }
 
@@ -189,8 +215,7 @@ public class StealthManager {
 
     data.setTicks(data.getTicks() - 1);
 
-    player.spawnParticle(Particle.ASH, player.getEyeLocation(), 60, 12, 12, 12, 0);
-    player.spawnParticle(Particle.SMOKE, player.getEyeLocation(), 40, 7, 7, 7, 0);
+    player.spawnParticle(Particle.SMOKE, player.getEyeLocation(), 120, 12, 12, 12, 0);
     double particles = StrifePlugin.RNG.nextFloat() * BASE_STEALTH_PARTICLES;
     if (MoveUtil.hasMoved(player)) {
       if (!player.isSneaking()) {
@@ -200,10 +225,25 @@ public class StealthManager {
         particles *= SPRINT_PARTICLE_MULT;
       }
     }
-    double sneakSkill = PlayerDataUtil.getSkillLevels(player, LifeSkillType.SNEAK, false).getLevelWithBonus();
+    if (SkillRank.isRank(data.getInitialRank(), SkillRank.JOURNEYMAN)) {
+      player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 5, 1, true, false));
+    } else {
+      player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 5, 0, true, false));
+    }
+    double sneakSkill = SkillRank.isRank(data.getInitialRank(), SkillRank.APPRENTICE) ? data.getInitialLevel() : 1;
+    sneakSkill *= data.getInitialStealthBonus();
     particles -= sneakSkill / SNEAK_SKILL_PARTICLE_REDUCTION;
-    particles = Math.min(Math.round(particles), MAX_STEALTH_PARTICLES);
-    Location newLoc = player.getLocation().clone().add(-0.7 + StrifePlugin.RNG.nextFloat() * 1.4, StrifePlugin.RNG.nextFloat() * 2, -0.7 + StrifePlugin.RNG.nextFloat() * 1.4);
-    newLoc.getWorld().spawnParticle(Particle.ENTITY_EFFECT, newLoc, (int) particles, 0.5, 0.5, 0.5, Color.GRAY);
+    int intParticles = (int) particles;
+    if (intParticles > 0) {
+      intParticles = (int) Math.min(particles, MAX_STEALTH_PARTICLES);
+      float lightLevel = player.getLocation().getBlock().getLightLevel() / 10f;
+      float spread = 0.25f + 0.25f * lightLevel;
+      float positionVariance = 3.0f - (1.85f * lightLevel);
+      float xPos = (-positionVariance / 2 + StrifePlugin.RNG.nextFloat() * positionVariance);
+      float yPos = (StrifePlugin.RNG.nextFloat() * 1.5f);
+      float zPos = (-positionVariance / 2 + StrifePlugin.RNG.nextFloat() * positionVariance);
+      Location newLoc = player.getLocation().clone().add(xPos, yPos, zPos);
+      newLoc.getWorld().spawnParticle(Particle.ENTITY_EFFECT, newLoc, intParticles, spread, spread, spread, Color.GRAY);
+    }
   }
 }

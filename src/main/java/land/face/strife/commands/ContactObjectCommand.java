@@ -92,7 +92,7 @@ public class ContactObjectCommand extends BaseCommand {
   }
 
   @Subcommand("agility-coin award")
-  public void creationCommand(CommandSender sender, OnlinePlayer target, double coinLevel, double baseXp) {
+  public void awardAgiCoin(CommandSender sender, OnlinePlayer target, double coinLevel, double baseXp) {
     coinLevel = Math.max(1, coinLevel);
     double lv = PlayerDataUtil.getLifeSkillLevel(target.getPlayer(), LifeSkillType.AGILITY);
     double ratio = Math.min(1.0, coinLevel / lv);

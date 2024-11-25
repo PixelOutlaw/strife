@@ -33,7 +33,7 @@ public class FallListener implements Listener {
 
   public FallListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    fallMs = plugin.getSettings().getInt("config.mechanics.agility.roll-ms");
+    fallMs = plugin.getSettings().getInt("config.mechanics.agility.fall-damage-crouch-reduction-ms");
   }
 
   @EventHandler(priority = EventPriority.LOW)
@@ -54,7 +54,7 @@ public class FallListener implements Listener {
 
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
 
-    if (player.getEyeLocation().getPitch() > 75 && player.isBlocking() && mob.hasTrait(StrifeTrait.SHIELD_BOUNCE)) {
+    if (player.getEyeLocation().getPitch() > 60 && player.isBlocking() && mob.hasTrait(StrifeTrait.SHIELD_BOUNCE)) {
       Location location = player.getLocation().clone();
       location.setPitch(0);
       Vector newMovement = location.getDirection().setY(0.00001);

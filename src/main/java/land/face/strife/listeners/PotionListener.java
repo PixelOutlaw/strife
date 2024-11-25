@@ -86,7 +86,7 @@ public class PotionListener implements Listener {
           reduceEffect(event.getNewEffect(), livingEntity);
         }
       }
-      case "BAD_OMEN" -> {
+      case "RAID_OMEN" -> {
         StrifeMob mob = plugin.getStrifeMobManager().getStatMob(livingEntity);
         if (mob.hasTrait(StrifeTrait.LEMON_SCENTED)) {
           event.setCancelled(true);
@@ -124,6 +124,14 @@ public class PotionListener implements Listener {
         Bukkit.getScheduler().runTaskLater(plugin, () ->
             ((LivingEntity) event.getEntity()).addPotionEffect(
                 new PotionEffect(PotionEffectType.POISON, 100, newAmp, false, true)), 0L);
+      }
+      return;
+    }
+    if ("TRIAL_OMEN".equals(event.getOldEffect().getType().getName())) {
+      if (event.getOldEffect().getAmplifier() > 0) {
+        int newAmp = event.getOldEffect().getAmplifier() - 1;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> ((LivingEntity) event.getEntity()).addPotionEffect(
+                new PotionEffect(PotionEffectType.TRIAL_OMEN, 30 * 20 * 60, newAmp, false, true)), 0L);
       }
     }
   }
@@ -182,7 +190,7 @@ public class PotionListener implements Listener {
     POTION_VFX.put("SATURATION", buildBuff("#ffcc15", true, "littleroom:littleroom.magnus.bonfire_lit", 2));
     POTION_VFX.put("REGENERATION", buildBuff("#ff66b2", true, "littleroom:littleroom.magnus.bonfire_lit", 2));
 
-    POTION_VFX.put("BAD_OMEN", buildBuff("#ab6900", false, "minecraft:block.respawn_anchor.deplete", 2));
+    POTION_VFX.put("RAID_OMEN", buildBuff("#ab6900", false, "minecraft:block.respawn_anchor.deplete", 2));
     POTION_VFX.put("BLINDNESS", buildBuff("#3d2230", false, "minecraft:block.respawn_anchor.deplete", 2));
     POTION_VFX.put("DARKNESS", buildBuff("#3d2230", false, "minecraft:block.respawn_anchor.deplete", 2));
     POTION_VFX.put("HUNGER", buildBuff("#8dd111", false, "minecraft:block.respawn_anchor.deplete", 2));

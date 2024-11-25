@@ -44,9 +44,9 @@ public class EnvironmentalTickTask extends BukkitRunnable {
         switch (mat) {
           case LAVA -> DOTUtil.doLava(p);
           case WATER, WATER_CAULDRON -> {
-            if (p.hasPotionEffect(PotionEffectType.BAD_OMEN) &&
-                p.getPotionEffect(PotionEffectType.BAD_OMEN).getAmplifier() < 1) {
-              p.removePotionEffect(PotionEffectType.BAD_OMEN);
+            if (p.hasPotionEffect(PotionEffectType.RAID_OMEN) &&
+                p.getPotionEffect(PotionEffectType.RAID_OMEN).getAmplifier() < 1) {
+              p.removePotionEffect(PotionEffectType.RAID_OMEN);
             }
           }
         }
