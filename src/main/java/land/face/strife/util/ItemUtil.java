@@ -107,14 +107,14 @@ public class ItemUtil {
         mainItem.getType() == Material.ARROW) {
       return false;
     }
+    if (isTool(mainItem)) {
+      return false;
+    }
     if (isMeleeWeapon(mainItem.getType())) {
       if (isMeleeWeapon(offItem.getType())) {
         return true;
       }
       return (offItem.getType() == Material.SHIELD || offItem.getType() == Material.BOOK);
-    }
-    if (isTool(mainItem)) {
-      return false;
     }
     if (isWand(mainItem) && isWand(offItem)) {
       return true;

@@ -50,24 +50,25 @@ public class GroundedCondition extends Condition {
   // For fluid gameplay, treat being recently on the ground
   // as grounded for players, so small falls and knockbacks
   // don't disable ground based conditions
-  private boolean isGroundedOrCloseToGround(LivingEntity le, int leeway) {
+  public static boolean isGroundedOrCloseToGround(LivingEntity le, float leeway) {
     if (le.isOnGround() || (le instanceof Player && MoveUtil.timeOffGround((Player) le) <= 151)) {
       return true;
     }
     if (leeway == 0) {
       return false;
     }
-    int check = 0;
+    float check = 0;
     Location position = le.getLocation().clone().add(0, -0.1, 0);
     if (position.getBlock().isSolid()) {
       return true;
     }
+    float interval = leeway / 4;
     while (check < leeway) {
-      position.add(0, -1, 0);
+      position.add(0, -interval, 0);
       if (position.getBlock().isSolid()) {
         return true;
       }
-      check++;
+      check += interval;
     }
     return false;
   }

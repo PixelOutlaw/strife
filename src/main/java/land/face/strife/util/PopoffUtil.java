@@ -25,12 +25,12 @@ public class PopoffUtil {
   private final HologramManager manager = FancyHologramsPlugin.get().getHologramManager();
 
   public static DamagePopoff createPopoff(Player player, Location location, Vector velocity,
-      double gravity, int life, String text) {
-    return createPopoff(player, location, velocity, gravity, life, text, 1.0f, 1.0f, 1.0f);
+      double gravity, int life, String text, boolean shadow) {
+    return createPopoff(player, location, velocity, gravity, life, text, 1.0f, 1.0f, 1.0f, shadow);
   }
 
   public static DamagePopoff createPopoff(Player player, Location location, Vector velocity,
-      double gravity, int life, String text, float startScale, float midScale, float endScale) {
+      double gravity, int life, String text, float startScale, float midScale, float endScale, boolean shadow) {
 
     TextHologramData textData = new TextHologramData(UUID.randomUUID().toString(), location);
     textData.setText(List.of(text));
@@ -38,7 +38,7 @@ public class PopoffUtil {
     textData.setBillboard(Billboard.CENTER);
     textData.setBrightness(new Brightness(13, 13));
     //textData.setIn(2);
-    textData.setTextShadow(false);
+    textData.setTextShadow(shadow);
     textData.setPersistent(false);
 
     var manager = FancyHologramsPlugin.get().getHologramManager();

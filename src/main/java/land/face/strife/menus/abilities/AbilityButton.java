@@ -39,6 +39,7 @@ import ninja.amp.ampmenus.items.MenuItem;
 import ninja.amp.ampmenus.menus.ItemMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -65,9 +66,10 @@ public class AbilityButton extends MenuItem {
     TextUtils.setLore(stack, stackLore);
 
     if (ability.getAbilityIconData().isRequirementMet(champ)) {
-      ItemStackExtensionsKt.setCustomModelData(stack, ItemUtil.getCustomData(stack));
+      //ItemStackExtensionsKt.setCustomModelData(stack, ItemUtil.getCustomData(stack));
     } else {
-      ItemStackExtensionsKt.setCustomModelData(stack, 7998);
+      stack.editMeta(m -> m.setItemModel(new NamespacedKey("faceland", "ability_icons/locked")));
+      //ItemStackExtensionsKt.setCustomModelData(stack, 7998);
     }
 
     if (plugin.getAbilityIconManager().playerHasAbility(player, ability)) {

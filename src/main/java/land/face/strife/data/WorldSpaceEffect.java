@@ -29,6 +29,7 @@ import org.bukkit.util.Vector;
 public class WorldSpaceEffect {
 
   private final Map<Integer, List<Effect>> effectSchedule;
+  private final Map<Integer, List<Effect>> returnEffectSchedule;
   private List<Effect> contactEffects;
   private List<Effect> expiryEffects;
 

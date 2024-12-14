@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import land.face.announce.ModernAnnouncerPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.Boost;
 import land.face.strife.data.LoadedStatBoost;
@@ -182,7 +183,7 @@ public class BoostManager {
     boost.setSecondsRemaining(seconds);
     boost.setStats(new HashMap<>(loadedBoosts.get(boostId).getStats()));
     boosts.add(boost);
-    announceBoost(loadedStatBoost.getAnnounceStart(), name, seconds);
+    announceBoost(loadedStatBoost, loadedStatBoost.getAnnounceStart(), name, seconds);
     return true;
   }
 
@@ -190,7 +191,7 @@ public class BoostManager {
     for (Boost boost : boosts) {
       LoadedStatBoost loadedStatBoost = loadedBoosts.get(boost.getBoostId());
       if (boost.getSecondsRemaining() <= 0) {
-        announceBoost(loadedStatBoost.getAnnounceEnd(), boost.getBoosterName(), 0);
+        announceBoost(loadedStatBoost, loadedStatBoost.getAnnounceEnd(), boost.getBoosterName(), 0);
         boosts.remove(boost);
         for (Player p : Bukkit.getOnlinePlayers()) {
           plugin.getChampionManager().getChampion(p).recombineCache(plugin);
@@ -199,7 +200,7 @@ public class BoostManager {
       }
       boost.setSecondsRemaining(boost.getSecondsRemaining() - 1);
       if (boost.getSecondsRemaining() % loadedStatBoost.getAnnounceInterval() == 0) {
-        announceBoost(loadedStatBoost.getAnnounceRun(), boost.getBoosterName(),
+        announceBoost(loadedStatBoost, loadedStatBoost.getAnnounceRun(), boost.getBoosterName(),
             boost.getSecondsRemaining());
       }
     }
@@ -228,6 +229,8 @@ public class BoostManager {
       loadedStatBoost.getAnnounceRun().addAll(announceRun);
       loadedStatBoost.getAnnounceEnd().addAll(announceEnd);
       loadedStatBoost.getStats().putAll(attrMap);
+      loadedStatBoost.setModernId(boost.getString("modern-id"));
+      loadedStatBoost.setModernLines(boost.getString("modern-lines"));
 
       loadedBoosts.put(boostId, loadedStatBoost);
     }
@@ -262,10 +265,14 @@ public class BoostManager {
       return;
     }
     dailyBoost = loadedStatBoost;
-    announceBoost(loadedStatBoost.getAnnounceRun(), "SERVER", 0);
+    announceBoost(loadedStatBoost, loadedStatBoost.getAnnounceRun(), "SERVER", 0);
   }
 
-  private void announceBoost(List<String> announce, String creator, int secondsRemaining) {
+  private void announceBoost(LoadedStatBoost lb, List<String> announce, String creator, int secondsRemaining) {
+    if (lb.getModernId() != null) {
+      ModernAnnouncerPlugin.sendAnnouncement(new HashSet<>(Bukkit.getOnlinePlayers()), lb.getModernId(), lb.getModernLines());
+      return;
+    }
     int minutes = secondsRemaining / 60;
     for (String line : announce) {
       Bukkit.broadcastMessage(line

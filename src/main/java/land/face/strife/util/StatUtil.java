@@ -202,7 +202,7 @@ public class StatUtil {
         if (mob.hasTrait(StrifeTrait.OVERSHIELD) && mob.getEntity().getHealth() > mob.getMaxLife() - 0.01) {
           float amount = stats.getOrDefault(StrifeStat.BARRIER_REGEN, 0f);
           float lifeRegen = mob.getStatRaw(StrifeStat.REGENERATION) * (1 + mob.getStatRaw(StrifeStat.REGEN_MULT) / 100);
-          amount += lifeRegen * 0.3f;
+          amount += lifeRegen * 0.5f;
           return amount;
         } else
           return stats.getOrDefault(StrifeStat.BARRIER_REGEN, 0f);

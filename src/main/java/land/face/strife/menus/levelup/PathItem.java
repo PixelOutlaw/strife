@@ -18,7 +18,19 @@
  */
 package land.face.strife.menus.levelup;
 
+import static info.faceland.loot.utils.ItemStyleUtil.HALFWAY;
+import static info.faceland.loot.utils.ItemStyleUtil.HALFWAY_SMALL;
+import static info.faceland.loot.utils.ItemStyleUtil.centerLargeText;
+import static info.faceland.loot.utils.ItemStyleUtil.centerSmallText;
+import static info.faceland.loot.utils.ItemStyleUtil.countTitleSize;
+import static info.faceland.loot.utils.ItemStyleUtil.doNameThing;
+import static info.faceland.loot.utils.ItemStyleUtil.doSmallNameThing;
+
+import com.sentropic.guiapi.gui.GUI;
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
+import info.faceland.loot.utils.ItemRenderer;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -89,22 +101,35 @@ public class PathItem extends MenuItem {
 
   private void buildPathIcon(Path path) {
     List<String> lore = new ArrayList<>();
-    lore.add("&f&oThis choice may be made at level " + levelRequirement);
-    lore.addAll(TextUtils.color(
-        plugin.getPathManager().getLevelPath(path, Choice.OPTION_1).getLore()));
-    lore.addAll(TextUtils.color(
-        plugin.getPathManager().getLevelPath(path, Choice.OPTION_2).getLore()));
-    lore.addAll(TextUtils.color(
-        plugin.getPathManager().getLevelPath(path, Choice.OPTION_3).getLore()));
+    lore.add(FaceColor.WHITE + FaceColor.ITALIC.s() + "This choice may be made at level " + levelRequirement);
+    lore.addAll(TextUtils.color(plugin.getPathManager().getLevelPath(path, Choice.OPTION_1).getLore()));
+    lore.addAll(TextUtils.color(plugin.getPathManager().getLevelPath(path, Choice.OPTION_2).getLore()));
+    lore.addAll(TextUtils.color(plugin.getPathManager().getLevelPath(path, Choice.OPTION_3).getLore()));
 
     lockedIcon = new ItemStack(Material.PAPER);
     ItemStackExtensionsKt.setDisplayName(lockedIcon, StringExtensionsKt.chatColorize("&8&l[ Locked ]"));
     ItemStackExtensionsKt.setCustomModelData(lockedIcon, 200);
-    TextUtils.setLore(lockedIcon, TextUtils.color(lore));
+    lockedIcon.editMeta(m -> m.setLore(lore));
 
     unlockedIcon = new ItemStack(Material.PAPER);
     ItemStackExtensionsKt.setDisplayName(unlockedIcon, TextUtils.color("&f&l&nClick to choose your path!"));
     ItemStackExtensionsKt.setCustomModelData(unlockedIcon, 201);
-    TextUtils.setLore(unlockedIcon, TextUtils.color(lore));
+
+    unlockedIcon.editMeta(m -> m.setLore(lore));
+/*
+    List<String> newLore = new ArrayList<>(List.of(
+        PaletteUtil.color("|ns|\uF808丌\uF808\uF801"),
+        HALFWAY + GUI.spacesOf(-countTitleSize(path.name()) / 2) +
+            FaceColor.BLACK + doNameThing(path.name()) + "\uF80C"
+    ));
+    for (String s : lore) {
+      newLore.add(centerLargeText(s));
+    }
+    newLore.add("");
+    newLore.add(centerLargeText(s));
+
+    unlockedIcon.editMeta(m -> m.setLore(newLore)));
+
+ */
   }
 }

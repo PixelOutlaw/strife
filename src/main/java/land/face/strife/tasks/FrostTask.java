@@ -4,7 +4,6 @@ import java.lang.ref.WeakReference;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeTrait;
-import land.face.strife.util.DamageUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -20,7 +19,13 @@ public class FrostTask extends BukkitRunnable {
 
   public FrostTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
-    this.runTaskTimer(StrifePlugin.getInstance(), 20L, 13L);
+    this.runTaskTimer(StrifePlugin.getInstance(), 40L, 13L);
+    if (parentMob.getEntity() != null) {
+      if (parentMob.getEntity().getFreezeTicks() > 0) {
+        parentMob.setFrost(100f *
+            ((float) parentMob.getEntity().getFreezeTicks() / parentMob.getEntity().getMaxFreezeTicks()));
+      }
+    }
   }
 
   @Override
@@ -74,7 +79,7 @@ public class FrostTask extends BukkitRunnable {
   }
 
   private static boolean isLocationCold(Block block) {
-    if (block.getTemperature() > 0.1) {
+    if (block.getTemperature() > -0.10) {
       return false;
     }
     if (block.getType() == Material.WATER) {

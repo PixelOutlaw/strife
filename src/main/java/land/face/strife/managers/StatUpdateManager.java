@@ -110,11 +110,11 @@ public class StatUpdateManager {
   }
 
   public void updateWeight(StrifeMob mob) {
-    float amount = 0.15f;
+    float amount = 0.35f;
     float weight = mob.getStat(StrifeStat.WEIGHT);
     if (weight >= 100) {
-      amount += 0.75f * ((weight-100) / 100);
-      amount = Math.min(0.9f, amount);
+      amount += 0.6499999f * ((weight-100) / 100);
+      amount = Math.min(0.9999999f, amount);
     } else {
       amount *= weight / 100;
     }
@@ -142,6 +142,10 @@ public class StatUpdateManager {
   }
 
   public void updateLeg(StrifeMob mob) {
+    if (mob.getChampion() != null && !mob.getChampion().getSaveData().isLongLegs()) {
+      mob.getEntity().getAttribute(Attribute.STEP_HEIGHT).setBaseValue(0.6);
+      return;
+    }
     mob.getEntity().getAttribute(Attribute.STEP_HEIGHT).setBaseValue(1.07);
   }
 

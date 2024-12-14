@@ -16,6 +16,7 @@
  */
 package land.face.strife.commands;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandCompletion;
@@ -27,6 +28,7 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.listeners.DeathListener;
 import land.face.strife.util.DamageUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -76,10 +78,10 @@ public class CurseCommand extends BaseCommand {
 
   public static void increaseCurse(Player target, int amount) {
     var currentCurse = target.getPotionEffect(PotionEffectType.TRIAL_OMEN);
-    var currentLevel = currentCurse == null ? 0 : currentCurse.getAmplifier();
-    var newLevel = Math.min(9, currentLevel + amount);
+    var currentLevel = currentCurse == null ? 0 : currentCurse.getAmplifier() + 1;
+    var newLevel = Math.min(10, currentLevel + amount);
     target.removePotionEffect(PotionEffectType.TRIAL_OMEN);
-    target.addPotionEffect(new PotionEffect(PotionEffectType.TRIAL_OMEN, CURSE_DURATION, newLevel, false, false));
+    target.addPotionEffect(new PotionEffect(PotionEffectType.TRIAL_OMEN, CURSE_DURATION, newLevel - 1, false, true, true));
   }
 
   public static void decreaseCurse(Player target, int ticks) {
@@ -94,11 +96,15 @@ public class CurseCommand extends BaseCommand {
     target.removePotionEffect(PotionEffectType.TRIAL_OMEN);
 
     if (reducedTicks <= 0) {
+      PaletteUtil.sendMessage(target, "|gray| \n|white||i|You feel that your curse has broken!\n|gray| ");
       return;
     }
     var newLevel = reducedTicks / CURSE_DURATION;
+    if (currentLevel != newLevel) {
+      PaletteUtil.sendMessage(target, "|gray| \n|lgray||i|You feel your curse weaken..!\n|gray| ");
+    }
     var remainderTicks = reducedTicks - (newLevel * CURSE_DURATION);
-    target.addPotionEffect(new PotionEffect(PotionEffectType.TRIAL_OMEN, remainderTicks, newLevel, false, false));
+    target.addPotionEffect(new PotionEffect(PotionEffectType.TRIAL_OMEN, remainderTicks, newLevel, false, true, true));
   }
 
   public static void afflictCurseDamage(StrifePlugin plugin, Player target) {
@@ -116,6 +122,9 @@ public class CurseCommand extends BaseCommand {
     target.setHealth(newHealth);
     DamageUtil.dealRawDamage(plugin.getStrifeMobManager().getStatMob(target), 0.01f);
     decreaseCurse(target, 20 * 60);
+    target.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 30, 0, false, true));
+    target.playSound(target.getLocation(), Sound.ENTITY_WARDEN_HEARTBEAT, 1, 0.6f);
+    PaletteUtil.sendMessage(target, "|gray| \n|gray||i|You will join them soon...\n|gray| ");
   }
 
   public static void triggerCurse(StrifePlugin plugin, Player triggerer) {

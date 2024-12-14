@@ -33,6 +33,7 @@ public class WSEManager {
     var entity = WorldSpaceEffect.builder()
         .caster(caster)
         .effectSchedule(cse.getCachedEffectSchedule())
+        .returnEffectSchedule(cse.getCachedReturnEffectSchedule())
         .contactEffects(cse.getContactEffects())
         .expiryEffects(cse.getExpiryEffects())
         .nextLocation(location)

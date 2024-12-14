@@ -41,6 +41,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import land.face.announce.ModernAnnouncerPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.EloResponse;
 import land.face.strife.data.LoreAbility;
@@ -391,11 +393,9 @@ public class StrifeCommand extends BaseCommand {
     champion.setUnusedStatPoints(target.getPlayer().getLevel());
     champion.getSaveData().getPathMap().clear();
     plugin.getPathManager().buildPathBonus(champion);
-    sendMessage(sender, "You reset %player%",
-        new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
+    sendMessage(sender, "You reset %player%", new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
     sendMessage(target.getPlayer(), "&aYour stats have been reset!");
-    sendMessage(target.getPlayer(),
-        "&6You have unspent levelpoints! Use &f/levelup &6to spend them!");
+    ModernAnnouncerPlugin.sendAnnouncement(Set.of(target.getPlayer()), "rainbow-orb", "unused-points");
     champion.recombineCache(plugin);
     plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
   }

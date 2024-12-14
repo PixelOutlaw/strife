@@ -86,8 +86,8 @@ public class Spawner extends BukkitRunnable {
         despawnParticles(mob);
         Set<Player> players = new HashSet<>(mob.getLocation().getNearbyEntitiesByType(Player.class, 15));
         for (Player p : players) {
-          StrifePlugin.getInstance().getIndicatorManager().addIndicator(p, mob,
-              IndicatorStyle.FLOAT_UP_MEDIUM, 30, "<red><bold>OUT OF RANGE", 1.0f, 1.0f, 1.0f);
+          StrifePlugin.getInstance().getIndicatorManager().addIndicator(p, mob.getLocation(),
+              IndicatorStyle.FLOAT_UP_MEDIUM, 30, "<red><bold>OUT OF RANGE", 1.0f, 1.0f, 1.0f, true);
         }
         if (StrifePlugin.getInstance().getStrifeMobManager().isTrackedEntity(mob)) {
           StrifePlugin.getInstance().getStrifeMobManager().removeStrifeMob(mob);

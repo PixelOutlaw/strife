@@ -115,13 +115,14 @@ public class SkillExperienceManager {
       float skillXpMult = mob.getStat(StrifeStat.SKILL_XP_GAIN) / 100;
       amount *= 1 + skillXpMult;
     }
-    if (location != null) {
+    if (location != null && saveData.isShowIndicators()) {
       String str = MiniMessage.miniMessage().serialize(LegacyComponentSerializer.legacySection().deserialize(
           type.getColor() + FaceColor.BOLD.s() + "+" +
               FaceColor.WHITE + FaceColor.BOLD.s() + (int) amount +
               type.getColor() + FaceColor.BOLD.s() + "XP!"
       ));
-      plugin.getIndicatorManager().addIndicator(mob.getEntity(), location, IndicatorStyle.FLOAT_UP_SLOW, 10, str, 0.9f, 1.0f, 0.7f);
+      plugin.getIndicatorManager().addIndicator(mob.getEntity(), location, IndicatorStyle.FLOAT_UP_SLOW,
+          10, str, 0.9f, 1.0f, 0.7f, true);
     }
     if (saveData.isDisplayExp() || forceDisplay) {
       String xp = FORMAT.format(amount);

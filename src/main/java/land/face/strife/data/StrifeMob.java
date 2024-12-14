@@ -26,7 +26,6 @@ import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.data.champion.LifeSkillType;
 import land.face.strife.data.champion.SkillRank;
 import land.face.strife.data.pojo.Shielding;
-import land.face.strife.events.AirJumpEvent;
 import land.face.strife.events.BarrierBreakEvent;
 import land.face.strife.events.BlockChangeEvent;
 import land.face.strife.events.RuneChangeEvent;
@@ -64,7 +63,7 @@ public class StrifeMob {
 
   private int expiryAge = 0;
 
-  private final WeakReference<LivingEntity> livingEntity;
+  private final LivingEntity livingEntity;
   private WeakReference<StrifeMob> owner = new WeakReference<>(null);
 
   private Champion champion;
@@ -110,7 +109,7 @@ public class StrifeMob {
   private final Map<Integer, Integer> multishotMap = new HashMap<>();
 
   public StrifeMob(LivingEntity livingEntity, Champion champion) {
-    this.livingEntity = new WeakReference<>(livingEntity);
+    this.livingEntity = livingEntity;
     this.champion = champion;
     useEquipment = champion != null;
     statCache.clear();
@@ -119,11 +118,11 @@ public class StrifeMob {
   }
 
   public int getLevel() {
-    if (livingEntity.get() instanceof Player) {
+    if (livingEntity instanceof Player p) {
       //noinspection DataFlowIssue
-      return ((Player) livingEntity.get()).getLevel();
+      return p.getLevel();
     }
-    return SpecialStatusUtil.getMobLevel(livingEntity.get());
+    return SpecialStatusUtil.getMobLevel(livingEntity);
   }
 
   public boolean canAttack() {
@@ -134,10 +133,6 @@ public class StrifeMob {
       return true;
     }
     return isGlobalCooldownReady();
-  }
-
-  public void setUniqueEntity(UniqueEntity uniqueEntity) {
-    this.uniqueEntity = uniqueEntity;
   }
 
   public void bumpGlobalCooldown(int millis) {
@@ -481,7 +476,7 @@ public class StrifeMob {
   }
 
   public LivingEntity getEntity() {
-    return livingEntity.get();
+    return livingEntity;
   }
 
   public String getUniqueEntityId() {
@@ -763,7 +758,7 @@ public class StrifeMob {
       return 0;
     }
     //noinspection DataFlowIssue
-    return livingEntity.get().getHealth() * (1 + (double) minionTask.getLifespan() / 10D);
+    return livingEntity.getHealth() * (1 + (double) minionTask.getLifespan() / 10D);
   }
 
   public float getMultishotRatio(int shotId) {
@@ -828,7 +823,7 @@ public class StrifeMob {
   }
 
   public void flagPvp() {
-    if (livingEntity.get() instanceof Player && isInCombat()) {
+    if (livingEntity instanceof Player && isInCombat()) {
       combatCountdownTask.setPvp();
     }
   }

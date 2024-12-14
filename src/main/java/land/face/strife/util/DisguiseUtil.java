@@ -191,6 +191,7 @@ public class DisguiseUtil {
         }
       }
       mobDisguise.setReplaceSounds(true);
+      mobDisguise.setDynamicName(true);
       disguise = mobDisguise;
     } else if (type.isMisc()) {
       MiscDisguise miscDisguise = new MiscDisguise(type);

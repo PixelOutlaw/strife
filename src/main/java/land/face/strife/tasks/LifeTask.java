@@ -28,7 +28,7 @@ public class LifeTask extends BukkitRunnable {
 
   public LifeTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
-    this.runTaskTimer(StrifePlugin.getInstance(), 5L, REGEN_TICK_RATE);
+    this.runTaskTimer(StrifePlugin.getInstance(), 40L, REGEN_TICK_RATE);
     tickMultiplier = (1 / (20f / REGEN_TICK_RATE)) * REGEN_PERCENT_PER_SECOND;
   }
 

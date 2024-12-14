@@ -194,6 +194,13 @@ public class EveryTickTask extends BukkitRunnable {
       bonusVelocity.setY(bonusVelocity.getY() + hoverPower * 0.0005);
       p.setVelocity(p.getVelocity().clone().add(bonusVelocity));
     }
+    /*
+    int power = (p.getCurrentInput().isRight() ? -1 : 0) + (p.getCurrentInput().isLeft() ? 1 : 0);
+    if (power != 0) {
+      p.setVelocity(p.getVelocity().clone().rotateAroundY(power * 0.025));
+    }
+
+     */
 
     plugin.getGuiManager().tickNotices(p);
   }

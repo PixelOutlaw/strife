@@ -1,5 +1,6 @@
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -115,23 +116,27 @@ public class PotionListener implements Listener {
 
   @EventHandler
   public void onEffectExpire(EntityPotionEffectEvent event) {
-    if (!(event.getCause() == Cause.EXPIRATION && event.getAction() == Action.REMOVED)) {
+    if (event.getCause() != Cause.EXPIRATION) {
       return;
     }
-    if ("POISON".equals(event.getOldEffect().getType().getName())) {
-      if (event.getOldEffect().getAmplifier() > 0) {
-        int newAmp = event.getOldEffect().getAmplifier() - 1;
-        Bukkit.getScheduler().runTaskLater(plugin, () ->
-            ((LivingEntity) event.getEntity()).addPotionEffect(
-                new PotionEffect(PotionEffectType.POISON, 100, newAmp, false, true)), 0L);
+    if (event.getEntity() instanceof LivingEntity le) {
+      var oldEffect = event.getOldEffect();
+      if (oldEffect.getType() == PotionEffectType.POISON  && oldEffect.getAmplifier() > 0) {
+        int newAmp = oldEffect.getAmplifier() - 1;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+          le.removePotionEffect(PotionEffectType.POISON);
+          le.addPotionEffect(new PotionEffect(PotionEffectType.POISON, 100, newAmp, false, true));
+        }, 0L);
+        return;
       }
-      return;
-    }
-    if ("TRIAL_OMEN".equals(event.getOldEffect().getType().getName())) {
-      if (event.getOldEffect().getAmplifier() > 0) {
-        int newAmp = event.getOldEffect().getAmplifier() - 1;
-        Bukkit.getScheduler().runTaskLater(plugin, () -> ((LivingEntity) event.getEntity()).addPotionEffect(
-                new PotionEffect(PotionEffectType.TRIAL_OMEN, 30 * 20 * 60, newAmp, false, true)), 0L);
+      if (oldEffect.getType() == PotionEffectType.TRIAL_OMEN && oldEffect.getAmplifier() > 0) {
+        int newAmp = oldEffect.getAmplifier() - 1;
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+          le.removePotionEffect(PotionEffectType.TRIAL_OMEN);
+          le.addPotionEffect(new PotionEffect(PotionEffectType.TRIAL_OMEN, 10 * 60 * 20, newAmp, false, true, true));
+          PaletteUtil.sendMessage(event.getEntity(), "|gray| \n|lgray||i|You feel your curse weaken..!\n|gray| ");
+          }, 0L);
+        return;
       }
     }
   }

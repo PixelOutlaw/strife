@@ -30,6 +30,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 
+@SuppressWarnings("unused")
 public class PlayerDataUtil {
 
   private static final Map<UUID, Set<Player>> NEARBY_PLAYER_CACHE = new HashMap<>();
@@ -206,6 +207,7 @@ public class PlayerDataUtil {
   // TODO: Something less stupid, this shouldn't be in this Util
   public static boolean conditionCompare(Comparison comparison, double val1, double val2) {
     return switch (comparison) {
+      case AT_LEAST -> val1 >= val2;
       case GREATER_THAN -> val1 > val2;
       case LESS_THAN -> val1 < val2;
       case EQUAL -> val1 == val2;
@@ -214,9 +216,8 @@ public class PlayerDataUtil {
   }
 
   public static int getMaxItemDestroyLevel(Player player) {
-    return getMaxItemDestroyLevel(
-        plugin.getChampionManager().getChampion(player)
-            .getLifeSkillLevel(LifeSkillType.CRAFTING));
+    return getMaxItemDestroyLevel(plugin.getChampionManager()
+        .getChampion(player).getLifeSkillLevel(LifeSkillType.CRAFTING));
   }
 
   private static int getMaxItemDestroyLevel(int craftLvl) {
@@ -224,9 +225,8 @@ public class PlayerDataUtil {
   }
 
   public static int getMaxCraftItemLevel(Player player) {
-    return getMaxCraftItemLevel(
-        plugin.getChampionManager().getChampion(player)
-            .getLifeSkillLevel(LifeSkillType.CRAFTING));
+    return getMaxCraftItemLevel(plugin.getChampionManager()
+        .getChampion(player).getLifeSkillLevel(LifeSkillType.CRAFTING));
   }
 
   public static int getMaxCraftItemLevel(int craftLvl) {
@@ -280,8 +280,7 @@ public class PlayerDataUtil {
   }
 
   public static float getLifeSkillExp(Player player, LifeSkillType type) {
-    return plugin.getChampionManager().getChampion(player)
-        .getLifeSkillExp(type);
+    return plugin.getChampionManager().getChampion(player).getLifeSkillExp(type);
   }
 
   public static float getLifeSkillExp(Champion champion, LifeSkillType type) {
@@ -289,8 +288,7 @@ public class PlayerDataUtil {
   }
 
   public static float getLifeSkillMaxExp(Player player, LifeSkillType type) {
-    int level = plugin.getChampionManager().getChampion(player)
-        .getLifeSkillLevel(type);
+    int level = plugin.getChampionManager().getChampion(player).getLifeSkillLevel(type);
     return plugin.getSkillExperienceManager().getMaxExp(type, level);
   }
 
@@ -301,8 +299,7 @@ public class PlayerDataUtil {
 
   public static int getLifeSkillExpToLevel(Champion champion, LifeSkillType type) {
     int level = champion.getLifeSkillLevel(type);
-    return (int) (plugin.getSkillExperienceManager().getMaxExp(type, level)
-        - champion.getLifeSkillExp(type));
+    return (int) (plugin.getSkillExperienceManager().getMaxExp(type, level) - champion.getLifeSkillExp(type));
   }
 
   public static float getSkillProgress(Champion champion, LifeSkillType type) {

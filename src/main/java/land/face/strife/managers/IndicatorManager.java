@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BlockData;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.DamagePopoff;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import land.face.strife.util.PopoffUtil;
@@ -54,7 +55,7 @@ public class IndicatorManager {
   }
 
   public void addIndicator(LivingEntity viewer, Location location, IndicatorStyle type, int life, String text,
-      float startScale, float midScale, float endScale) {
+      float startScale, float midScale, float endScale, boolean shadow) {
     if (!(viewer instanceof Player) || location.getWorld() != viewer.getWorld()) {
       return;
     }
@@ -93,19 +94,22 @@ public class IndicatorManager {
     }
 
     DamagePopoff damagePopoff = PopoffUtil.createPopoff((Player) viewer,
-        midway, velocity, gravity, life, text, startScale, midScale, endScale);
+        midway, velocity, gravity, life, text, startScale, midScale, endScale, shadow);
     indicators.add(damagePopoff);
   }
 
-  public void addIndicator(LivingEntity creator, LivingEntity target, IndicatorStyle type, int life, String text,
-      float startScale, float midScale, float endScale) {
+  public void addIndicator(StrifeMob creator, LivingEntity target, IndicatorStyle type, int life, String text,
+      float startScale, float midScale, float endScale, boolean shadow) {
+    if (creator.getChampion() != null && !creator.getChampion().getSaveData().isShowIndicators()) {
+      return;
+    }
     //Location loc = TargetingUtil.getOriginLocation(target, OriginLocation.CENTER);
     Location loc = target.getLocation().clone();
     if (!loc.getWorld().getName().equals(target.getEyeLocation().getWorld().getName())) {
       return;
     }
     loc.add(0, target.getHeight() / 3, 0);
-    addIndicator(creator, loc, type, life, text, startScale, midScale, endScale);
+    addIndicator(creator.getEntity(), loc, type, life, text, startScale, midScale, endScale, shadow);
   }
 
   public void tickAllIndicators() {

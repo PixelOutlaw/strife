@@ -83,7 +83,10 @@ public class ContactSpawner {
   }
 
   public void contact(Player player) {
-    if (inactivePlayers.contains(player.getUniqueId()) && !MoveUtil.hasMoved(player, 10000)) {
+    if (inactivePlayers.contains(player.getUniqueId())) {
+      return;
+    }
+    if (!MoveUtil.hasMoved(player, 10000)) {
       return;
     }
     inactivePlayers.add(player.getUniqueId());

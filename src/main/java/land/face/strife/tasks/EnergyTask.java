@@ -28,7 +28,7 @@ public class EnergyTask extends BukkitRunnable {
 
   public EnergyTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
-    this.runTaskTimer(StrifePlugin.getInstance(), 10L, TICKS_PER);
+    this.runTaskTimer(StrifePlugin.getInstance(), 20L, TICKS_PER);
   }
 
   @Override

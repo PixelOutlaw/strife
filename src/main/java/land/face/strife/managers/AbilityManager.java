@@ -50,6 +50,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
@@ -213,7 +214,7 @@ public class AbilityManager {
   }
 
   public CooldownTracker getCooldownTracker(LivingEntity le, String abilityId) {
-    if (cdMap.get(le) == null) {
+    if (!cdMap.containsKey(le)) {
       cdMap.put(le, new HashSet<>());
       return null;
     }
@@ -246,10 +247,10 @@ public class AbilityManager {
   }
 
   public void loadPlayerCooldowns(Player player) {
-    cdMap.put(player, new HashSet<>());
     if (!savedCooldowns.containsKey(player.getUniqueId())) {
       return;
     }
+    cdMap.putIfAbsent(player, new HashSet<>());
     for (CooldownTracker container : savedCooldowns.get(player.getUniqueId())) {
       container.setStartTime(System.currentTimeMillis());
       cdMap.get(player).add(container);
@@ -269,8 +270,7 @@ public class AbilityManager {
     return true;
   }
 
-  public Map<StrifeStat, Float> getApplicableAbilityPassiveStats(Player player,
-      @NotNull Ability ability) {
+  public Map<StrifeStat, Float> getApplicableAbilityPassiveStats(Player player, @NotNull Ability ability) {
     if (ability.isPassiveStatsOnCooldown()) {
       if (ability.getTargetType() == TargetType.TOGGLE) {
         CooldownTracker tracker = getCooldownTracker(player, ability.getId());
@@ -391,9 +391,7 @@ public class AbilityManager {
     if (cooldown < 0.5) {
       return;
     }
-    if (!cdMap.containsKey(caster.getEntity())) {
-      cdMap.put(caster.getEntity(), new HashSet<>());
-    }
+    cdMap.putIfAbsent(caster.getEntity(), new HashSet<>());
     CooldownTracker tracker = getCooldownTracker(caster.getEntity(), ability.getId());
     if (tracker == null) {
       tracker = new CooldownTracker(caster, ability, slot);
@@ -413,9 +411,7 @@ public class AbilityManager {
     if (ability.getTargetType() != TargetType.TOGGLE) {
       throw new IllegalStateException("Attempted to toggle a non toggle ability!");
     }
-    if (!cdMap.containsKey(caster.getEntity())) {
-      cdMap.put(caster.getEntity(), new HashSet<>());
-    }
+    cdMap.putIfAbsent(caster.getEntity(), new HashSet<>());
     CooldownTracker tracker = getCooldownTracker(caster.getEntity(), ability.getId());
     if (tracker == null) {
       tracker = new CooldownTracker(caster, ability, slot);
@@ -752,11 +748,12 @@ public class AbilityManager {
 
     ItemStackExtensionsKt.setDisplayName(icon, format + AbilityIconManager.ABILITY_PREFIX + key);
     ItemStackExtensionsKt.setUnbreakable(icon, true);
-    ItemStackExtensionsKt.setCustomModelData(icon, config.getInt("custom-model-data", 7999));
+    int modelData = config.getInt("custom-model-data", 7999);
     ItemRenderer.applyCommonFlags(icon);
     icon.editMeta(m -> {
       ((Damageable) m).setMaxDamage(1000);
       m.setMaxStackSize(charges);
+      m.setItemModel(new NamespacedKey("faceland", "ability_icons/" + modelData));
     });
 
     ItemStack simpleIcon = icon.clone();

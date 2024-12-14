@@ -69,7 +69,7 @@ public class AttackSpeedManager {
     setAttackTime(
         mob.getEntity().getUniqueId(),
         (long) (1000 * attackSeconds),
-        (long) delaySeconds * 1000,
+        (long) (delaySeconds * 1000),
         hardReset
     );
     int ticks = (int) Math.max(10, attackSeconds * 20);
@@ -103,7 +103,7 @@ public class AttackSpeedManager {
     if (!lastAttackMap.containsKey(attacker.getEntity().getUniqueId())) {
       attackTracker = new AttackTracker(finalAttackTime, 0L);
       lastAttackMap.put(attacker.getEntity().getUniqueId(), attackTracker);
-      attackMult = attacker.hasTrait(StrifeTrait.OVERDRAW) ? 1.35f : 1.0f;
+      attackMult = attacker.hasTrait(StrifeTrait.OVERDRAW) ? 1.5f : 1.0f;
     } else {
       attackTracker = lastAttackMap.get(attacker.getEntity().getUniqueId());
       attackMult = attackTracker.getRechargePercent(attacker.hasTrait(StrifeTrait.OVERDRAW));

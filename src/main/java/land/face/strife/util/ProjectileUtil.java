@@ -16,11 +16,6 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.effects.CreateModelAnimation;
 import land.face.strife.data.effects.Effect;
 import land.face.strife.stats.StrifeStat;
-import me.libraryaddict.disguise.disguisetypes.Disguise;
-import me.libraryaddict.disguise.disguisetypes.DisguiseType;
-import me.libraryaddict.disguise.disguisetypes.FlagWatcher;
-import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
-import me.libraryaddict.disguise.disguisetypes.watchers.SnowballWatcher;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -35,6 +30,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Snowball;
 import org.bukkit.entity.Trident;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
@@ -55,8 +51,6 @@ public class ProjectileUtil {
 
   private static final ItemStack wandProjectile = buildWandProjectile();
   private static final ItemStack bulletProjectile = buildBulletProjectile();
-  private static final Disguise wandDisguise = buildWandDisguise();
-  private static final Disguise bulletDisguise = buildBulletDisguise();
 
   public static void setContactTrigger(Projectile projectile) {
     CONTACT_TRIGGER.put(projectile, true);
@@ -103,22 +97,24 @@ public class ProjectileUtil {
   }
 
   public static void setPierce(Projectile projectile, float chance, int flatBonus) {
-    if (chance > 0) {
-      int maxPuncture = 0;
-      while (maxPuncture < 3) {
-        if (StrifePlugin.RNG.nextDouble() > chance) {
-          break;
-        }
-        maxPuncture++;
+    if (chance < 0.1 && flatBonus <= 0) {
+      return;
+    }
+    int maxPuncture = 0;
+    while (maxPuncture < 3) {
+      if (StrifePlugin.RNG.nextDouble() > chance) {
+        break;
       }
-      maxPuncture += flatBonus;
-      if (maxPuncture > 0) {
-        PEIRCE_LEVEL.put(projectile, maxPuncture);
-        if (projectile instanceof Arrow a) {
-          a.setShotFromCrossbow(true);
-          a.setPierceLevel(100);
-        }
-      }
+      maxPuncture++;
+    }
+    maxPuncture += flatBonus;
+    if (maxPuncture < 1) {
+      return;
+    }
+    PEIRCE_LEVEL.put(projectile, maxPuncture);
+    if (projectile instanceof AbstractArrow a) {
+      //a.setShotFromCrossbow(true);
+      a.setPierceLevel(100);
     }
   }
 
@@ -131,24 +127,6 @@ public class ProjectileUtil {
     if (amount > 0) {
       PEIRCE_LEVEL.put(projectile, amount - 1);
     }
-  }
-
-  private static Disguise buildWandDisguise() {
-    MiscDisguise miscDisguise = new MiscDisguise(DisguiseType.SNOWBALL);
-    miscDisguise.setReplaceSounds(true);
-    miscDisguise.setVelocitySent(true);
-    FlagWatcher watcher = miscDisguise.getWatcher();
-    ((SnowballWatcher) watcher).setItemStack(wandProjectile);
-    return miscDisguise;
-  }
-
-  private static Disguise buildBulletDisguise() {
-    MiscDisguise miscDisguise = new MiscDisguise(DisguiseType.SNOWBALL);
-    miscDisguise.setReplaceSounds(true);
-    miscDisguise.setVelocitySent(true);
-    FlagWatcher watcher = miscDisguise.getWatcher();
-    ((SnowballWatcher) watcher).setItemStack(bulletProjectile);
-    return miscDisguise;
   }
 
   public static void setShotId(Projectile projectile) {
@@ -230,7 +208,8 @@ public class ProjectileUtil {
     projectiles--;
 
     for (int i = projectiles; i > 0; i--) {
-      ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed, speedMult, pierceChance, randomBulletOffset(projectiles));
+      ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed, speedMult, pierceChance,
+          randomBulletOffset(projectiles));
     }
     mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
     shotId++;
@@ -261,14 +240,16 @@ public class ProjectileUtil {
     Location location = shooter.getEyeLocation().clone().add(0, -0.35, 0);
     location.setDirection(velocity);
     HANDLED_PROJECTILE.add(shooter.getUniqueId());
-    Arrow arrow = shooter.getWorld().spawn(location, Arrow.class, e -> {
+    Arrow arrow = shooter.launchProjectile(Arrow.class, velocity, e -> {
       e.setShooter(shooter);
-      e.setVelocity(velocity);
+      e.setHasLeftShooter(false);
+      e.getLocation().setDirection(shooter.getEyeLocation().getDirection());
+      e.getBoundingBox().expand(1);
       e.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+      e.teleport(location, TeleportCause.PLUGIN);
+      e.setVelocity(velocity);
     });
     HANDLED_PROJECTILE.remove(shooter.getUniqueId());
-    arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
-    arrow.getBoundingBox().expand(1);
 
     setPierce(arrow, pierceChance);
     setAttackMult(arrow, (float) attackMult);
@@ -303,7 +284,8 @@ public class ProjectileUtil {
     setShotId(arrow);
   }
 
-  public static void createBullet(LivingEntity shooter, double attackMult, float power, float speedMult, float pierce, double spread) {
+  public static void createBullet(LivingEntity shooter, double attackMult, float power, float speedMult, float pierce,
+      double spread) {
     Vector velocity = getProjectileVelocity(shooter, power, spread, 0);
     Location location = shooter.getEyeLocation().clone().add(0, -0.35, 0);
     location.setDirection(velocity);
@@ -311,6 +293,7 @@ public class ProjectileUtil {
     Arrow arrow = shooter.getWorld().spawn(location, Arrow.class, e -> {
       e.setShooter(shooter);
       e.setVelocity(velocity);
+      e.setHasLeftShooter(false);
       e.setSilent(true);
       e.setVisibleByDefault(false);
       e.setPickupStatus(PickupStatus.CREATIVE_ONLY);

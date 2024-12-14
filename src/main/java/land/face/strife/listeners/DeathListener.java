@@ -16,18 +16,13 @@
  */
 package land.face.strife.listeners;
 
-import com.github.retrooper.packetevents.protocol.potion.Potion;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.collections.CollectionUtils;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.commands.CurseCommand;
 import land.face.strife.data.StrifeMob;
@@ -36,7 +31,6 @@ import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.data.effects.EndlessEffect;
 import land.face.strife.stats.AbilitySlot;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.DamageUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
@@ -53,7 +47,6 @@ import org.bukkit.potion.PotionEffectType;
 public class DeathListener implements Listener {
 
   private final StrifePlugin plugin;
-  private static Map<UUID, List<PotionEffect>> STORED_DEATH_POTIONS = new HashMap<>();
   public static List<String> CURSE_EXEMPT_WORLDS = List.of("Graveyard", "PvP", "Faceland", "Arena");
 
   public DeathListener(StrifePlugin plugin) {
@@ -66,24 +59,22 @@ public class DeathListener implements Listener {
       return;
     }
     List<PotionEffect> effects = new ArrayList<>();
-    CollectionUtils.addIgnoreNull(effects, event.getPlayer().getPotionEffect(PotionEffectType.TRIAL_OMEN));
-    CollectionUtils.addIgnoreNull(effects, event.getPlayer().getPotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE));
+    if (event.getPlayer().hasPotionEffect(PotionEffectType.TRIAL_OMEN)) {
+      effects.add(event.getPlayer().getPotionEffect(PotionEffectType.TRIAL_OMEN));
+    }
+    if (event.getPlayer().hasPotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE)) {
+      effects.add(event.getPlayer().getPotionEffect(PotionEffectType.HERO_OF_THE_VILLAGE));
+    }
     if (!effects.isEmpty()) {
-      STORED_DEATH_POTIONS.put(event.getPlayer().getUniqueId(), effects);
+      Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        PotionListener.ignoreFx = true;
+        effects.forEach(e -> event.getPlayer().addPotionEffect(e));
+        PotionListener.ignoreFx = false;
+      }, 20L);
     }
     if (event.getPlayer().hasPotionEffect(PotionEffectType.TRIAL_OMEN) &&
         !CURSE_EXEMPT_WORLDS.contains(event.getPlayer().getWorld().getName())) {
       Bukkit.getScheduler().runTaskLater(plugin, () -> CurseCommand.triggerCurse(plugin, event.getPlayer()), 1L);
-    }
-  }
-
-  @EventHandler(priority = EventPriority.MONITOR)
-  public void onPlayerRespawnRestoreOptions(PlayerDeathEvent event) {
-    var effects = STORED_DEATH_POTIONS.remove(event.getPlayer().getUniqueId());
-    if (effects != null) {
-      PotionListener.ignoreFx = true;
-      effects.forEach(e -> event.getPlayer().addPotionEffect(e));
-      PotionListener.ignoreFx = false;
     }
   }
 

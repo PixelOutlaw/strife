@@ -19,6 +19,8 @@ public class LoadedStatBoost {
   private final List<String> announceStart;
   private final List<String> announceRun;
   private final List<String> announceEnd;
+  private String modernId = null;
+  private String modernLines = null;
 
   public LoadedStatBoost(String creator, String topBarText, int announceInterval, int duration) {
     this.creator = creator;

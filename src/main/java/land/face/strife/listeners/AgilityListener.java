@@ -10,6 +10,7 @@ import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.SkillRank;
+import land.face.strife.data.conditions.GroundedCondition;
 import land.face.strife.events.AirJumpEvent;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
@@ -124,10 +125,12 @@ public class AgilityListener implements Listener {
     if (!event.isState()) {
       return;
     }
-    if (event.getPlayer().isOnGround() || event.getPlayer().isFlying()) {
+    if (event.getPlayer().isOnGround() || event.getPlayer().isFlying() ||
+        event.getPlayer().getGameMode() != GameMode.ADVENTURE) {
       return;
     }
-    if (MoveUtil.timeOffGround(event.getPlayer()) < 200) {
+    var velocity = MoveUtil.getVelocity(event.getPlayer());
+    if (velocity.getY() >= 0 && GroundedCondition.isGroundedOrCloseToGround(event.getPlayer(), 1.5f)) {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
@@ -137,7 +140,7 @@ public class AgilityListener implements Listener {
     }
 
     float cost = AIR_JUMP_COST_FLAT + mob.getMaxEnergy() * AIR_JUMP_COST_PERCENT;
-    cost *= (50 + mob.getStat(StrifeStat.WEIGHT)) / 150;
+    cost *= (100 + mob.getStat(StrifeStat.WEIGHT)) / 200;
 
     if (mob.getEnergy() < cost) {
       plugin.getGuiManager().postNotice(event.getPlayer(), GuiManager.NOTICE_ENERGY, 10);
@@ -196,7 +199,7 @@ public class AgilityListener implements Listener {
     }
 
     float currentCost = ROLL_COST_FLAT + mob.getMaxEnergy() * ROLL_COST_PERCENT;
-    currentCost *= (50 + mob.getStat(StrifeStat.WEIGHT)) / 150;
+    currentCost *= (100 + mob.getStat(StrifeStat.WEIGHT)) / 200;
 
     if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
       if (mob.getEnergy() < currentCost) {
@@ -246,7 +249,7 @@ public class AgilityListener implements Listener {
       bonusVelocity.setY(bonusY);
     }
 
-    bonusVelocity.multiply(1 / ((50 + mob.getStat(StrifeStat.WEIGHT)) / 115));
+    bonusVelocity.multiply(1 / ((100 + mob.getStat(StrifeStat.WEIGHT)) / 200));
     float netGravity = mob.getStat(StrifeStat.INCREASED_GRAVITY) - mob.getStat(StrifeStat.REDUCED_GRAVITY);
     if (netGravity > 0) {
       bonusVelocity.setY(bonusVelocity.getY() * (1 + netGravity / 185f));

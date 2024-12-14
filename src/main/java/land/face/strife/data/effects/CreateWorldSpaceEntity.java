@@ -12,15 +12,16 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.util.Vector;
 
 @Getter
 @Setter
 public class CreateWorldSpaceEntity extends LocationEffect {
 
   private final Map<Integer, List<Effect>> cachedEffectSchedule = new HashMap<>();
+  private final Map<Integer, List<Effect>> cachedReturnEffectSchedule = new HashMap<>();
 
   private Map<Integer, List<String>> effectSchedule;
+  private Map<Integer, List<String>> returnEffectSchedule;
   private List<Effect> expiryEffects = new ArrayList<>();
   private List<Effect> contactEffects = new ArrayList<>();
 
@@ -79,5 +80,16 @@ public class CreateWorldSpaceEntity extends LocationEffect {
       }
       effectSchedule.clear();
     }
+    if (cachedReturnEffectSchedule.isEmpty() && !returnEffectSchedule.isEmpty()) {
+      for (int i : returnEffectSchedule.keySet()) {
+        List<Effect> effectList = new ArrayList<>();
+        for (String s : returnEffectSchedule.get(i)) {
+          effectList.add(StrifePlugin.getInstance().getEffectManager().getEffect(s));
+        }
+        cachedReturnEffectSchedule.put(i, effectList);
+      }
+      returnEffectSchedule.clear();
+    }
   }
+
 }

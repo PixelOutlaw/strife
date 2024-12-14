@@ -48,17 +48,17 @@ public class Push extends Effect {
       push.setY(push.getY() + height / 10);
     } else {var horizontalMult = power / 10;
       push.setX(push.getX() * horizontalMult);
-      push.setY(push.getY() * horizontalMult);
-      push.setY(push.getY() + height / 10);
+      push.setZ(push.getZ() * horizontalMult);
+      push.setY(height / 10);
     }
 
     double weightMult;
     if (applyToCaster) {
-      weightMult = caster.getStat(StrifeStat.WEIGHT) / 100;
+      weightMult = (100 + caster.getStat(StrifeStat.WEIGHT)) / 200;
       double difference = 1 - weightMult;
       weightMult = 1 + difference * weightRatio;
     } else {
-      weightMult = target.getStat(StrifeStat.WEIGHT) / 100;
+      weightMult = (100 + caster.getStat(StrifeStat.WEIGHT)) / 200;
       double difference = 1 - weightMult;
       weightMult = 1 + difference * weightRatio;
     }
@@ -76,8 +76,11 @@ public class Push extends Effect {
       target.getEntity().setFallDistance(0);
     }
 
+    push.setY(push.getY() * verticalMultiplier);
+
     Vector newVelocity = currentVelocity.clone();
     newVelocity.add(push);
+
 
     if (verticalClamp) {
       newVelocity.setY(clampRay(currentVelocity.getY(), push.getY()));
@@ -88,7 +91,6 @@ public class Push extends Effect {
       newVelocity.setZ(clampRay(currentVelocity.getZ(), push.getZ()));
     }
 
-    newVelocity.setY(newVelocity.getY() * verticalMultiplier);
 
     if (applyToCaster) {
       caster.getEntity().setVelocity(newVelocity);

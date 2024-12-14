@@ -14,35 +14,22 @@ import lombok.Setter;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+@Getter
+@Setter
 public class CooldownTracker extends BukkitRunnable {
 
   private static final long TICK_TIME = 4L;
 
-  @Getter
   private final Ability ability;
-  @Getter
   private final AbilitySlot slot;
-  @Getter
   private final StrifeMob holder;
-  @Getter
-  @Setter
   private long startTime;
 
-  @Getter
-  @Setter
   private int duration;
-  @Getter
-  @Setter
   private int maxDuration;
-  @Getter
-  @Setter
   private int chargesLeft;
-  @Getter
-  @Setter
   private boolean toggleState;
 
-  @Getter
-  @Setter
   private long logoutTime;
 
   public CooldownTracker(StrifeMob holder, Ability ability, AbilitySlot slot) {

@@ -95,7 +95,7 @@ public class ContactObjectCommand extends BaseCommand {
   public void awardAgiCoin(CommandSender sender, OnlinePlayer target, double coinLevel, double baseXp) {
     coinLevel = Math.max(1, coinLevel);
     double lv = PlayerDataUtil.getLifeSkillLevel(target.getPlayer(), LifeSkillType.AGILITY);
-    double ratio = Math.min(1.0, coinLevel / lv);
+    double ratio = 1; //Math.min(1.0, coinLevel / lv);
     if (!sendPlayers.contains(target.player.getUniqueId())) {
       target.player.sendMessage(FaceColor.TEAL +
           "Woo! You got an agility token! These tokens award Agility XP and will regenerate after awhile!");
@@ -108,7 +108,7 @@ public class ContactObjectCommand extends BaseCommand {
   public void creationCommand(CommandSender sender, String section, OnlinePlayer target, double level, double baseXp) {
     level = Math.max(1, level);
     double lv = PlayerDataUtil.getLifeSkillLevel(target.getPlayer(), LifeSkillType.LOREMASTER);
-    double ratio = Math.min(1.0, level / lv);
+    double ratio = 1; //Math.min(1.0, level / lv);
 
     LoreBooks.openBook(target.player, section);
 

@@ -16,16 +16,23 @@
  */
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import land.face.announce.ModernAnnouncerPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
@@ -134,10 +141,8 @@ public class ExperienceManager {
     if (showTotem) {
       player.playEffect(EntityEffect.TOTEM_RESURRECT);
     }
-    MessageUtils.sendMessage(player,
-        "&a&lCongratulations! You have reached level &f" + player.getLevel() + "&a!");
-    MessageUtils.sendMessage(player,
-        "&6You gained a Levelpoint! Use &f/levelup &6to spend levelpoints and raise your stats!");
+    ModernAnnouncerPlugin.sendAnnouncement(Set.of(player), "faceguy-up-arrows", "generic-level-up");
+    Bukkit.getScheduler().runTaskLater(plugin, () -> notifyUnusedPoints(player), 20L * 30);
     if (announce) {
       String discordMessage =
           ":levelup: **" + player.getDisplayName() + " has reached level " + player.getLevel() + "!**";
@@ -149,5 +154,14 @@ public class ExperienceManager {
         MessageUtils.sendMessage(p, chatMessage);
       }
     }
+  }
+
+  public void notifyUnusedPoints(final Player player) {
+    var champ = plugin.getChampionManager().getChampion(player);
+    if (champ.getUnusedStatPoints() < 1) {
+      return;
+    }
+    ToastUtils.sendToast(player, UnicodeUtil.unicodePlacehold("<toast_unused_points>"), ItemUtils.BLANK);
+    ModernAnnouncerPlugin.sendAnnouncement(Set.of(player), "rainbow-orb", "unused-points");
   }
 }

@@ -84,8 +84,8 @@ public class BlockManager {
       BlockEvent ev = new BlockEvent(defender, attacker);
       Bukkit.getPluginManager().callEvent(ev);
       if (attacker.getEntity() instanceof Player) {
-        plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.FLOAT_UP_MEDIUM, 4, "彠", 1.0f, 1.0f, 1.0f);
+        plugin.getIndicatorManager().addIndicator(attacker, defender.getEntity(),
+            IndicatorStyle.FLOAT_UP_MEDIUM, 4, "彠", 1.0f, 1.0f, 1.0f, false);
       }
       if (defender.getEntity() instanceof Player) {
         plugin.getGuiManager().postNotice((Player) defender.getEntity(), GuiManager.NOTICE_BLOCK, 4);

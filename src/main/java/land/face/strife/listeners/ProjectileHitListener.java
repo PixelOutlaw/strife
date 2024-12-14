@@ -18,7 +18,6 @@ package land.face.strife.listeners;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
@@ -30,6 +29,7 @@ import land.face.strife.util.TargetingUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -42,91 +42,84 @@ public record ProjectileHitListener(StrifePlugin plugin) implements Listener {
     if (event.isCancelled()) {
       return;
     }
-    // Just ignore invulnerable things entirely
-    if (event.getHitEntity() != null && event.getHitEntity().isInvulnerable()) {
-      if (event.getHitEntity() instanceof LivingEntity le) {
+    boolean deleteProjectile = true;
+    if (event.getHitEntity() != null) {
+      if (event.getHitEntity().isInvulnerable() || event.getHitEntity().hasMetadata("NPC")) {
         event.setCancelled(true);
-        ProjectileUtil.disableCollision(event.getEntity(), le);
+        return;
       }
-      return;
+      if (event.getHitEntity() instanceof LivingEntity le) {
+        ProjectileUtil.disableCollision(event.getEntity(), le);
+        int pierce = ProjectileUtil.getPierce(event.getEntity());
+        if (pierce > 0) {
+          deleteProjectile = false;
+          ProjectileUtil.reducePierce(event.getEntity());
+          event.setCancelled(true);
+        }
+      }
     }
     // Process hit effects including location effects
     if (ProjectileUtil.getHitEffects(event.getEntity()) != null) {
       doHitEffects(event);
+      if (event.getHitBlock() == null && deleteProjectile) {
+        event.getEntity().remove();
+      }
       return;
     }
     // Entity only (not location) after this point
     if (event.getHitEntity() == null) {
       return;
     }
-
-    if (event.getHitEntity() instanceof LivingEntity le) {
-      UUID projectileUuid = event.getEntity().getUniqueId();
-      if (le.getCollidableExemptions().contains(projectileUuid)) {
-        event.setCancelled(true);
-      } else {
-        ProjectileUtil.disableCollision(event.getEntity(), le);
-        event.setCancelled(true);
-        if (event.getEntity().getShooter() instanceof LivingEntity &&
-            TargetingUtil.isFriendly((LivingEntity) event.getEntity().getShooter(), le)) {
-          // Friendly fire, don't bother checking for pierce or projectile removal
-          return;
-        }
-        StrifeMob attacker;
-        if (event.getEntity().getShooter() instanceof LivingEntity) {
-          attacker = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity().getShooter());
-        } else {
-          attacker = null;
-        }
-        ProjectileDamageEvent pde = new ProjectileDamageEvent(
-            attacker, plugin.getStrifeMobManager().getStatMob(le), event.getEntity());
-        Bukkit.getPluginManager().callEvent(pde);
-        if (!pde.isPassThrough()) {
-          int peirce = ProjectileUtil.getPierce(event.getEntity());
-          if (peirce == 0) {
-            event.getEntity().remove();
-            event.setCancelled(true);
-          } else {
-            ProjectileUtil.reducePierce(event.getEntity());
-          }
-        }
-      }
-    } else {
+    // If it's a non-living entity, just bail out
+    if (!(event.getHitEntity() instanceof LivingEntity hitEntity)) {
       event.getEntity().remove();
       event.setCancelled(true);
+      return;
+    }
+
+    // At this point, we'll either pass through or delete the projectile
+    event.setCancelled(true);
+
+    var shooter = event.getEntity().getShooter();
+    if (shooter instanceof LivingEntity && TargetingUtil.isFriendly((LivingEntity) shooter, hitEntity)) {
+      // Friendly fire, don't bother checking for pierce or projectile removal
+      return;
+    }
+
+    StrifeMob attacker;
+    if (shooter instanceof LivingEntity) {
+      attacker = plugin.getStrifeMobManager().getStatMob((LivingEntity) shooter);
+    } else {
+      attacker = null;
+    }
+
+    ProjectileDamageEvent pde = new ProjectileDamageEvent(attacker,
+        plugin.getStrifeMobManager().getStatMob(hitEntity), event.getEntity());
+    Bukkit.getPluginManager().callEvent(pde);
+
+    if (pde.isPassThrough()) {
+      return;
+    }
+
+    if (deleteProjectile) {
+      event.getEntity().remove();
     }
   }
 
   private void doHitEffects(ProjectileHitEvent event) {
-
     TargetResponse response = buildFromEvent(event);
-
     if (response == null) {
       return;
     }
-
-    StrifeMob caster = plugin.getStrifeMobManager().getStatMob((LivingEntity) event.getEntity().getShooter());
-
-    List<Effect> hitEffects = ProjectileUtil.getHitEffects(event.getEntity());
+    Projectile projectile = event.getEntity();
+    StrifeMob caster = plugin.getStrifeMobManager().getStatMob((LivingEntity) projectile.getShooter());
+    List<Effect> hitEffects = ProjectileUtil.getHitEffects(projectile);
     if (hitEffects.isEmpty()) {
       LogUtil.printWarning("A handled effectProjectile was missing effect meta... something's wrong");
-      event.getEntity().remove();
+      projectile.remove();
       return;
     }
-
-    plugin.getEffectManager()
-        .processEffectList(caster, response, hitEffects, ProjectileUtil.getShotId(event.getEntity()));
-
-    if (event.getHitEntity() != null && event.getHitEntity() instanceof LivingEntity) {
-      ProjectileUtil.disableCollision(event.getEntity(), (LivingEntity) event.getHitEntity());
-      int peirce = ProjectileUtil.getPierce(event.getEntity());
-      if (peirce == 0) {
-        event.getEntity().remove();
-        event.setCancelled(true);
-      } else {
-        ProjectileUtil.reducePierce(event.getEntity());
-      }
-    }
+    plugin.getEffectManager().processEffectList(caster, response, hitEffects, ProjectileUtil.getShotId(projectile));
   }
 
   private TargetResponse buildFromEvent(ProjectileHitEvent event) {
@@ -150,23 +143,10 @@ public record ProjectileHitListener(StrifePlugin plugin) implements Listener {
     }
     // not block, living entity
     if (event.getHitEntity() instanceof LivingEntity le) {
-      if (le.isInvulnerable() || le.hasMetadata("NPC")) {
-        ProjectileUtil.disableCollision(event.getEntity(), le);
-        event.setCancelled(true);
-        return null;
-      }
       if (TargetingUtil.isFriendly((LivingEntity) event.getEntity().getShooter(), le)) {
         ProjectileUtil.disableCollision(event.getEntity(), le);
         event.setCancelled(true);
         return null;
-      }
-      ProjectileUtil.disableCollision(event.getEntity(), (LivingEntity) event.getHitEntity());
-      int pierce = ProjectileUtil.getPierce(event.getEntity());
-      if (pierce == 0) {
-        event.getEntity().remove();
-        event.setCancelled(true);
-      } else {
-        ProjectileUtil.reducePierce(event.getEntity());
       }
       return new TargetResponse(Collections.singleton(le), event.getEntity().getLocation());
     }
@@ -179,5 +159,17 @@ public record ProjectileHitListener(StrifePlugin plugin) implements Listener {
     event.getEntity().remove();
     event.setCancelled(true);
     return null;
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onDespawnProjectileHit(final ProjectileHitEvent event) {
+    if (event.isCancelled() || event.getHitBlock() == null || !event.getEntity().isValid()) {
+      return;
+    }
+    if (!ProjectileUtil.isDespawnOnContact(event.getEntity())) {
+      return;
+    }
+    event.getEntity().remove();
+    ProjectileUtil.removeDespawnOnContact(event.getEntity());
   }
 }

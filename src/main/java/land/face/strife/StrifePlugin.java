@@ -54,6 +54,7 @@ import land.face.strife.commands.InspectCommand;
 import land.face.strife.commands.LevelUpCommand;
 import land.face.strife.commands.MountCommand;
 import land.face.strife.commands.PrayerCommand;
+import land.face.strife.commands.SettingsCommand;
 import land.face.strife.commands.SpawnerCommand;
 import land.face.strife.commands.StrifeCommand;
 import land.face.strife.commands.ToggleInspectCommand;
@@ -63,6 +64,7 @@ import land.face.strife.data.LevelPath.Path;
 import land.face.strife.data.LoadedMount;
 import land.face.strife.data.LoreBooks;
 import land.face.strife.data.Spawner;
+import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
@@ -187,14 +189,19 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Horse.Color;
 import org.bukkit.entity.Horse.Style;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import net.milkbowl.vault.permission.Permission;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 public class StrifePlugin extends FacePlugin {
 
   private static StrifePlugin instance;
+  private static Permission perms = null;
+
   public static SecureRandom RNG;
   @Getter
   private static boolean glowEnabled;
@@ -359,6 +366,8 @@ public class StrifePlugin extends FacePlugin {
       LogUtil.printError("DANGUS ALERT! Bad log level! Acceptable values: " + Arrays.toString(LogLevel.values()));
     }
 
+    setupPermissions();
+
     List<SmartYamlConfiguration> configurations = new ArrayList<>();
     SmartYamlConfiguration configYAML;
     configurations.add(configYAML = defaultSettingsLoad("config.yml"));
@@ -483,6 +492,7 @@ public class StrifePlugin extends FacePlugin {
     commandManager.registerCommand(new GodCommand(this));
     commandManager.registerCommand(new CurseCommand(this));
     commandManager.registerCommand(new StrifeCommand(this));
+    commandManager.registerCommand(new SettingsCommand(this));
     commandManager.registerCommand(new ToggleXpCommand(this));
     commandManager.registerCommand(new ToggleInspectCommand(this));
     commandManager.registerCommand(new SpawnerCommand(this));
@@ -1050,5 +1060,20 @@ public class StrifePlugin extends FacePlugin {
     if (debugPrinter != null) {
       debugPrinter.log(level, Arrays.asList(messages));
     }
+  }
+
+  public static StrifeMob getMob(LivingEntity le) {
+    return instance.getStrifeMobManager().getStatMob(le);
+  }
+
+  private boolean setupPermissions() {
+    RegisteredServiceProvider<Permission> rsp = getServer().getServicesManager()
+        .getRegistration(Permission.class);
+    perms = rsp.getProvider();
+    return perms != null;
+  }
+
+  public static Permission getPermissions() {
+    return perms;
   }
 }

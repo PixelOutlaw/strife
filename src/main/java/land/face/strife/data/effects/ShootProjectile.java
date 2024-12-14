@@ -1,5 +1,7 @@
 package land.face.strife.data.effects;
 
+import static land.face.strife.util.ProjectileUtil.HANDLED_PROJECTILE;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
@@ -27,12 +29,14 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.SmallFireball;
-import org.bukkit.entity.Snowball;
+import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.entity.WitherSkull;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
-@Getter @Setter
+@Getter
+@Setter
 public class ShootProjectile extends Effect {
 
   private EntityType projectileEntity;
@@ -41,8 +45,8 @@ public class ShootProjectile extends Effect {
   private List<Color> modelColors;
   private String modelId;
 
-  private boolean ignoreMultishot, bounce, ignite, zeroPitch, blockHitEffects, silent, gravity, throwItem,
-      throwSpin, targeted, seeking, scaleModelWithMultishot;
+  private boolean ignoreMultishot, ignite, zeroPitch, blockHitEffects, silent, gravity, throwItem, throwSpin, targeted,
+      seeking, scaleModelWithMultishot;
   private int quantity, pierceTargets, maxDuration;
   private float attackMultiplier, yield, speed, spread, radialAngle, verticalBonus, minVerticalSpeed, modelScale;
 
@@ -79,35 +83,54 @@ public class ShootProjectile extends Effect {
         velocity.setY(Math.max(minVerticalSpeed, velocity.getY()));
       }
 
+      assert projectileEntity.getEntityClass() != null;
+
       Location location = originLocation.clone();
       location.setDirection(direction);
-      assert projectileEntity.getEntityClass() != null;
-      Projectile projectile = (Projectile) location.getWorld().spawn(location, projectileEntity.getEntityClass(), e -> {
-        caster.getEntity().getCollidableExemptions().add(e.getUniqueId());
-        if (projectileEntity == EntityType.SNOWBALL) {
-          ((Snowball) e).setItem(thrownStack);
-        }
-        e.setVelocity(velocity);
-        if (!gravity) {
-          e.setGravity(false);
-        }
-      });
-      projectile.setShooter(caster.getEntity());
-      Bukkit.getScheduler().runTaskLater(getPlugin(), () ->
-          caster.getEntity().getCollidableExemptions().remove(projectile.getUniqueId()), 20L * 30);
+      LivingEntity shooter = caster.getEntity();
 
-      if (silent) {
-        projectile.setSilent(true);
+      Projectile projectile;
+      if (projectileEntity == EntityType.ARROW) {
+        HANDLED_PROJECTILE.add(caster.getEntity().getUniqueId());
+        projectile = shooter.launchProjectile(Arrow.class, velocity, e -> {
+          e.setShooter(shooter);
+          e.setHasLeftShooter(false);
+          e.getLocation().setDirection(shooter.getEyeLocation().getDirection());
+          e.setGravity(gravity);
+          e.setSilent(silent);
+          e.getBoundingBox().expand(1);
+          e.teleport(location, TeleportCause.PLUGIN);
+          e.setVelocity(velocity);
+        });
+        HANDLED_PROJECTILE.remove(caster.getEntity().getUniqueId());
+      } else {
+        HANDLED_PROJECTILE.add(caster.getEntity().getUniqueId());
+        projectile = (Projectile) location.getWorld().spawn(location, projectileEntity.getEntityClass(), e -> {
+          ((Projectile) e).setShooter(shooter);
+          ((Projectile) e).setHasLeftShooter(false);
+          e.setVelocity(velocity);
+          e.getLocation().setDirection(shooter.getEyeLocation().getDirection());
+          e.setGravity(gravity);
+          e.setSilent(silent);
+          if (e instanceof ThrowableProjectile tp) {
+            tp.setItem(thrownStack);
+          }
+          e.getBoundingBox().expand(1);
+        });
+        HANDLED_PROJECTILE.remove(caster.getEntity().getUniqueId());
+      }
+
+      if (!blockHitEffects && pierceTargets > -3) {
+        ProjectileUtil.setPierce(projectile, caster.getStat(StrifeStat.PIERCE_CHANCE) / 100, pierceTargets);
       }
       if (ignite) {
         projectile.setFireTicks(200);
       }
-      if (projectileEntity == EntityType.ARROW || projectileEntity == EntityType.SPECTRAL_ARROW) {
+      if (projectile instanceof AbstractArrow aa) {
         if (projectileEntity != EntityType.SPECTRAL_ARROW && arrowColor != null) {
-          ((Arrow) projectile).setColor(arrowColor);
+          ((Arrow) aa).setColor(arrowColor);
         }
-        ((AbstractArrow) projectile).setPickupStatus(PickupStatus.CREATIVE_ONLY);
-        ProjectileUtil.setPierce(projectile, caster.getStat(StrifeStat.PIERCE_CHANCE) / 100, pierceTargets);
+        aa.setPickupStatus(PickupStatus.CREATIVE_ONLY);
       } else if (projectileEntity == EntityType.FIREBALL || projectileEntity == EntityType.DRAGON_FIREBALL) {
         ((Fireball) projectile).setYield(yield);
         ((Fireball) projectile).setIsIncendiary(ignite);
@@ -119,7 +142,6 @@ public class ShootProjectile extends Effect {
       } else if (seeking && projectileEntity == EntityType.SHULKER_BULLET) {
         ((ShulkerBullet) projectile).setTarget(target.getEntity());
       }
-      projectile.setBounce(bounce);
       ProjectileUtil.setAttackMult(projectile, attackMultiplier);
       ProjectileUtil.setApplyOnHit(projectile, true);
       ProjectileUtil.setAbilityProjectile(projectile);
@@ -189,7 +211,8 @@ public class ShootProjectile extends Effect {
     if (ignoreMultishot || projectileEntity == EntityType.FIREBALL) {
       return 1;
     }
-    return ProjectileUtil.getTotalProjectiles(quantity, caster.getStat(StrifeStat.MULTISHOT), caster.getStat(StrifeStat.EXTRA_PROJECTILES));
+    return ProjectileUtil.getTotalProjectiles(quantity, caster.getStat(StrifeStat.MULTISHOT),
+        caster.getStat(StrifeStat.EXTRA_PROJECTILES));
   }
 
   private void applyRadialAngles(Vector direction, double angle, int projectiles, int counter) {

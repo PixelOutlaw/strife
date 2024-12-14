@@ -8,6 +8,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import land.face.announce.ModernAnnouncerPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
@@ -60,13 +61,16 @@ public class JoinAndLeaveListener implements Listener {
   public void onPlayerJoin(final PlayerJoinEvent event) {
     event.getPlayer().setGravity(true);
 
-    StrifeMob playerMob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
-    Champion champion = playerMob.getChampion();
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    mob.restartTimers();
+
+    Champion champion = mob.getChampion();
     plugin.getAbilityManager().loadPlayerCooldowns(event.getPlayer());
     plugin.getBoostManager().updateGlobalBoostStatus(event.getPlayer());
 
     if (champion.getUnusedStatPoints() > 0) {
-      notifyUnusedPoints(event.getPlayer(), champion.getUnusedStatPoints());
+      Bukkit.getScheduler().runTaskLater(plugin, () ->
+          plugin.getExperienceManager().notifyUnusedPoints(event.getPlayer()), 20L * 30);
     }
     if (event.getPlayer().getLevel() / 10 > champion.getSaveData().getPathMap().size()) {
       notifyUnusedPaths(event.getPlayer());
@@ -84,7 +88,7 @@ public class JoinAndLeaveListener implements Listener {
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
       plugin.getStrifeMobManager().updateCollisions(event.getPlayer());
       plugin.getPrayerManager().sendPrayerUpdate(event.getPlayer(),
-          playerMob.getPrayer() / playerMob.getMaxPrayer(), false);
+          mob.getPrayer() / mob.getMaxPrayer(), false);
     }, 15L);
 
     Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -99,7 +103,7 @@ public class JoinAndLeaveListener implements Listener {
 
     champion.recombineCache(plugin);
     plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
-    plugin.getAttackSpeedManager().getAttackMultiplier(playerMob, 1);
+    plugin.getAttackSpeedManager().getAttackMultiplier(mob, 1);
 
     if (event.getPlayer().getGameMode() != GameMode.CREATIVE) {
       Bukkit.getScheduler().runTaskLater(plugin,
@@ -115,7 +119,7 @@ public class JoinAndLeaveListener implements Listener {
           plugin.getSkillExperienceManager().updateSkillString(champion));
       }, 33L);
 
-    plugin.getGuiManager().updateLevelDisplay(playerMob);
+    plugin.getGuiManager().updateLevelDisplay(mob);
     //plugin.getGuiManager().updateEquipmentDisplay(event.getPlayer());
   }
 
@@ -152,14 +156,6 @@ public class JoinAndLeaveListener implements Listener {
     plugin.getAbilityIconManager().removeIconItem(player, AbilitySlot.SLOT_D);
     plugin.getCounterManager().clearCounters(player);
     plugin.getBossBarManager().clearBars(player);
-  }
-
-  private void notifyUnusedPoints(final Player player, final int unused) {
-    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      ToastUtils.sendToast(player, FaceColor.NO_SHADOW +
-          UnicodeUtil.unicodePlacehold("<toast_unused_points>"), ItemUtils.BLANK);
-      player.sendMessage(UNUSED_POINTS.replace("{0}", String.valueOf(unused)));
-    }, 20L * 30);
   }
 
   private void notifyUnusedPaths(final Player player) {

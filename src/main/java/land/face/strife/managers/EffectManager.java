@@ -294,8 +294,9 @@ public class EffectManager {
         boolean selfInflict = (cs.getBoolean("self-inflict", false));
         ((Damage) effect).setSelfInflict(selfInflict);
         boolean defaultOnHit = true;
-        if (attackType == AttackType.BONUS || attackType == AttackType.LINGERING ||
-            (attackMult < 0.6 && damageReductionRatio < 0.6) || selfInflict) {
+        if (selfInflict || attackType == AttackType.BONUS || attackType == AttackType.LINGERING) {
+          defaultOnHit = false;
+        } else if (attackMult < 0.6 && damageReductionRatio < 0.6) {
           defaultOnHit = false;
         }
         ((Damage) effect).setApplyOnHitEffects(cs.getBoolean("apply-on-hit-effects", defaultOnHit));
@@ -307,8 +308,12 @@ public class EffectManager {
         ((Damage) effect).setGuardBreak(cs.getBoolean("guard-break", false));
         ((Damage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", defaultOnHit));
         ((Damage) effect).setCanBeEvaded(cs.getBoolean("can-be-evaded", defaultOnHit));
-        ((Damage) effect).setHealMultiplier(
-            (float) cs.getDouble("heal-multiplier", Math.min(1.0, damageReductionRatio)));
+        float defaultHealRatio = switch (attackType) {
+          case AREA, LINGERING -> 0.4f * (float) Math.min(1.0, damageReductionRatio);
+          case BONUS -> 0.0f;
+          default -> (float) Math.min(1.0, damageReductionRatio);
+        };
+        ((Damage) effect).setHealMultiplier((float) cs.getDouble("heal-multiplier", defaultHealRatio));
         ((Damage) effect).setCanSneakAttack(cs.getBoolean("can-sneak-attack", false));
         List<String> hitEffects = cs.getStringList("hit-effects");
         delayedSetEffects(((Damage) effect).getHitEffects(), hitEffects, key, false);
@@ -346,6 +351,17 @@ public class EffectManager {
           effectSchedule.put(Integer.valueOf(intKey), effects);
         }
         ((CreateWorldSpaceEntity) effect).setEffectSchedule(effectSchedule);
+
+        Map<Integer, List<String>> returnEffectSchedule = new HashMap<>();
+        var returnScheduleSection = cs.getConfigurationSection("return-schedule");
+        if (returnScheduleSection != null) {
+          for (String intKey : returnScheduleSection.getKeys(false)) {
+            List<String> effects = returnScheduleSection.getStringList(intKey);
+            returnEffectSchedule.put(Integer.valueOf(intKey), effects);
+          }
+        }
+        ((CreateWorldSpaceEntity) effect).setReturnEffectSchedule(returnEffectSchedule);
+
         ((CreateWorldSpaceEntity) effect).setMaxTicks(cs.getInt("refresh-delay", 5));
         ((CreateWorldSpaceEntity) effect).setLifespan(cs.getInt("life-span", 10));
         ((CreateWorldSpaceEntity) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
@@ -554,7 +570,6 @@ public class EffectManager {
         ((ShootProjectile) effect).setMaxDuration(cs.getInt("max-duration", -1));
         ((ShootProjectile) effect).setPierceTargets(cs.getInt("pierce-targets", 0));
         ((ShootProjectile) effect).setIgnite(cs.getBoolean("ignite", false));
-        ((ShootProjectile) effect).setBounce(cs.getBoolean("bounce", false));
         ((ShootProjectile) effect).setIgnoreMultishot(cs.getBoolean("ignore-multishot", false));
         ((ShootProjectile) effect).setZeroPitch(cs.getBoolean("zero-pitch", false));
         ((ShootProjectile) effect).setSilent(cs.getBoolean("silent", false));
@@ -804,7 +819,7 @@ public class EffectManager {
         ((Push) effect).setPower(cs.getDouble("power", 10));
         ((Push) effect).setHeight(cs.getDouble("height", 10));
         ((Push) effect).setWeightRatio(cs.getDouble("weight-ratio", 1));
-        ((Push) effect).setVerticalMultiplier(cs.getDouble("vertical-mult", 1));
+        ((Push) effect).setVerticalMultiplier(cs.getDouble("vertical-mult", 1f));
         ((Push) effect).setZeroFall(cs.getBoolean("zero-fall", false));
         ((Push) effect).setCancelHorizontal(cs.getBoolean("cancel-horizontal", false));
         ((Push) effect).setUseTrueDirection(cs.getBoolean("use-true-direction", false));

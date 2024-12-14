@@ -28,7 +28,7 @@ public class BarrierTask extends BukkitRunnable {
 
   public BarrierTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
-    this.runTaskTimer(StrifePlugin.getInstance(), 20L, DamageUtil.TICK_RATE);
+    this.runTaskTimer(StrifePlugin.getInstance(), 40L, DamageUtil.TICK_RATE);
     tickMultiplier = (1 / (20f / DamageUtil.TICK_RATE)) * 0.1f;
   }
 

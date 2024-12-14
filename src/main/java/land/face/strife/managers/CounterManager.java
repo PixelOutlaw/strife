@@ -77,8 +77,9 @@ public class CounterManager {
       isCountered = true;
       defender.getWorld().playSound(defender.getLocation(), counterSound, 1.0f, pitch);
       if (attacker instanceof Player) {
-        StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender,
-            IndicatorStyle.BOUNCE, 7, COUNTER_MESSAGE, 1.0f, 1.0f, 1.0f);
+        StrifePlugin.getInstance().getIndicatorManager().addIndicator(
+            plugin.getStrifeMobManager().getStatMob(attacker), defender, IndicatorStyle.BOUNCE,
+            7, COUNTER_MESSAGE, 1.0f, 1.0f, 1.0f, false);
       }
       if (defender instanceof Player) {
         plugin.getGuiManager().postNotice((Player) defender, GuiManager.NOTICE_BLOCK, 4);

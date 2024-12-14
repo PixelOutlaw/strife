@@ -36,7 +36,7 @@ public class StrifeMobManager {
 
   private final StrifePlugin plugin;
 
-  private final WeakHashMap<LivingEntity, StrifeMob> trackedEntities = new WeakHashMap<>();
+  private final Map<LivingEntity, StrifeMob> trackedEntities = new HashMap<>();
   private final String levelReqGeneric;
   private final float dualWieldAttackSpeed;
   private final float dualWieldRatio;
@@ -67,7 +67,7 @@ public class StrifeMobManager {
     }
   }
 
-  public WeakHashMap<LivingEntity, StrifeMob> getMobs() {
+  public Map<LivingEntity, StrifeMob> getMobs() {
     return trackedEntities;
   }
 

@@ -53,8 +53,8 @@ public class HerdLocation {
       despawnParticles((LivingEntity) e);
       Set<Player> players = new HashSet<>(e.getLocation().getNearbyEntitiesByType(Player.class, 15));
       for (Player p : players) {
-        StrifePlugin.getInstance().getIndicatorManager().addIndicator(p, (LivingEntity) e,
-            IndicatorStyle.FLOAT_UP_MEDIUM, 10, "<green><bold>Noice!", 0.3f, 1.6f, 0.8f);
+        StrifePlugin.getInstance().getIndicatorManager().addIndicator(p, e.getLocation(),
+            IndicatorStyle.FLOAT_UP_MEDIUM, 10, "<green><bold>Noice!", 0.3f, 1.6f, 0.8f, true);
       }
       e.remove();
     }

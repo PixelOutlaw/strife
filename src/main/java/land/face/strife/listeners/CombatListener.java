@@ -289,7 +289,7 @@ public class CombatListener implements Listener {
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
       onHitChance = attackMultiplier;
       if (item != null && (item.getType() == Material.BOW || item.getType() == Material.WOODEN_SWORD)) {
-        attackMultiplier *= 0.35f;
+        attackMultiplier *= 0.4f;
       }
       //double angle = attackEntity.getEyeLocation().getDirection()
       //    .angle(defendEntity.getEyeLocation().getDirection());
@@ -301,7 +301,7 @@ public class CombatListener implements Listener {
       healMultiplier = 0.3f;
     }
 
-    if (attackMultiplier < 0.05) {
+    if (attackMultiplier < 0.125f) {
       event.setCancelled(true);
       return;
     }

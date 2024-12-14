@@ -58,6 +58,7 @@ public abstract class Condition {
   }
 
   public enum Comparison {
+    AT_LEAST,
     GREATER_THAN,
     LESS_THAN,
     EQUAL,

@@ -203,8 +203,8 @@ public class DamageUtil {
 
     if (defender.isInvincible()) {
       if (attacker.getEntity() instanceof Player) {
-        plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.FLOAT_UP_MEDIUM, 4, "彡", 1.0f, 1.0f, 1.0f);
+        plugin.getIndicatorManager().addIndicator(attacker, defender.getEntity(), IndicatorStyle.FLOAT_UP_MEDIUM,
+            4, "彡", 1.0f, 1.0f, 1.0f, false);
       }
       defender.getEntity().getWorld().playSound(defender.getEntity().getLocation(),
           Sound.BLOCK_ANVIL_FALL, 1.0f, 2.0f);
@@ -288,6 +288,10 @@ public class DamageUtil {
       }
     }
 
+    if (attacker.hasTrait(StrifeTrait.ICE_PICK)) {
+      physicalDamage *= 1 + (defender.getFrost() / 100);
+    }
+
     float generalDamageMultiplier = 1f;
     generalDamageMultiplier *= 1f + defender.getStat(StrifeStat.DAMAGE_TAKEN) / 100F;
     if (attackType != AttackType.BONUS) {
@@ -333,7 +337,7 @@ public class DamageUtil {
       if (attacker.hasTrait(StrifeTrait.VENGEANCE)) {
         rawDamage *= 2f - (float) (attacker.getEntity().getHealth() / attacker.getMaxLife());
       }
-      DamageUtil.applyLifeSteal(attacker,
+      DamageUtil.applyLifeSteal(attacker, defender,
           Math.min(rawDamage, defender.getEntity().getHealth()),
           mods.getHealMultiplier(),
           mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL, 0f)
@@ -378,21 +382,21 @@ public class DamageUtil {
     String damageString;
     if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player && attacker != defender) {
       if (rawDamage == 0) {
-        plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 9, "<aqua>０", 0.6f, 1.1f, 0.3f);
+        plugin.getIndicatorManager().addIndicator(attacker, defender.getEntity(),
+            IndicatorStyle.RANDOM_POPOFF, 9, "<aqua>０", 0.6f, 1.1f, 0.3f, false);
       } else {
         damageString = buildDamageString(Math.round(rawDamage));
         if (criticalHit) {
           damageString += "\uF802✸";
         }
-        plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 9, damageString, 0.6f, 1.1f, 0.3f);
+        plugin.getIndicatorManager().addIndicator(attacker, defender.getEntity(), IndicatorStyle.RANDOM_POPOFF,
+            9, damageString, 0.6f, 1.1f, 0.3f, false);
       }
     } else if (mods.isShowPopoffs() && attacker.getMaster() != null &&
         attacker.getMaster().getEntity() instanceof Player) {
       damageString = buildDamageString(Math.round(rawDamage));
-      plugin.getIndicatorManager().addIndicator(attacker.getMaster().getEntity(),
-          defender.getEntity(), IndicatorStyle.RANDOM_POPOFF, 9, "<gray>" + damageString, 0.6f, 1.1f, 0.3f);
+      plugin.getIndicatorManager().addIndicator(attacker.getMaster(), defender.getEntity(),
+          IndicatorStyle.RANDOM_POPOFF, 9, "<gray>" + damageString, 0.6f, 1.1f, 0.3f, false);
     }
 
     if (isSneakAttack) {
@@ -413,7 +417,8 @@ public class DamageUtil {
     float ratio = mods.getDamageReductionRatio() * mods.getHealMultiplier();
     float healRatio = ratio * (1 + attacker.getStat(StrifeStat.HEALING_POWER) / 300);
 
-    DamageUtil.applyHealthOnHit(attacker, healRatio, mods.getAbilityMods().getOrDefault(AbilityMod.HEALTH_ON_HIT, 0f));
+    DamageUtil.applyHealthOnHit(attacker, defender, healRatio,
+        mods.getAbilityMods().getOrDefault(AbilityMod.HEALTH_ON_HIT, 0f));
     DamageUtil.applyEnergyOnHit(attacker, ratio);
 
     DamageUtil.doReflectedDamage(defender, attacker);
@@ -469,8 +474,8 @@ public class DamageUtil {
       SpecialStatusUtil.setSneakImmune(defender.getEntity());
     }
     if (mods.isShowPopoffs()) {
-      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), IndicatorStyle.FLOAT_UP_MEDIUM, 5, "彤", 1.0f, 1.1f, 0.75f);
+      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender.getEntity(),
+          IndicatorStyle.FLOAT_UP_MEDIUM, 5, "彤", 1.0f, 1.1f, 0.75f, false);
     }
     defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(), Sound.ENTITY_PHANTOM_BITE, 1f, 1f);
 
@@ -588,9 +593,8 @@ public class DamageUtil {
     if (attacker.hasTrait(StrifeTrait.WEAK_LINK)) {
       abilityMods.put(AbilityMod.CAPPED_RESIST, calcWeakLinkResist(defender));
     }
-    damageMap.replaceAll(
-        (t, v) -> damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods) * resistTraitMult(defender,
-            t));
+    damageMap.replaceAll((t, v) ->
+        damageMap.get(t) * getDamageReduction(t, attacker, defender, abilityMods) * resistTraitMult(defender, t));
   }
 
   public static float resistTraitMult(StrifeMob mob, DamageType type) {
@@ -959,8 +963,8 @@ public class DamageUtil {
         // Do not use DamageUtil.doEvasion here, to skip all notices and sounds!
         callEvadeEvent(defender, attacker);
         if (attacker.getEntity() instanceof Player) {
-          StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-              defender.getEntity(), IndicatorStyle.BOUNCE, 6, "彥", 3.5f, 3f, 2f);
+          StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker,
+              defender.getEntity(), IndicatorStyle.BOUNCE, 6, "彥", 3.5f, 3f, 2f, false);
         }
         return true;
       }
@@ -987,8 +991,8 @@ public class DamageUtil {
     defender.getEntity().getWorld().playSound(defender.getEntity().getEyeLocation(),
         Sound.ENTITY_GHAST_SHOOT, 0.5f, 2f);
     if (attacker.getEntity() instanceof Player) {
-      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker.getEntity(),
-          defender.getEntity(), IndicatorStyle.BOUNCE, 6, "彥", 3.5f, 3f, 2f);
+      StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker,
+          defender.getEntity(), IndicatorStyle.BOUNCE, 6, "彥", 3.5f, 3f, 2f, false);
     }
   }
 
@@ -1052,18 +1056,30 @@ public class DamageUtil {
         def.getStat(StrifeStat.PROJECTILE_REDUCTION)) / 100f);
   }
 
-  public static void applyLifeSteal(StrifeMob attacker, double damage, double healMultiplier, double bonus) {
-    if (attacker.getEntity().hasPotionEffect(PotionEffectType.WITHER)) {
+  public static void applyLifeSteal(StrifeMob attackMob, StrifeMob defendMob, double damage, double healMultiplier, double bonus) {
+    if (attackMob.getEntity().hasPotionEffect(PotionEffectType.WITHER)) {
       return;
     }
-    double lifeSteal = (attacker.getStat(StrifeStat.LIFE_STEAL) + bonus) / 100;
-    lifeSteal *= 1 + attacker.getStat(StrifeStat.HEALING_POWER) / 300;
-    restoreHealth(attacker.getEntity(), damage * lifeSteal * healMultiplier, true, false);
+    if (attackMob.hasTrait(StrifeTrait.POISON_EATER)) {
+      var poison = defendMob.getEntity().getPotionEffect(PotionEffectType.POISON);
+      if (poison != null) {
+        bonus += (poison.getAmplifier() + 1) * 4;
+      }
+    }
+    double lifeSteal = (attackMob.getStat(StrifeStat.LIFE_STEAL) + bonus) / 100;
+    lifeSteal *= 1 + attackMob.getStat(StrifeStat.HEALING_POWER) / 300;
+    if (attackMob.hasTrait(StrifeTrait.DEATH_EATER)) {
+      lifeSteal *= 1 + (defendMob.getCorruption() / 100);
+    }
+    restoreHealth(attackMob.getEntity(), damage * lifeSteal * healMultiplier, true, false);
   }
 
-  public static void applyHealthOnHit(StrifeMob attacker, float totalMult, double bonus) {
-    double health = (attacker.getStat(StrifeStat.HP_ON_HIT) + bonus) * totalMult;
-    restoreHealth(attacker.getEntity(), health, true, false);
+  public static void applyHealthOnHit(StrifeMob attackMob, StrifeMob defendMob, float totalMult, double bonus) {
+    double health = (attackMob.getStat(StrifeStat.HP_ON_HIT) + bonus) * totalMult;
+    if (attackMob.hasTrait(StrifeTrait.DEATH_EATER)) {
+      health *= 1 + (defendMob.getCorruption() / 100);
+    }
+    restoreHealth(attackMob.getEntity(), health, true, false);
   }
 
   public static void applyEnergyOnHit(StrifeMob attacker, float totalMult) {
@@ -1140,8 +1156,8 @@ public class DamageUtil {
     );
     defender.getEntity().removePotionEffect(PotionEffectType.POISON);
     defender.getEntity().addPotionEffect(newPoisonEffect);
-    plugin.getIndicatorManager().addIndicator(attacker.getEntity(), defender.getEntity(),
-        IndicatorStyle.FLOAT_UP_MEDIUM, 5, POISON_TEXT, 1.0f, 1.0f, 1.0f);
+    plugin.getIndicatorManager().addIndicator(attacker, defender.getEntity(),
+        IndicatorStyle.FLOAT_UP_MEDIUM, 5, POISON_TEXT, 1.0f, 1.0f, 1.0f, false);
     attacker.getEntity().getWorld().playSound(defender.getEntity().getLocation(),
         Sound.ENTITY_SILVERFISH_DEATH, 1, 2.0f);
     return true;

@@ -148,18 +148,19 @@ public class StealthManager {
   }
 
   public void stealthPlayer(Player player, float seconds) {
+    var mob = plugin.getStrifeMobManager().getStatMob(player);
     for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), 70, 70, 70)) {
       if (e instanceof Player) {
-        plugin.getIndicatorManager()
-            .addIndicator(player, (LivingEntity) e, IndicatorStyle.BOUNCE, 6, "<bold>???", 1.0f, 1.0f, 1.0f);
+        plugin.getIndicatorManager().addIndicator(mob, (LivingEntity) e, IndicatorStyle.BOUNCE,
+            6, "<bold>???", 1.0f, 1.0f, 1.0f, true);
       } else if (e instanceof Mob && ((Mob) e).getTarget() == player) {
         ((Mob) e).setTarget(null);
-        plugin.getIndicatorManager()
-            .addIndicator(player, (Mob) e, IndicatorStyle.BOUNCE, 6, "<bold>???", 1.0f, 1.0f, 1.0f);
+        plugin.getIndicatorManager().addIndicator(mob, (Mob) e, IndicatorStyle.BOUNCE,
+            6, "<bold>???", 1.0f, 1.0f, 1.0f, true);
       }
     }
     player.spawnParticle(Particle.SMOKE, player.getLocation(), 90, 0.5, 1, 0.5, 0);
-    var mob = plugin.getStrifeMobManager().getStatMob(player);
+
     var rank = SkillRank.getRank(mob, LifeSkillType.SNEAK);
     var skillLevel = PlayerDataUtil.getSkillLevels(mob, LifeSkillType.SNEAK, true);
     int ticks = (int) (seconds * 20f / 3f);

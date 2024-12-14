@@ -46,7 +46,7 @@ public class LoreBooks {
       return;
     }
     Collections.shuffle(options);
-    var selection = options.get(0);
+    var selection = options.getFirst();
     var book = BOOKS.getOrDefault(selection, null);
     if (book == null) {
       Bukkit.getLogger().info("[Strife] Failed to open lorebook " + selection + " for " + player);

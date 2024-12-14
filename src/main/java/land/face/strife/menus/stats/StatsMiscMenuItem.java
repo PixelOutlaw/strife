@@ -73,10 +73,8 @@ public class StatsMiscMenuItem extends MenuItem {
     List<String> lore = new ArrayList<>();
     lore.add(breakLine);
     lore.add(FaceColor.TEAL.getColor() + "Maximum Energy: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(mob.getMaxEnergy()));
-    if (!mob.hasTrait(StrifeTrait.NO_ENERGY_REGEN)) {
-      lore.add(FaceColor.TEAL.getColor() + "Energy Regeneration: " + FaceColor.WHITE.getColor() + ONE_DECIMAL
+    lore.add(FaceColor.TEAL.getColor() + "Energy Regeneration: " + FaceColor.WHITE.getColor() + ONE_DECIMAL
           .format(mob.getStat(StrifeStat.ENERGY_REGEN)) + PER_TEN);
-    }
     if (mob.getStat(StrifeStat.ENERGY_ON_HIT) > 0) {
       lore.add(FaceColor.TEAL.getColor() + "Energy On Hit: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
           mob.getStat(StrifeStat.ENERGY_ON_HIT)));

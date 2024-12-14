@@ -35,6 +35,10 @@ public class InventoryListener implements Listener {
         .getString("language.abilities.cant-move-ability", ""));
   }
 
+  // SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL
+  // SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL
+  // SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL SCROLL HOTBAR
+  // THERE, NOW ITS FUCKING SEARCHABLE
   @EventHandler(priority = EventPriority.MONITOR)
   public void onChangeHeldItem(PlayerItemHeldEvent event) {
     if (isIcon(event.getPlayer().getInventory().getItem(event.getNewSlot()))) {
@@ -47,6 +51,27 @@ public class InventoryListener implements Listener {
       plugin.getStrifeMobManager().updateEquipmentStats(event.getPlayer());
       plugin.getStatUpdateManager().updateAllAttributes(event.getPlayer());
     }, 1L);
+  }
+
+  @EventHandler
+  public void onStupidHandSwapNotFromScrolling(InventoryClickEvent event) {
+    if (!(event.getWhoClicked() instanceof Player p)) {
+      return;
+    }
+    var heldSlot = p.getInventory().getHeldItemSlot();
+    if (event.getClick() == ClickType.SHIFT_LEFT && p.getInventory().firstEmpty() == heldSlot) {
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+        plugin.getStrifeMobManager().updateEquipmentStats(p);
+        plugin.getStatUpdateManager().updateAllAttributes(p);
+      }, 0L);
+      return;
+    }
+    if (event.getSlot() == heldSlot || event.getHotbarButton() == heldSlot) {
+      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+        plugin.getStrifeMobManager().updateEquipmentStats(p);
+        plugin.getStatUpdateManager().updateAllAttributes(p);
+      }, 0L);
+    }
   }
 
   @EventHandler(priority = EventPriority.LOWEST)
