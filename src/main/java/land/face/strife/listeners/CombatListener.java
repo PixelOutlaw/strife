@@ -206,6 +206,11 @@ public class CombatListener implements Listener {
       event.setCancelled(true);
       return;
     }
+    if (event.getDamager() instanceof Projectile) {
+      //Bukkit.getLogger().info("[Strife] Normal projectile dmg detected... ignoring");
+      event.setCancelled(true);
+      return;
+    }
     LivingEntity attackEntity = DamageUtil.getAttacker(event.getDamager());
     if (attackEntity == null) {
       return;
@@ -251,15 +256,15 @@ public class CombatListener implements Listener {
       return;
     }
 
-    if (event.getDamager() instanceof Projectile) {
-      Bukkit.getLogger().info("[Strife] Normal projectile dmg detected... ignoring");
+    putMonsterHit(attackEntity);
+
+    StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
+
+    if (!attacker.canAttack()) {
       event.setCancelled(true);
       return;
     }
 
-    putMonsterHit(attackEntity);
-
-    StrifeMob attacker = plugin.getStrifeMobManager().getStatMob(attackEntity);
     StrifeMob defender = plugin.getStrifeMobManager().getStatMob(defendEntity);
 
     if (defender.isInvincible()) {

@@ -30,14 +30,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.DisplayFrame;
 import land.face.strife.data.GodPrayerDetails;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.buff.LoadedBuff;
 import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
 import land.face.strife.data.effects.DisplaySpawn;
 import land.face.strife.data.effects.Effect;
-import land.face.strife.events.EventConditionEvent;
 import land.face.strife.events.PrayerTickEvent;
 import land.face.strife.menus.prayer.PrayerMenu;
 import land.face.strife.stats.StrifeStat;
@@ -45,7 +43,6 @@ import lombok.Getter;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
-import net.kyori.adventure.sound.Sound.Emitter;
 import net.kyori.adventure.sound.Sound.Source;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -192,7 +189,7 @@ public class PrayerManager {
       return false;
     }
     mob.setPrayer(mob.getPrayer() - cost);
-    mob.setReCache(true);
+    mob.setCacheNeeded(true);
     Audience audience = Audience.audience(player.getWorld().getNearbyPlayers(player.getLocation(), 20));
     assert sound != null;
     audience.playSound(sound);
@@ -227,7 +224,7 @@ public class PrayerManager {
       case FIFTEEN -> removeGodBuff(mob, godPassiveThree);
     }
     sendPrayerUpdate(player, mob.getPrayer() / mob.getMaxPrayer(), isPrayerActive(player));
-    mob.setReCache(true);
+    mob.setCacheNeeded(true);
 
     //PaletteUtil.sendMessage(player, "Prayer deactivated " + prayer);
     return true;
@@ -265,7 +262,7 @@ public class PrayerManager {
 
   public void putGodPrayerDetails(SelectedGod god, int level, String loreAbilityId) {
     LoadedBuff loadedBuff = new LoadedBuff(god.name() + level, new HashMap<>(), god.name() + level,
-        -1, null, 1, 1);
+        -1, null, 1, 1, false);
     loadedBuff.getLoreAbilities().add(plugin.getLoreAbilityManager().getLoreAbilityFromId(loreAbilityId));
     String name = PaletteUtil.color(
         plugin.getPrayerYAML().getString("gods." + god.name() + ".prayer" + (level-1) + ".name", "test"));
@@ -356,7 +353,7 @@ public class PrayerManager {
 
     if (removed) {
       p.playSound(p.getLocation(), org.bukkit.Sound.BLOCK_BEACON_DEACTIVATE, SoundCategory.MASTER, 0.65f, 2);
-      playerMob.setReCache(true);
+      playerMob.setCacheNeeded(true);
       // TODO: UPDATE MENU!
     }
     if (activePrayers.get(p).isEmpty()) {

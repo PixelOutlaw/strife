@@ -46,7 +46,8 @@ public class Push extends Effect {
       var powerMult = power / 10;
       push.multiply(powerMult);
       push.setY(push.getY() + height / 10);
-    } else {var horizontalMult = power / 10;
+    } else {
+      var horizontalMult = power / 10;
       push.setX(push.getX() * horizontalMult);
       push.setZ(push.getZ() * horizontalMult);
       push.setY(height / 10);
@@ -54,11 +55,11 @@ public class Push extends Effect {
 
     double weightMult;
     if (applyToCaster) {
-      weightMult = (100 + caster.getStat(StrifeStat.WEIGHT)) / 200;
+      weightMult = 200f / (100f + caster.getStat(StrifeStat.WEIGHT));
       double difference = 1 - weightMult;
       weightMult = 1 + difference * weightRatio;
     } else {
-      weightMult = (100 + caster.getStat(StrifeStat.WEIGHT)) / 200;
+      weightMult = 200f / (100f + target.getStat(StrifeStat.WEIGHT));
       double difference = 1 - weightMult;
       weightMult = 1 + difference * weightRatio;
     }

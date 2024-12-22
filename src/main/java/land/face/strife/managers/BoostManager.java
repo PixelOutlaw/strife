@@ -33,6 +33,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
+import java.time.temporal.TemporalUnit;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -251,7 +255,9 @@ public class BoostManager {
   }
 
   public void checkBoostSchedule() {
-    LocalDate date = LocalDate.now();
+    LocalDateTime date = LocalDateTime.now();
+    // TODO: CONFIGURABLE
+    date = date.minusHours(5);
     DayOfWeek dow = date.getDayOfWeek();
     String boostId = boostSchedule.get(dow);
     if (boostId == null) {

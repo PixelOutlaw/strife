@@ -18,10 +18,11 @@ import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 
-@Getter @Setter
+@Getter
+@Setter
 public class Buff extends BukkitRunnable {
 
-  private final String id;
+  private final LoadedBuff parent;
   private final WeakReference<StrifeMob> buffOwner;
   private final UUID source;
   private final String actionBarTag;
@@ -34,13 +35,12 @@ public class Buff extends BukkitRunnable {
   private int usesRemaining;
   private final boolean stacksMultiplyStats;
   private float secondsRemaining;
-  private boolean rebuildBarrier;
   private TriggerType useType;
 
-  public Buff(String id, StrifeMob owner, UUID source, float duration, String actionBarTag,
+  public Buff(LoadedBuff parent, StrifeMob owner, UUID source, float duration, String actionBarTag,
       Map<StrifeStat, Float> buffStats, Set<StrifeTrait> traits, Set<LoreAbility> loreAbilities, int usesRemaining,
       TriggerType useType, int maxStacks, boolean stacksMultiplyStats) {
-    this.id = id;
+    this.parent = parent;
     this.source = source;
     this.actionBarTag = actionBarTag;
     this.buffOwner = new WeakReference<>(owner);
@@ -53,10 +53,6 @@ public class Buff extends BukkitRunnable {
     this.stacksMultiplyStats = stacksMultiplyStats;
     this.secondsRemaining = duration;
     this.useType = useType;
-    if (rebuildBarrier) {
-      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(),
-          () -> StatUtil.getStat(owner, StrifeStat.BARRIER), 0L);
-    }
     runTaskTimer(StrifePlugin.getInstance(), 2L, 4L);
   }
 
@@ -66,15 +62,6 @@ public class Buff extends BukkitRunnable {
       cancel();
       return;
     }
-    /*
-    if (StringUtils.isNotBlank(actionBarTag)
-        && buffOwner.get().getEntity().getType() == EntityType.PLAYER) {
-      String msg = TextUtils.color("&9&l" + actionBarTag +
-          "&b&l" + Math.round(secondsRemaining) + "s");
-      AdvancedActionBarUtil.addMessage((Player) buffOwner.get().getEntity(),
-          actionBarTag + source, msg, 4);
-    }
-    */
     secondsRemaining -= 0.2F;
     if (secondsRemaining < 0) {
       buffOwner.get().removeBuff(this);

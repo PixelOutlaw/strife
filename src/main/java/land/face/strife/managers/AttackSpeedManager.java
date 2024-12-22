@@ -44,16 +44,12 @@ public class AttackSpeedManager {
   private final int warnLevel;
   private final String attackFastMsg;
 
-  @Getter
-  private long offswingTicks;
-
   public AttackSpeedManager(StrifePlugin plugin) {
     this.plugin = plugin;
     this.lastAttackMap = new HashMap<>();
     attackCost = (float) plugin.getSettings().getDouble("config.mechanics.energy.attack-cost", 5);
     warnLevel = plugin.getSettings().getInt("config.mechanics.energy.warn-level", 10) + 1;
     attackFastMsg = plugin.getSettings().getString("language.generic.attack-too-fast");
-    offswingTicks =  plugin.getSettings().getInt("config.mechanics.dual-wield-offhand-ticks", 5);
   }
 
   public void resetAttack(StrifeMob mob, float ratio, boolean hardReset) {

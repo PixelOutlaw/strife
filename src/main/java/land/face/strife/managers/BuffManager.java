@@ -60,7 +60,8 @@ public class BuffManager {
       Bukkit.getLogger().info("[Strife] Invalid use type for buff " + key + " you dummy!");
     }
     String tag = cs.getString("action-bar-tag", "");
-    LoadedBuff loadedBuff = new LoadedBuff(key, statsMap, tag, uses, useType, maxStacks, durationSeconds);
+    boolean triggerRefresh = cs.getBoolean("trigger-refresh", false);
+    LoadedBuff loadedBuff = new LoadedBuff(key, statsMap, tag, uses, useType, maxStacks, durationSeconds, triggerRefresh);
     List<String> traits = cs.getStringList("traits");
     List<String> loreAbilities = cs.getStringList("lore-abilities");
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {

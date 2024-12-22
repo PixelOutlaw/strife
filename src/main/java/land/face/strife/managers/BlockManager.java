@@ -25,6 +25,7 @@ import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.events.BlockEvent;
+import land.face.strife.listeners.SwingListener;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.timers.BlockTimer;
@@ -37,6 +38,7 @@ import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Shulker;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.util.Vector;
 
 public class BlockManager {
@@ -94,6 +96,14 @@ public class BlockManager {
         blockTimers.put(defender.getEntity().getUniqueId(), new BlockTimer(this, defender));
       }
       DamageUtil.doWhenHit(attacker, defender, attackType);
+
+      // Skip swing if player is blocking
+      if (defender.getEntity() instanceof Player p && p.isBlocking()) {
+        return true;
+      }
+      SwingListener.FAKE_SWING = true;
+      defender.getEntity().swingHand(EquipmentSlot.OFF_HAND);
+      SwingListener.FAKE_SWING = false;
       return true;
     }
     return false;
@@ -106,8 +116,12 @@ public class BlockManager {
   }
 
   public void tickBlock(StrifeMob mob) {
-    float blockGain = FLAT_BLOCK_S + PERCENT_BLOCK_S * mob.getMaxBlock();
-    mob.setBlock(mob.getBlock() + (BLOCK_TICK_MULT * blockGain));
+    var blockGain = FLAT_BLOCK_S + PERCENT_BLOCK_S * mob.getMaxBlock();
+    blockGain *= 1 + mob.getStat(StrifeStat.BLOCK_RECOVERY) / 100;
+    blockGain *= BLOCK_TICK_MULT;
+    if (blockGain > 0) {
+      mob.setBlock(mob.getBlock() + blockGain);
+    }
   }
 
   public void endTasks() {

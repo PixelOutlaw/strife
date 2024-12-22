@@ -682,6 +682,7 @@ public class AbilityManager {
         .globalCooldownTicks(globalCooldownTicks)
         .effects(effects)
         .toggleOffEffects(toggleOffEffects)
+        .tags(new HashSet<>(cs.getStringList("tags")))
         .targetType(targetType)
         .castType(abilityType)
         .sneakEffects(sneakEffects)

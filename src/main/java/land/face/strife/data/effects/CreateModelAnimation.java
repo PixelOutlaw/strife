@@ -72,7 +72,6 @@ public class CreateModelAnimation extends LocationEffect {
       case RANDOM_ROTATION -> loc.setYaw(StrifePlugin.RNG.nextFloat() * 360f);
     }
 
-
     if (forceGroundBlocks > 0) {
       int tries = forceGroundBlocks;
       loc = loc.clone();
@@ -102,16 +101,30 @@ public class CreateModelAnimation extends LocationEffect {
       Bukkit.getLogger().warning("[Strife] Failed to create model animation! No model!" + getId());
       return;
     }
-    if (TEMP_LOC == null) {
-      loc.setPitch(0);
-      switch (animationType) {
-        case LOOK_DIRECTION -> loc.setDirection(caster.getEntity().getEyeLocation().getDirection());
-        case LOOK_ROTATION -> loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
-        case RANDOM_ROTATION -> loc.setYaw(StrifePlugin.RNG.nextFloat() * 360f);
+
+    switch (animationType) {
+      case LOOK_DIRECTION -> {
+        if (TEMP_LOC == null) {
+          loc.setPitch(0);
+          loc.setDirection(caster.getEntity().getEyeLocation().getDirection());
+        } else {
+          loc.setPitch(TEMP_LOC.getPitch());
+          loc.setYaw(TEMP_LOC.getYaw());
+        }
       }
-    } else {
-      loc.setPitch(TEMP_LOC.getPitch());
-      loc.setYaw(TEMP_LOC.getYaw());
+      case LOOK_ROTATION -> {
+        if (TEMP_LOC == null) {
+          loc.setPitch(0);
+          loc.setYaw(caster.getEntity().getEyeLocation().getYaw());
+        } else {
+          loc.setPitch(TEMP_LOC.getPitch());
+          loc.setYaw(TEMP_LOC.getYaw());
+        }
+      }
+      case RANDOM_ROTATION -> {
+        loc.setPitch(0);
+        loc.setYaw(StrifePlugin.RNG.nextFloat() * 360f);
+      }
     }
 
     if (forceGroundBlocks > 0) {
@@ -189,7 +202,8 @@ public class CreateModelAnimation extends LocationEffect {
     if (!animations.isEmpty()) {
       if (lifespan == -1) {
         Collections.shuffle(animations);
-        double animationDuration = model.getBlueprint().getAnimations().get(animations.getFirst()).getLength() / realSpeed;
+        double animationDuration =
+            model.getBlueprint().getAnimations().get(animations.getFirst()).getLength() / realSpeed;
         realLifespan = (int) Math.floor(20 * animationDuration) + 1;
       } else {
         realLifespan = (int) (lifespan * effectDuration);
@@ -215,7 +229,7 @@ public class CreateModelAnimation extends LocationEffect {
           Math.max(1, 1 + realLifespan - endTicks));
     }
 
-    if (hasEquipBones || ! hasCheckedEquipBones) {
+    if (hasEquipBones || !hasCheckedEquipBones) {
       equipModel(caster, model);
       hasCheckedEquipBones = true;
     }

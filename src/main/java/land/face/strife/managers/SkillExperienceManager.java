@@ -39,11 +39,9 @@ import land.face.strife.events.SkillLevelUpEvent;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -156,7 +154,7 @@ public class SkillExperienceManager {
       checkSkillUnlock(player, type);
     }
     if (levelUp) {
-      mob.setReCache(true);
+      mob.setCacheNeeded(true);
     }
     saveData.setSkillExp(type, (float) currentExp);
     try {

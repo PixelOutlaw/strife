@@ -117,7 +117,6 @@ public class StrifeCommand extends BaseCommand {
   }
 
   @Subcommand("vagabond")
-  @CommandCompletion("@uniques")
   @CommandPermission("strife.admin")
   public void vagabondSummon(Player sender, String className, int level) {
     plugin.getVagabondManager().spawnVagabond(level, className, sender.getLocation());

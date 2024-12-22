@@ -12,7 +12,8 @@ import land.face.strife.stats.StrifeTrait;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class LoadedBuff {
 
   private final String id;
@@ -24,9 +25,10 @@ public class LoadedBuff {
   private final int maxStacks;
   private final float seconds;
   private final TriggerType useType;
+  private final boolean triggerRefresh;
 
   public LoadedBuff(String id, Map<StrifeStat, Float> stats, String tag, int usesRemaining, TriggerType useType,
-      int maxStacks, float seconds) {
+      int maxStacks, float seconds, boolean triggerRefresh) {
     this.id = id;
     this.tag = tag;
     this.stats = stats;
@@ -34,10 +36,11 @@ public class LoadedBuff {
     this.maxStacks = maxStacks;
     this.seconds = seconds;
     this.useType = useType;
+    this.triggerRefresh = triggerRefresh;
   }
 
   public static Buff toRunningBuff(StrifeMob target, UUID source, float duration, LoadedBuff buff) {
-    return new Buff(buff.id, target, source, duration, buff.tag, buff.stats, buff.traits, buff.loreAbilities,
+    return new Buff(buff, target, source, duration, buff.tag, buff.stats, buff.traits, buff.loreAbilities,
         buff.usesRemaining, buff.useType, buff.maxStacks, true);
   }
 

@@ -1,6 +1,8 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
+import info.faceland.loot.LootPlugin;
+import info.faceland.loot.listeners.VagabondEquipListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.VagabondClass;
@@ -131,25 +134,26 @@ public class VagabondManager {
 
     boolean dualWield = ItemUtil.isDualWield(entity.getEquipment());
     Map<StrifeStat, Float> equipmentStats = new HashMap<>();
-    for (EquipmentSlot slot : EquipmentSlot.values()) {
-      switch (slot) {
-        case HAND, OFF_HAND -> {
-          ItemStack stack = entity.getEquipment().getItem(slot);
-          if (stack.getType() == Material.AIR) {
-            continue;
-          }
-          Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(stack, dualWield ? 0.8f : 1.0f);
-          equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);
-        }
-        default -> {
-          ItemStack stack = entity.getEquipment().getItem(slot);
-          if (stack.getType() == Material.AIR) {
-            continue;
-          }
-          Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(stack);
-          equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);
-        }
+    var vagabond = VagabondEquipListener.VAGABONDS.get(entity);
+
+    for (var dSlot : DeluxeSlot.values()) {
+      String slot = dSlot.toString();
+      var stack = vagabond.getItems().get(slot);
+      if (stack == null || stack.getType() == Material.AIR) {
+        continue;
       }
+      if (slot.equals("OFF_HAND")) {
+        Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(stack, dualWield ? 0.65f : 1.0f);
+        equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);
+      } else {
+        Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(stack);
+        equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);
+      }
+    }
+    var handStack = vagabond.getItems().get("HAND");
+    if (handStack != null && handStack.getType() != Material.AIR) {
+      Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(handStack, dualWield ? 0.65f : 1.0f);
+      equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);
     }
 
     Map<StrifeStat, Float> baseStats = plugin.getMonsterManager()

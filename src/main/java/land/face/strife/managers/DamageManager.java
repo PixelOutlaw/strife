@@ -52,55 +52,55 @@ public class DamageManager {
     return handledDamages.getOrDefault(entity.getUniqueId(), 0D);
   }
 
-  public double dealDamage(StrifeMob attacker, StrifeMob defender, float damage, DamageModifiers modifiers) {
-    if (defender.isInvincible()) {
+  public double dealDamage(StrifeMob atkMob, StrifeMob defMob, float damage, DamageModifiers modifiers) {
+    if (defMob.isInvincible()) {
       return 0;
     }
-    if (!modifiers.isBypassBarrier() && defender.getBarrier() > 0) {
-      float dmgVsBarrier = 1 + attacker.getStat(StrifeStat.DAMAGE_TO_BARRIERS) / 100;
+    if (!modifiers.isBypassBarrier() && defMob.getBarrier() > 0) {
+      float dmgVsBarrier = 1 + atkMob.getStat(StrifeStat.DAMAGE_TO_BARRIERS) / 100;
       damage *= dmgVsBarrier;
-      damage = defender.damageBarrier(attacker, damage);
+      damage = defMob.damageBarrier(atkMob, damage);
       damage /= dmgVsBarrier;
     } else {
-      defender.damageBarrier(attacker, 0);
+      defMob.damageBarrier(atkMob, 0);
     }
 
-    damage = doEnergyAbsorb(defender, damage);
-    if (attacker == defender) {
-      DamageUtil.dealRawDamage(defender, damage);
+    damage = doEnergyAbsorb(defMob, damage);
+    if (atkMob == defMob) {
+      DamageUtil.dealRawDamage(defMob, damage);
       return damage;
     }
 
-    if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
+    if (defMob.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
       damage *= 0.5F;
       float bleed = damage;
-      DamageUtil.applyBleed(attacker, defender, bleed, true, true, false);
+      DamageUtil.applyBleed(atkMob, defMob, bleed, true, true, false);
     }
 
-    handledDamages.put(attacker.getEntity().getUniqueId(), (double) damage);
-    if (damage >= defender.getEntity().getHealth()) {
-      damage = DamageUtil.doPreDeath(defender, damage);
+    handledDamages.put(atkMob.getEntity().getUniqueId(), (double) damage);
+    if (damage >= defMob.getEntity().getHealth()) {
+      damage = DamageUtil.doPreDeath(defMob, damage);
     }
-    if (attacker.getEntity() instanceof Player) {
-      attacker.bumpCombat(defender);
-      defender.bumpCombat(null);
-      defender.getEntity().setKiller((Player) attacker.getEntity());
+    if (atkMob.getEntity() instanceof Player) {
+      atkMob.bumpCombat(defMob);
+      defMob.bumpCombat(null);
+      defMob.getEntity().setKiller((Player) atkMob.getEntity());
     }
-    if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player &&
-        attacker.getEntity() != defender.getEntity()) {
-      attacker.flagPvp();
-      defender.flagPvp();
+    if (atkMob.getEntity() instanceof Player && defMob.getEntity() instanceof Player &&
+        atkMob.getEntity() != defMob.getEntity()) {
+      atkMob.flagPvp();
+      defMob.flagPvp();
     }
-    if (defender.getEntity() instanceof Player && attacker.getMaster() != null &&
-        attacker.getMaster().getEntity() instanceof Player) {
-      defender.flagPvp();
-      attacker.getMaster().flagPvp();
+    if (defMob.getEntity() instanceof Player && atkMob.getMaster() != null &&
+        atkMob.getMaster().getEntity() instanceof Player) {
+      defMob.flagPvp();
+      atkMob.getMaster().flagPvp();
     }
-    if (damage >= defender.getEntity().getHealth() && defender.isPlayer()) {
-      sourceOfDeath.put(defender.getEntity().getUniqueId(), PlayerDataUtil.getName(attacker.getEntity()));
+    if (damage >= defMob.getEntity().getHealth() && defMob.isPlayer()) {
+      sourceOfDeath.put(defMob.getEntity().getUniqueId(), PlayerDataUtil.getName(atkMob.getEntity()));
     }
-    defender.getEntity().damage(damage);
-    handledDamages.remove(attacker.getEntity().getUniqueId());
+    defMob.getEntity().damage(damage);
+    handledDamages.remove(atkMob.getEntity().getUniqueId());
     return damage;
   }
 

@@ -100,7 +100,7 @@ public class StrifeMob {
 
   private final Set<StrifeMob> minions = new HashSet<>();
 
-  private boolean reCache = false;
+  private boolean cacheNeeded = false;
   private long lastEquipmentUpdate = 100L;
   private long lastChampionUpdate = 100L;
 
@@ -427,20 +427,13 @@ public class StrifeMob {
   }
 
   public boolean cacheUpdateRequired() {
-    return reCache || lastEquipmentUpdate != equipmentCache.getLastUpdate() ||
+    return cacheNeeded || lastEquipmentUpdate != equipmentCache.getLastUpdate() ||
         (getChampion() != null && getChampion().getLastChanged() != lastChampionUpdate);
   }
 
   public float getStatRaw(StrifeStat stat) {
     if (cacheUpdateRequired()) {
-      statCache.clear();
-      statCache.putAll(getFinalStats());
-      reCache = false;
-      lastEquipmentUpdate = equipmentCache.getLastUpdate();
-      if (getChampion() != null) {
-        lastChampionUpdate = getChampion().getLastChanged();
-      }
-      setMaxBlock(StatUtil.getStat(this, StrifeStat.BLOCK));
+      cacheStats();
     }
     return getStatCache().getOrDefault(stat, 0f);
   }
@@ -449,7 +442,7 @@ public class StrifeMob {
     if (cacheUpdateRequired()) {
       statCache.clear();
       statCache.putAll(getFinalStats());
-      reCache = false;
+      cacheNeeded = false;
       lastEquipmentUpdate = equipmentCache.getLastUpdate();
       if (getChampion() != null) {
         lastChampionUpdate = getChampion().getLastChanged();
@@ -457,6 +450,17 @@ public class StrifeMob {
       setMaxBlock(StatUtil.getStat(this, StrifeStat.BLOCK));
     }
     return StatUtil.getStat(this, stat);
+  }
+
+  public void cacheStats() {
+    statCache.clear();
+    statCache.putAll(getFinalStats());
+    cacheNeeded = false;
+    lastEquipmentUpdate = equipmentCache.getLastUpdate();
+    if (getChampion() != null) {
+      lastChampionUpdate = getChampion().getLastChanged();
+    }
+    setMaxBlock(StatUtil.getStat(this, StrifeStat.BLOCK));
   }
 
   public StrifeMob getOwner() {
@@ -472,7 +476,7 @@ public class StrifeMob {
 
   public void forceSetStat(StrifeStat stat, float value) {
     baseStats.put(stat, value);
-    reCache = true;
+    cacheNeeded = true;
   }
 
   public LivingEntity getEntity() {
@@ -519,7 +523,7 @@ public class StrifeMob {
       buff.cancel();
     }
     runningBuffs.clear();
-    reCache = true;
+    cacheNeeded = true;
   }
 
   public Map<StrifeStat, Float> getFinalStats() {
@@ -566,7 +570,7 @@ public class StrifeMob {
 
   public Buff getBuff(String buffId, UUID source) {
     for (Buff buff : runningBuffs) {
-      if (buff.getId().equals(buffId)) {
+      if (buff.getParent().getId().equals(buffId)) {
         if ((buff.getSource() == null && source == null) || buff.getSource().equals(source)) {
           return buff;
         }
@@ -585,17 +589,17 @@ public class StrifeMob {
 
   public void addBuff(LoadedBuff loadedBuff, UUID source, float duration) {
     Buff buff = LoadedBuff.toRunningBuff(this, source, duration, loadedBuff);
-    Buff oldBuff = getBuff(buff.getId(), buff.getSource());
-    reCache = true;
+    Buff oldBuff = getBuff(buff.getParent().getId(), buff.getSource());
+    cacheNeeded = true;
     if (oldBuff == null) {
       buff.refreshBuff(duration);
       runningBuffs.add(buff);
-      return;
+    } else {
+      oldBuff.bumpBuff(duration);
     }
-    oldBuff.bumpBuff(duration);
-    if (buff.getBuffStats().containsKey(StrifeStat.BARRIER)) {
-      getStat(StrifeStat.BARRIER);
-      StatUtil.getStat(this, StrifeStat.BARRIER);
+    if (loadedBuff.isTriggerRefresh()) {
+      cacheStats();
+      StrifePlugin.getInstance().getStatUpdateManager().updateAllAttributes(this);
     }
   }
 
@@ -618,10 +622,10 @@ public class StrifeMob {
   public void removeBuff(Buff buff) {
     buff.cancel();
     runningBuffs.remove(buff);
-    reCache = true;
-    if (buff.getBuffStats().containsKey(StrifeStat.BARRIER)) {
-      getStat(StrifeStat.BARRIER);
-      StatUtil.getStat(this, StrifeStat.BARRIER);
+    cacheNeeded = true;
+    if (buff.getParent().isTriggerRefresh()) {
+      cacheStats();
+      StrifePlugin.getInstance().getStatUpdateManager().updateAllAttributes(this);
     }
   }
 
@@ -629,11 +633,11 @@ public class StrifeMob {
     if (buff.getStacks() <= stacks) {
       buff.cancel();
       runningBuffs.remove(buff);
-      reCache = true;
+      cacheNeeded = true;
       return;
     }
     buff.setStacks(buff.getStacks() - stacks);
-    reCache = true;
+    cacheNeeded = true;
   }
 
   public boolean isMinionOf(StrifeMob strifeMob) {

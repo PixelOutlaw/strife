@@ -20,6 +20,7 @@ import com.sk89q.worldguard.protection.regions.RegionContainer;
 import com.soujah.poggersguilds.GuildPlugin;
 import com.soujah.poggersguilds.data.Guild;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -240,7 +241,7 @@ public class DamageUtil {
     DamageUtil.applyDamageReductions(attacker, defender, damageMap, mods.getAbilityMods());
   }
 
-  public static float calculateFinalDamage(StrifeMob attacker, StrifeMob defender, AttackType attackType,
+  public static float calculateFinalDamage(StrifeMob atkMob, StrifeMob defMob, AttackType attackType,
       Map<DamageType, Float> damageMap, DamageModifiers mods) {
 
     double physicalDamage = damageMap.getOrDefault(DamageType.PHYSICAL, 0f);
@@ -257,52 +258,52 @@ public class DamageUtil {
 
     if (mods.getAttackType() != AttackType.BONUS) {
       if (mods.isSneakAttack()) {
-        if (!SpecialStatusUtil.isSneakImmune(defender.getEntity())) {
+        if (!SpecialStatusUtil.isSneakImmune(defMob.getEntity())) {
           damageMap.put(DamageType.TRUE_DAMAGE,
-              damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) + doSneakAttack(attacker, defender, mods));
+              damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) + doSneakAttack(atkMob, defMob, mods));
           isSneakAttack = true;
         }
-        plugin.getStealthManager().unstealthPlayer((Player) attacker.getEntity(), false);
+        plugin.getStealthManager().unstealthPlayer((Player) atkMob.getEntity(), false);
       }
     }
 
-    float potionMult = DamageUtil.getPotionMult(attacker.getEntity(), defender.getEntity());
+    float potionMult = DamageUtil.getPotionMult(atkMob.getEntity(), defMob.getEntity());
 
     if (mods.isCanCrit()) {
-      criticalHit = isCriticalHit(attacker, defender, mods) && !attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2);
-      if (criticalHit && !attacker.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
-        critMult = (attacker.getStat(StrifeStat.CRITICAL_DAMAGE) +
+      criticalHit = isCriticalHit(atkMob, defMob, mods) && !atkMob.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2);
+      if (criticalHit && !atkMob.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
+        critMult = (atkMob.getStat(StrifeStat.CRITICAL_DAMAGE) +
             mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_DAMAGE, 0f)) / 100;
-        if (attacker.hasTrait(StrifeTrait.LETHAL_STRIKE)) {
-          float chance = attacker.getStat(StrifeStat.CRITICAL_RATE) +
+        if (atkMob.hasTrait(StrifeTrait.LETHAL_STRIKE)) {
+          float chance = atkMob.getStat(StrifeStat.CRITICAL_RATE) +
               mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_CHANCE, 0f);
           if (chance > 100) {
-            if (DamageUtil.isLethalHit(attacker, defender, chance - 100)) {
+            if (DamageUtil.isLethalHit(atkMob, defMob, chance - 100)) {
               critMult *= 2f;
             }
           }
         }
-        if (defender.hasTrait(StrifeTrait.IRON_SCARS)) {
+        if (defMob.hasTrait(StrifeTrait.IRON_SCARS)) {
           critMult += 0.4F;
         }
       }
     }
 
-    if (attacker.hasTrait(StrifeTrait.ICE_PICK)) {
-      physicalDamage *= 1 + (defender.getFrost() / 100);
+    if (atkMob.hasTrait(StrifeTrait.ICE_PICK)) {
+      physicalDamage *= 1 + (defMob.getFrost() / 100);
     }
 
     float generalDamageMultiplier = 1f;
-    generalDamageMultiplier *= 1f + defender.getStat(StrifeStat.DAMAGE_TAKEN) / 100F;
+    generalDamageMultiplier *= 1f + defMob.getStat(StrifeStat.DAMAGE_TAKEN) / 100F;
     if (attackType != AttackType.BONUS) {
-      if (attacker.getStat(StrifeStat.PVP_ATTACK) > 0 && defender.getStat(StrifeStat.PVP_ATTACK) > 0) {
-        generalDamageMultiplier *= attacker.getStat(StrifeStat.PVP_ATTACK) / defender.getStat(StrifeStat.PVP_DEFENCE);
+      if (atkMob.getStat(StrifeStat.PVP_ATTACK) > 0 && defMob.getStat(StrifeStat.PVP_ATTACK) > 0) {
+        generalDamageMultiplier *= atkMob.getStat(StrifeStat.PVP_ATTACK) / defMob.getStat(StrifeStat.PVP_DEFENCE);
       }
     }
     if (mods.isApplyMinionDamageMult()) {
-      generalDamageMultiplier *= 1 + attacker.getStat(StrifeStat.MINION_DAMAGE) / 100;
+      generalDamageMultiplier *= 1 + atkMob.getStat(StrifeStat.MINION_DAMAGE) / 100;
     }
-    float minionDamageMultiplier = DamageUtil.getMinionMult(attacker);
+    float minionDamageMultiplier = DamageUtil.getMinionMult(atkMob);
 
     physicalDamage += physicalDamage * critMult;
     physicalDamage *= potionMult;
@@ -314,38 +315,54 @@ public class DamageUtil {
     elementalDamage *= generalDamageMultiplier;
     elementalDamage *= minionDamageMultiplier;
 
-    float damageReduction = defender.getStat(StrifeStat.DAMAGE_REDUCTION) * mods.getDamageReductionRatio();
+    float damageReduction = defMob.getStat(StrifeStat.DAMAGE_REDUCTION) * mods.getDamageReductionRatio();
     float rawDamage = (float) Math.max(0D, (physicalDamage + elementalDamage) - damageReduction);
 
     if (mods.getAttackType() == AttackType.PROJECTILE) {
-      rawDamage *= DamageUtil.getProjectileMultiplier(attacker, defender);
+      rawDamage *= DamageUtil.getProjectileMultiplier(atkMob, defMob);
     }
 
-    rawDamage *= DamageUtil.getTenacityMult(defender, false);
+    rawDamage *= DamageUtil.getTenacityMult(defMob, false);
 
     if (attackType != AttackType.BONUS) {
-      if (attacker.getEntity().getFreezeTicks() > 0 && !(attacker.getEntity() instanceof Player)) {
+      if (atkMob.getEntity().getFreezeTicks() > 0 && !(atkMob.getEntity() instanceof Player)) {
         rawDamage *=
-            1 - 0.3f * ((float) attacker.getEntity().getFreezeTicks() / attacker.getEntity().getMaxFreezeTicks());
+            1 - 0.3f * ((float) atkMob.getEntity().getFreezeTicks() / atkMob.getEntity().getMaxFreezeTicks());
       }
-      if (defender.hasTrait(StrifeTrait.STONE_SKIN)) {
-        rawDamage *= 1 - (0.03f * defender.getEarthRunes());
+      if (defMob.hasTrait(StrifeTrait.STONE_SKIN)) {
+        rawDamage *= 1 - (0.03f * defMob.getEarthRunes());
       }
       if (mods.isFromAbility()) {
-        rawDamage *= 1 + attacker.getStat(StrifeStat.ABILITY_DAMAGE) / 100;
+        rawDamage *= 1 + atkMob.getStat(StrifeStat.ABILITY_DAMAGE) / 100;
       }
-      if (attacker.hasTrait(StrifeTrait.VENGEANCE)) {
-        rawDamage *= 2f - (float) (attacker.getEntity().getHealth() / attacker.getMaxLife());
+      if (atkMob.hasTrait(StrifeTrait.VENGEANCE)) {
+        rawDamage *= 2f - (float) (atkMob.getEntity().getHealth() / atkMob.getMaxLife());
       }
-      DamageUtil.applyLifeSteal(attacker, defender,
-          Math.min(rawDamage, defender.getEntity().getHealth()),
+      if (defMob.hasTrait(StrifeTrait.SKY_CRASH)) {
+        var velocity = defMob.isPlayer() ? MoveUtil.getVelocity(defMob.getEntity()) : defMob.getEntity().getVelocity();
+        if (velocity.getY() < 0) {
+          rawDamage *= 0.9f;
+        }
+      }
+      if (mods.isBasicAttack() && mods.isApplyOnHitEffects() && atkMob.hasTrait(StrifeTrait.SKY_CRASH)) {
+        var velocity = atkMob.isPlayer() ? MoveUtil.getVelocity(atkMob.getEntity()) : atkMob.getEntity().getVelocity();
+        if (velocity.getY() < 0) {
+          rawDamage *= 1.2f;
+          velocity = velocity.clone();
+          velocity.setY(3);
+          atkMob.getEntity().setVelocity(velocity);
+          atkMob.getEntity().getWorld().playSound(atkMob.getEntity().getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 1.5f);
+        }
+      }
+      DamageUtil.applyLifeSteal(atkMob, defMob,
+          Math.min(rawDamage, defMob.getEntity().getHealth()),
           mods.getHealMultiplier(),
           mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL, 0f)
       );
     }
 
     rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
-    rawDamage += DamageUtil.getKnowledgeMult(attacker, defender);
+    rawDamage += DamageUtil.getKnowledgeMult(atkMob, defMob);
 
     if (mods.getAbilityMods().containsKey(AbilityMod.MAX_DAMAGE)) {
       rawDamage = Math.min(mods.getAbilityMods().get(AbilityMod.MAX_DAMAGE), rawDamage);
@@ -355,55 +372,55 @@ public class DamageUtil {
       rawDamage = 0;
     }
 
-    if (defender.getChampion() == null) {
-      int attackerLevel = StatUtil.getMobLevel(attacker.getEntity());
-      int defenderLevel = StatUtil.getMobLevel(defender.getEntity());
+    if (defMob.getChampion() == null) {
+      int attackerLevel = StatUtil.getMobLevel(atkMob.getEntity());
+      int defenderLevel = StatUtil.getMobLevel(defMob.getEntity());
       int diffCap = (int) Math.max(9f, (float) attackerLevel / 5);
       if (attackerLevel + diffCap < defenderLevel) {
         rawDamage *= (float) Math.pow(0.875, defenderLevel - (attackerLevel + diffCap));
       }
     }
 
-    if (plugin.getPrayerManager().isPrayerActive(attacker.getEntity(), Prayer.TWO)) {
-      if (attacker.hasTrait(StrifeTrait.FAITH_DAMAGE)) {
-        rawDamage *= 1.05f + getMissingArmorItems((Player) attacker.getEntity()) * 0.05f;
+    if (plugin.getPrayerManager().isPrayerActive(atkMob.getEntity(), Prayer.TWO)) {
+      if (atkMob.hasTrait(StrifeTrait.FAITH_DAMAGE)) {
+        rawDamage *= 1.05f + getMissingArmorItems((Player) atkMob.getEntity()) * 0.05f;
       } else {
         rawDamage *= 1.05F;
       }
     }
-    if (plugin.getPrayerManager().isPrayerActive(defender.getEntity(), Prayer.ONE)) {
-      if (defender.hasTrait(StrifeTrait.FAITH_DEFENSE)) {
-        rawDamage *= 0.9f - getMissingArmorItems((Player) defender.getEntity()) * 0.1f;
+    if (plugin.getPrayerManager().isPrayerActive(defMob.getEntity(), Prayer.ONE)) {
+      if (defMob.hasTrait(StrifeTrait.FAITH_DEFENSE)) {
+        rawDamage *= 0.9f - getMissingArmorItems((Player) defMob.getEntity()) * 0.1f;
       } else {
         rawDamage *= 0.9F;
       }
     }
 
     String damageString;
-    if (mods.isShowPopoffs() && attacker.getEntity() instanceof Player && attacker != defender) {
+    if (mods.isShowPopoffs() && atkMob.getEntity() instanceof Player && atkMob != defMob) {
       if (rawDamage == 0) {
-        plugin.getIndicatorManager().addIndicator(attacker, defender.getEntity(),
+        plugin.getIndicatorManager().addIndicator(atkMob, defMob.getEntity(),
             IndicatorStyle.RANDOM_POPOFF, 9, "<aqua>０", 0.6f, 1.1f, 0.3f, false);
       } else {
         damageString = buildDamageString(Math.round(rawDamage));
         if (criticalHit) {
           damageString += "\uF802✸";
         }
-        plugin.getIndicatorManager().addIndicator(attacker, defender.getEntity(), IndicatorStyle.RANDOM_POPOFF,
+        plugin.getIndicatorManager().addIndicator(atkMob, defMob.getEntity(), IndicatorStyle.RANDOM_POPOFF,
             9, damageString, 0.6f, 1.1f, 0.3f, false);
       }
-    } else if (mods.isShowPopoffs() && attacker.getMaster() != null &&
-        attacker.getMaster().getEntity() instanceof Player) {
+    } else if (mods.isShowPopoffs() && atkMob.getMaster() != null &&
+        atkMob.getMaster().getEntity() instanceof Player) {
       damageString = buildDamageString(Math.round(rawDamage));
-      plugin.getIndicatorManager().addIndicator(attacker.getMaster(), defender.getEntity(),
+      plugin.getIndicatorManager().addIndicator(atkMob.getMaster(), defMob.getEntity(),
           IndicatorStyle.RANDOM_POPOFF, 9, "<gray>" + damageString, 0.6f, 1.1f, 0.3f, false);
     }
 
     if (isSneakAttack) {
-      boolean finishingBlow = rawDamage > defender.getEntity().getHealth() + defender.getBarrier();
-      float gainedXp = plugin.getStealthManager().getSneakAttackExp(defender.getEntity(),
-          attacker.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
-      plugin.getSkillExperienceManager().addExperience((Player) attacker.getEntity(),
+      boolean finishingBlow = rawDamage > defMob.getEntity().getHealth() + defMob.getBarrier();
+      float gainedXp = plugin.getStealthManager().getSneakAttackExp(defMob.getEntity(),
+          atkMob.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
+      plugin.getSkillExperienceManager().addExperience((Player) atkMob.getEntity(),
           LifeSkillType.SNEAK, gainedXp, false, false);
     }
 

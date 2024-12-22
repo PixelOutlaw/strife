@@ -33,6 +33,7 @@ public class Ability {
   private final List<Effect> effects;
   private final List<Effect> sneakEffects;
   private final List<Effect> toggleOffEffects;
+  private final Set<String> tags;
   private final Set<Condition> conditions;
   private final Set<Condition> sneakConditions;
   private final Set<Condition> filterConditions = new HashSet<>();

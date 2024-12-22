@@ -12,7 +12,6 @@ import info.faceland.loot.utils.PersistHelper;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.WeakHashMap;
 import land.face.dinvy.entity.PlayerData;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.pet.data.pdc.PetData;
@@ -22,6 +21,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.EquipmentCache;
 import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
@@ -38,9 +38,8 @@ public class StrifeMobManager {
 
   private final Map<LivingEntity, StrifeMob> trackedEntities = new HashMap<>();
   private final String levelReqGeneric;
-  private final float dualWieldAttackSpeed;
+  private final Map<StrifeStat, Float> dualWieldStats;
   private final float dualWieldRatio;
-  private final float dualWieldExtraProjectiles;
   private final Map<String, String> levelReqMap = new HashMap<>();
 
   @Getter
@@ -48,22 +47,18 @@ public class StrifeMobManager {
 
   public StrifeMobManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    dualWieldAttackSpeed =
-        (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-attack-speed", 0) / 2;
-    dualWieldRatio =
-        (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-stat-mult", 0.625);
-    dualWieldExtraProjectiles =
-        (float) plugin.getSettings().getDouble("config.mechanics.dual-wield-extra-projectiles", 1) / 2;
-    levelReqGeneric = PaletteUtil.color(plugin.getSettings()
-        .getString("language.level-req.generic", ""));
-    baseAirTicks = plugin.getSettings().getInt("config.mechanics.base-oxygen-ticks", 300);
+    var settings = plugin.getSettings();
+
+    dualWieldStats = StatUtil.getStatMapFromSection(plugin.getConfig().getConfigurationSection("mechanics.dual-wield.bonus-stats"));
+    dualWieldStats.replaceAll((a, v) -> dualWieldStats.get(a) * 0.5f);
+    dualWieldRatio = (float) settings.getDouble("config.mechanics.dual-wield.stat-mult", 0.625);
+    levelReqGeneric = PaletteUtil.color(settings.getString("language.level-req.generic", ""));
+    baseAirTicks = settings.getInt("config.mechanics.base-oxygen-ticks", 300);
     for (EquipmentSlot slot : EquipmentCache.EQUIPMENT_SLOTS) {
-      levelReqMap.put(slot.toString(), PaletteUtil.color(
-          plugin.getSettings().getString("language.level-req." + slot, "")));
+      levelReqMap.put(slot.toString(), PaletteUtil.color(settings.getString("language.level-req." + slot, "")));
     }
     for (DeluxeSlot slot : EquipmentCache.DELUXE_SLOTS) {
-      levelReqMap.put(slot.toString(), PaletteUtil.color(
-          plugin.getSettings().getString("language.level-req." + slot, "")));
+      levelReqMap.put(slot.toString(), PaletteUtil.color(settings.getString("language.level-req." + slot, "")));
     }
   }
 
@@ -179,6 +174,7 @@ public class StrifeMobManager {
     } else if (updateItems.containsKey("OFF_HAND")) {
       updateItems.put("HAND", handItem);
     }
+    boolean dualWieldAllowed = true;
     for (String slot : updateItems.keySet()) {
       ItemStack item = updateItems.get(slot);
       if ("PET".equals(slot)) {
@@ -197,12 +193,21 @@ public class StrifeMobManager {
       equipmentCache.setSlotStats(slot, dataBundle.getStats());
       equipmentCache.setSlotAbilities(slot, dataBundle.getAbilities());
       equipmentCache.setSlotTraits(slot, dataBundle.getTraits());
+      if (dataBundle.getTraits().contains(StrifeTrait.NO_DUAL_WIELD)) {
+        dualWieldAllowed = false;
+      }
     }
     if (updateItems.containsKey("HAND")) {
       assert equipment != null;
       if (ItemUtil.isDualWield(equipment)) {
-        applyDualWieldStatChanges(equipmentCache, "HAND");
-        applyDualWieldStatChanges(equipmentCache, "OFF_HAND");
+        if (dualWieldAllowed) {
+          applyDualWieldStatChanges(equipmentCache, "HAND");
+          applyDualWieldStatChanges(equipmentCache, "OFF_HAND");
+        } else {
+          equipmentCache.getSlotStats("OFF_HAND").clear();
+          equipmentCache.getSlotAbilities("OFF_HAND").clear();
+          equipmentCache.getSlotTraits("OFF_HAND").clear();
+        }
       }
     }
     applyWeaponMods(handItem, updateItems.get("OFF_HAND"), equipmentCache);
@@ -316,9 +321,6 @@ public class StrifeMobManager {
         return dataBundle;
       }
       default -> {
-        if (invyData == null) {
-          return dataBundle;
-        }
         ItemStack stack2 = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
         dataBundle.setStats(plugin.getStatUpdateManager().getItemStats(stack2));
         dataBundle.setAbilities(plugin.getLoreAbilityManager().getAbilities(stack2));
@@ -348,12 +350,10 @@ public class StrifeMobManager {
   }
 
   private void applyDualWieldStatChanges(EquipmentCache cache, String slot) {
-    for (StrifeStat attribute : cache.getSlotStats(slot).keySet()) {
-      cache.getSlotStats(slot).put(attribute, cache.getSlotStats(slot).get(attribute) * dualWieldRatio);
+    var stats = cache.getSlotStats(slot);
+    stats.replaceAll((a, v) -> stats.get(a) * dualWieldRatio);
+    for (var statEntry : dualWieldStats.entrySet()) {
+      stats.put(statEntry.getKey(), stats.getOrDefault(statEntry.getKey(), 0f) + statEntry.getValue());
     }
-    cache.getSlotStats(slot).put(StrifeStat.ATTACK_SPEED,
-        cache.getSlotStats(slot).getOrDefault(StrifeStat.ATTACK_SPEED, 0f) + dualWieldAttackSpeed);
-    cache.getSlotStats(slot).put(StrifeStat.EXTRA_PROJECTILES,
-        cache.getSlotStats(slot).getOrDefault(StrifeStat.EXTRA_PROJECTILES, 0f) + dualWieldExtraProjectiles);
   }
 }

@@ -51,11 +51,9 @@ public class TargetingUtil {
     if (!(victim instanceof Mob)) {
       return;
     }
+    victim.getAttribute(Attribute.FOLLOW_RANGE).setBaseValue(80);
     LivingEntity target = ((Mob) victim).getTarget();
     if (target == null || !target.isValid()) {
-      AttributeInstance attr = victim.getAttribute(Attribute.FOLLOW_RANGE);
-      double newVal = Math.max(Math.max(attr.getBaseValue(), attr.getDefaultValue()), 80);
-      victim.getAttribute(Attribute.FOLLOW_RANGE).setBaseValue(newVal);
       ((Mob) victim).setTarget(attacker);
     }
   }

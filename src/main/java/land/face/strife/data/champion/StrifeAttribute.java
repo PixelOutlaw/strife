@@ -18,12 +18,15 @@
  */
 package land.face.strife.data.champion;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import land.face.strife.stats.StrifeStat;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Sound;
 
+@Getter
+@Setter
 public class StrifeAttribute {
 
   private final String key;
@@ -42,84 +45,8 @@ public class StrifeAttribute {
   private Map<String, Integer> statIncreaseIncrements;
   private Map<StrifeStat, Float> attributeMap;
 
-  public int getLevelsToRaiseCap() {
-    return levelsToRaiseCap;
-  }
-
-  public void setLevelsToRaiseCap(int levelsToRaiseCap) {
-    this.levelsToRaiseCap = levelsToRaiseCap;
-  }
-
-  public int getStartCap() {
-    return startCap;
-  }
-
-  public void setStartCap(int startCap) {
-    this.startCap = startCap;
-  }
-
-  public int getMaxCap() {
-    return maxCap;
-  }
-
-  public void setMaxCap(int maxCap) {
-    this.maxCap = maxCap;
-  }
-
-  public Map<String, Integer> getBaseStatRequirements() {
-    return baseStatRequirements;
-  }
-
-  public void setBaseStatRequirements(Map<String, Integer> baseStatRequirements) {
-    this.baseStatRequirements = baseStatRequirements;
-  }
-
-  public Map<String, Integer> getStatIncreaseIncrements() {
-    return statIncreaseIncrements;
-  }
-
-  public void setStatIncreaseIncrements(Map<String, Integer> statIncreaseIncrements) {
-    this.statIncreaseIncrements = statIncreaseIncrements;
-  }
-
   public StrifeAttribute(String key) {
     this.key = key;
-  }
-
-  public String getKey() {
-    return key;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public List<String> getDescription() {
-    return description;
-  }
-
-  public void setDescription(List<String> description) {
-    this.description = description;
-  }
-
-  public int getCustomData() {
-    return customData;
-  }
-
-  public void setCustomData(int customData) {
-    this.customData = customData;
-  }
-
-  public Map<StrifeStat, Float> getAttributeMap() {
-    return new HashMap<>(attributeMap);
-  }
-
-  public void setAttributeMap(Map<StrifeStat, Float> attributeMap) {
-    this.attributeMap = attributeMap;
   }
 
   public double getAttribute(StrifeStat attribute) {
@@ -147,45 +74,4 @@ public class StrifeAttribute {
 
     return !(key != null ? !key.equals(that.key) : that.key != null);
   }
-
-  public int getSlot() {
-    return slot;
-  }
-
-  public void setSlot(int slot) {
-    this.slot = slot;
-  }
-
-  public Sound getClickSound() {
-    return clickSound;
-  }
-
-  public void setClickSound(Sound clickSound) {
-    this.clickSound = clickSound;
-  }
-
-  public float getClickPitch() {
-    return clickPitch;
-  }
-
-  public void setClickPitch(float clickPitch) {
-    this.clickPitch = clickPitch;
-  }
-
-  public Sound getLevelSound() {
-    return levelSound;
-  }
-
-  public void setLevelSound(Sound levelSound) {
-    this.levelSound = levelSound;
-  }
-
-  public float getLevelPitch() {
-    return levelPitch;
-  }
-
-  public void setLevelPitch(float levelPitch) {
-    this.levelPitch = levelPitch;
-  }
-
 }
