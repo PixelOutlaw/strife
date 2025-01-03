@@ -3,8 +3,10 @@ package land.face.strife.tasks;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.RestoreData;
 import land.face.strife.data.StrifeMob;
@@ -25,6 +27,7 @@ public class EnergyTask extends BukkitRunnable {
   private final List<RestoreData> energyRestore = new ArrayList<>();
   public static final int TICKS_PER = 10;
   public static final float TICK_MULT = 1f / (20f / TICKS_PER);
+  public static final Map<Integer, Float> SPRINT_COST_MAP = buildSprintCostMap();
 
   public EnergyTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
@@ -93,8 +96,8 @@ public class EnergyTask extends BukkitRunnable {
   }
 
   private static float getAgilityMult(StrifeMob mob) {
-    float agility = PlayerDataUtil.getLifeSkillLevel(mob.getChampion(), LifeSkillType.AGILITY);
-    return 50f / (50f + agility);
+    int agility = PlayerDataUtil.getLifeSkillLevel(mob.getChampion(), LifeSkillType.AGILITY);
+    return SPRINT_COST_MAP.get(agility);
   }
 
   public void addEnergyOverTime(float amount, int ticks) {
@@ -133,6 +136,20 @@ public class EnergyTask extends BukkitRunnable {
       ratio -= (float) (0.1 * (livingEntity.getPotionEffect(PotionEffectType.HUNGER).getAmplifier() + 1));
     }
     return ratio;
+  }
+
+  private static Map<Integer, Float> buildSprintCostMap() {
+    Map<Integer, Float> cachedSprintCosts = new HashMap<>();
+    cachedSprintCosts.put(-5, 1.5f);
+    cachedSprintCosts.put(-4, 1.4f);
+    cachedSprintCosts.put(-3, 1.3f);
+    cachedSprintCosts.put(-2, 1.2f);
+    cachedSprintCosts.put(-1, 1.1f);
+    cachedSprintCosts.put(0, 1.0f);
+    for (int i = 1; i <= 120; i++) {
+      cachedSprintCosts.put(i, (float) Math.pow(0.98, i - 1));
+    }
+    return cachedSprintCosts;
   }
 
 }

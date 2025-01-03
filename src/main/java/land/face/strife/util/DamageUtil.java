@@ -82,9 +82,6 @@ public class DamageUtil {
 
   private static StrifePlugin plugin;
 
-  public static String ATTACK_BLOCKED;
-  public static String ATTACK_DODGED;
-
   public static float BASE_ATTACK_SECONDS = 1.4f;
 
   public static int BASE_RECHARGE_TICKS;
@@ -112,8 +109,6 @@ public class DamageUtil {
     plugin = refreshedPlugin;
 
     BASE_ATTACK_SECONDS = (float) plugin.getSettings().getDouble("config.mechanics.attack-speed.base-attack-time", 1.4);
-    ATTACK_BLOCKED = PaletteUtil.color(plugin.getSettings().getString("language.status.block-message", "&e&lBlocked!"));
-    ATTACK_DODGED = PaletteUtil.color(plugin.getSettings().getString("language.status.evade-message", "&7&l&oDodge!"));
 
     BASE_RECHARGE_TICKS = plugin.getSettings().getInt("config.mechanics.barrier.base-delay-ticks", 100);
     TICK_RATE = plugin.getSettings().getInt("config.mechanics.barrier.task-tick-rate", 3);
@@ -989,14 +984,14 @@ public class DamageUtil {
     if (StrifePlugin.RNG.nextFloat() < defender.getStat(StrifeStat.DODGE_CHANCE) / 100) {
       DamageUtil.doEvasion(attacker, defender);
       if (defender.getEntity() instanceof Player) {
-        plugin.getGuiManager().postNotice((Player) defender.getEntity(), GuiManager.NOTICE_DODGE, 4);
+        plugin.getGuiManager().postNotice((Player) defender.getEntity(), GuiManager.NOTICE_DODGE, 5);
       }
       return true;
     }
     if (rollDodgeFromEvasion(attacker, defender, attackModifiers)) {
       DamageUtil.doEvasion(attacker, defender);
       if (defender.getEntity() instanceof Player) {
-        plugin.getGuiManager().postNotice((Player) defender.getEntity(), GuiManager.NOTICE_DODGE, 4);
+        plugin.getGuiManager().postNotice((Player) defender.getEntity(), GuiManager.NOTICE_DODGE, 5);
       }
       return true;
     }

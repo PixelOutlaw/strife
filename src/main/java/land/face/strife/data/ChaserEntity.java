@@ -180,6 +180,9 @@ public class ChaserEntity {
       return;
     }
     if (guided && target.get() != null) {
+      if (location.getWorld() != target.get().getLocation().getWorld()) {
+        delete();
+      }
       Location targetCoords = target.get().getLocation().clone();
       targetCoords.setY(targetCoords.getY() + target.get().getHeight() / 2 + 0.07);
       double range = 1 + Math.pow(speed + Math.max(target.get().getHeight(), target.get().getWidth()), 2);
@@ -187,7 +190,6 @@ public class ChaserEntity {
         runEffects(target.get(), null);
         delete();
       }
-      return;
     }
   }
 

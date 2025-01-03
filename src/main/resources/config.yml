@@ -74,32 +74,6 @@ flintlock:
   flare-speed: 0.01
   flare-offset: 0.8
 
-custom-spawn-limits:
-  world:
-    base-spawn-limit: 200
-    per-player-spawn-limit: 10
-  hard-world:
-    base-spawn-limit: 1000
-    per-player-spawn-limit: 100
-
-leveled-monsters:
-  name-format: "&7%ENTITY% &f(%LEVEL%)"
-  add-mod-chance: 0.2
-  max-mob-mods: 3
-  give-skeletons-sword-chance: 0.1
-  give-skeletons-wand-chance: 0.1
-  replace-witch-evoker: 0.15
-  replace-witch-illusioner: 0.05
-  killer-bunny-chance: 0.05
-  mob-rankup-chance: 0.1
-  enabled-worlds:
-    world:
-      starting-level: 3
-      distance-per-level: 150
-    hard-world:
-      starting-level: 50
-      distance-per-level: 100
-
 death-worlds:
 - Graveyard
 

@@ -66,7 +66,7 @@ public enum StrifeTrait {
   REALLY_STUBBORN("|orange||ul|Passive Effect - Really Stubborn", "|none|丒",
       "|yellow|You cannot die"),
   MASOCHISM("|orange||ul|Passive Effect - Masochism", "|none|丒",
-      "|yellow|Gain |white|20% |yellow|of lost |none|儔 |yellow|as |none|儔"),
+      "|yellow|Gain |white|20% |yellow|of lost |none|儔 |yellow|as |none|儓"),
   PERMAFROST("|orange||ul|Passive Effect - Permafrost", "|none|丒",
       "|cyan|Frost |yellow|does not decay"),
 

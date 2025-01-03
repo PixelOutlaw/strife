@@ -82,7 +82,7 @@ public class CounterManager {
             7, COUNTER_MESSAGE, 1.0f, 1.0f, 1.0f, false);
       }
       if (defender instanceof Player) {
-        plugin.getGuiManager().postNotice((Player) defender, GuiManager.NOTICE_BLOCK, 4);
+        plugin.getGuiManager().postNotice((Player) defender, GuiManager.NOTICE_COUNTER, 5);
       }
       if (!data.isTriggered()) {
         StrifeMob defenderMob = plugin.getStrifeMobManager().getStatMob(defender);

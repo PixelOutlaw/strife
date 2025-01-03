@@ -89,36 +89,25 @@ public class ShootProjectile extends Effect {
       location.setDirection(direction);
       LivingEntity shooter = caster.getEntity();
 
-      Projectile projectile;
-      if (projectileEntity == EntityType.ARROW) {
-        HANDLED_PROJECTILE.add(caster.getEntity().getUniqueId());
-        projectile = shooter.launchProjectile(Arrow.class, velocity, e -> {
-          e.setShooter(shooter);
-          e.setHasLeftShooter(false);
-          e.getLocation().setDirection(shooter.getEyeLocation().getDirection());
-          e.setGravity(gravity);
-          e.setSilent(silent);
-          e.getBoundingBox().expand(1);
-          e.teleport(location, TeleportCause.PLUGIN);
-          e.setVelocity(velocity);
-        });
-        HANDLED_PROJECTILE.remove(caster.getEntity().getUniqueId());
-      } else {
-        HANDLED_PROJECTILE.add(caster.getEntity().getUniqueId());
-        projectile = (Projectile) location.getWorld().spawn(location, projectileEntity.getEntityClass(), e -> {
-          ((Projectile) e).setShooter(shooter);
-          ((Projectile) e).setHasLeftShooter(false);
-          e.setVelocity(velocity);
-          e.getLocation().setDirection(shooter.getEyeLocation().getDirection());
-          e.setGravity(gravity);
-          e.setSilent(silent);
-          if (e instanceof ThrowableProjectile tp) {
-            tp.setItem(thrownStack);
-          }
-          e.getBoundingBox().expand(1);
-        });
-        HANDLED_PROJECTILE.remove(caster.getEntity().getUniqueId());
-      }
+      HANDLED_PROJECTILE.add(caster.getEntity().getUniqueId());
+      Projectile projectile = (Projectile) location.getWorld().spawn(location, projectileEntity.getEntityClass(), e -> {
+        ((Projectile) e).setShooter(shooter);
+        ((Projectile) e).setHasLeftShooter(false);
+        e.setVelocity(velocity);
+        e.getLocation().setDirection(direction);
+        e.setGravity(gravity);
+        e.setSilent(silent);
+        if (e instanceof ThrowableProjectile tp) {
+          tp.setItem(thrownStack);
+        }
+        e.getBoundingBox().expand(1);
+
+        double hLen = Math.sqrt(direction.getX() * direction.getX() + direction.getZ() * direction.getZ());
+        e.setRotation(
+            (float) Math.toDegrees(Math.atan2(direction.getX(), direction.getZ())),
+            (float) Math.toDegrees(Math.atan2(direction.getY(), hLen)));
+      });
+      HANDLED_PROJECTILE.remove(caster.getEntity().getUniqueId());
 
       if (!blockHitEffects && pierceTargets > -3) {
         ProjectileUtil.setPierce(projectile, caster.getStat(StrifeStat.PIERCE_CHANCE) / 100, pierceTargets);

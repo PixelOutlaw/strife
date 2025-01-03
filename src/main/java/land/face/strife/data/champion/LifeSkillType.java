@@ -2,10 +2,10 @@ package land.face.strife.data.champion;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import java.awt.Color;
-import land.face.strife.data.StrifeMob;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 
+@Getter
 public enum LifeSkillType {
 
   CRAFTING("Crafting", "crafting", "冷", FaceColor.YELLOW.getColor()),
@@ -39,15 +39,10 @@ public enum LifeSkillType {
 
   public final static LifeSkillType[] types = LifeSkillType.values();
 
-  @Getter
   private final String prettyName;
-  @Getter
   private final String dataName;
-  @Getter
   private final String character;
-  @Getter
   private final ChatColor color;
-  @Getter
   private final boolean combat;
 
   LifeSkillType(String prettyName, String dataName, String character, ChatColor color, boolean combat) {

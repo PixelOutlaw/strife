@@ -240,7 +240,7 @@ public class ProjectileUtil {
     Location location = shooter.getEyeLocation().clone().add(0, -0.35, 0);
     location.setDirection(velocity);
     HANDLED_PROJECTILE.add(shooter.getUniqueId());
-    Arrow arrow = shooter.launchProjectile(Arrow.class, velocity, e -> {
+    Arrow arrow = location.getWorld().spawn(location, Arrow.class, e -> {
       e.setShooter(shooter);
       e.setHasLeftShooter(false);
       e.getLocation().setDirection(shooter.getEyeLocation().getDirection());
@@ -248,6 +248,12 @@ public class ProjectileUtil {
       e.setPickupStatus(PickupStatus.CREATIVE_ONLY);
       e.teleport(location, TeleportCause.PLUGIN);
       e.setVelocity(velocity);
+
+      var direction = velocity.normalize();
+      double hLen = Math.sqrt(direction.getX() * direction.getX() + direction.getZ() * direction.getZ());
+      e.setRotation(
+          (float) Math.toDegrees(Math.atan2(direction.getX(), direction.getZ())),
+          (float) Math.toDegrees(Math.atan2(direction.getY(), hLen)));
     });
     HANDLED_PROJECTILE.remove(shooter.getUniqueId());
 

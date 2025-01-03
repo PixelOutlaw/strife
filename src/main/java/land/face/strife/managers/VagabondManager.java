@@ -1,7 +1,6 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
-import info.faceland.loot.LootPlugin;
 import info.faceland.loot.listeners.VagabondEquipListener;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,8 +39,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Skeleton;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.ItemStack;
 
 public class VagabondManager {
 
@@ -134,11 +131,16 @@ public class VagabondManager {
 
     boolean dualWield = ItemUtil.isDualWield(entity.getEquipment());
     Map<StrifeStat, Float> equipmentStats = new HashMap<>();
-    var vagabond = VagabondEquipListener.VAGABONDS.get(entity);
+
+    var vagabondData = VagabondEquipListener.VAGABONDS.get(entity);
+    if (vagabondData == null) {
+      entity.remove();
+      return;
+    }
 
     for (var dSlot : DeluxeSlot.values()) {
       String slot = dSlot.toString();
-      var stack = vagabond.getItems().get(slot);
+      var stack = vagabondData.getItems().get(slot);
       if (stack == null || stack.getType() == Material.AIR) {
         continue;
       }
@@ -150,7 +152,7 @@ public class VagabondManager {
         equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);
       }
     }
-    var handStack = vagabond.getItems().get("HAND");
+    var handStack = vagabondData.getItems().get("HAND");
     if (handStack != null && handStack.getType() != Material.AIR) {
       Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(handStack, dualWield ? 0.65f : 1.0f);
       equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);

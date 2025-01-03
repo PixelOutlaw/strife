@@ -271,15 +271,14 @@ public class AbilityManager {
   }
 
   public Map<StrifeStat, Float> getApplicableAbilityPassiveStats(Player player, @NotNull Ability ability) {
-    if (ability.isPassiveStatsOnCooldown()) {
-      if (ability.getTargetType() == TargetType.TOGGLE) {
-        CooldownTracker tracker = getCooldownTracker(player, ability.getId());
-        if (tracker != null && tracker.isToggleState()) {
-          return StatUpdateManager.combineMaps(ability.getPassiveStats(), ability.getTogglePassiveStats());
-        }
+    if (ability.getTargetType() == TargetType.TOGGLE) {
+      CooldownTracker tracker = getCooldownTracker(player, ability.getId());
+      if (tracker != null && tracker.isToggleState()) {
+        return ability.getTogglePassiveStats();
+      }
+      if (ability.isPassiveStatsOnCooldown() || tracker == null || tracker.getChargesLeft() > 0) {
         return ability.getPassiveStats();
       }
-      return ability.getPassiveStats();
     }
     CooldownTracker tracker = getCooldownTracker(player, ability.getId());
     if (tracker == null || tracker.getChargesLeft() > 0) {

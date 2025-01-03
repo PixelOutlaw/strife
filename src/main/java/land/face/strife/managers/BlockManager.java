@@ -90,7 +90,7 @@ public class BlockManager {
             IndicatorStyle.FLOAT_UP_MEDIUM, 4, "彠", 1.0f, 1.0f, 1.0f, false);
       }
       if (defender.getEntity() instanceof Player) {
-        plugin.getGuiManager().postNotice((Player) defender.getEntity(), GuiManager.NOTICE_BLOCK, 4);
+        plugin.getGuiManager().postNotice((Player) defender.getEntity(), GuiManager.NOTICE_BLOCK, 5);
       }
       if (!blockTimers.containsKey(defender.getEntity().getUniqueId())) {
         blockTimers.put(defender.getEntity().getUniqueId(), new BlockTimer(this, defender));

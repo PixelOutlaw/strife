@@ -66,6 +66,8 @@ public class GuiManager {
       new GUIComponent("notices", noShadow(new TextComponent("丞")), 171, 0, Alignment.CENTER);
   public static final GUIComponent NOTICE_BLOCK =
       new GUIComponent("notices", noShadow(new TextComponent("丟")), 171, 0, Alignment.CENTER);
+  public static final GUIComponent NOTICE_COUNTER =
+      new GUIComponent("notices", noShadow(new TextComponent("俺")), 171, 0, Alignment.CENTER);
 
   private final GUIComponent NOTIF_EMPTY_MAIL = new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER);
   private final GUIComponent NOTIF_EMPTY_FRIEND = new GUIComponent("notif-friend", EMPTY, 0, 0, Alignment.CENTER);
