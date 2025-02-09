@@ -61,7 +61,7 @@ public class JoinAndLeaveListener implements Listener {
   public void onPlayerJoin(final PlayerJoinEvent event) {
     event.getPlayer().setGravity(true);
 
-    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer(), true);
     mob.restartTimers();
 
     Champion champion = mob.getChampion();

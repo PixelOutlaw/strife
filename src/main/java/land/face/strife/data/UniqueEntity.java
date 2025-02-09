@@ -38,7 +38,6 @@ public class UniqueEntity {
   private int maxMods;
   private double displaceMultiplier;
   private double boundingBonus;
-  private String mount;
   private Map<EquipmentSlot, String> equipment = new HashMap<>();
   private StrifeParticle strifeParticle;
   private List<String> removeGoals;

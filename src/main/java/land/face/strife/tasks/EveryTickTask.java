@@ -89,6 +89,9 @@ public class EveryTickTask extends BukkitRunnable {
     for (Player p : Bukkit.getOnlinePlayers()) {
       try {
         updateForPlayer(p);
+        if (p.getGameMode() == GameMode.ADVENTURE && p.isFlying()) {
+          Bukkit.getLogger().warning("[Strife] Player " + p.getName() + " is flying!!");
+        }
       } catch (Exception e) {
         Bukkit.getLogger().warning("[Strife] Failed to tick player " + p.getName());
         e.printStackTrace();

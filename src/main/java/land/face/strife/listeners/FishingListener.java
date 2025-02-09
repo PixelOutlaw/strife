@@ -194,6 +194,9 @@ public class FishingListener implements Listener {
 
   public boolean isRodCached(Player player) {
     ItemStack rod1 = equippedRods.get(player);
+    if (rod1 == null) {
+      return false;
+    }
     ItemStack rod2 = player.getEquipment().getItemInMainHand();
     if (rod1 == rod2) {
       return true;

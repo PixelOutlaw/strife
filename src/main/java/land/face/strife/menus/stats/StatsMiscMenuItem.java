@@ -72,9 +72,10 @@ public class StatsMiscMenuItem extends MenuItem {
     itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     List<String> lore = new ArrayList<>();
     lore.add(breakLine);
-    lore.add(FaceColor.TEAL.getColor() + "Maximum Energy: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(mob.getMaxEnergy()));
+    lore.add(FaceColor.TEAL.getColor() + "Maximum Energy: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
+        mob.getMaxEnergy()));
     lore.add(FaceColor.TEAL.getColor() + "Energy Regeneration: " + FaceColor.WHITE.getColor() + ONE_DECIMAL
-          .format(mob.getStat(StrifeStat.ENERGY_REGEN)) + PER_TEN);
+        .format(mob.getStat(StrifeStat.ENERGY_REGEN)) + PER_TEN);
     if (mob.getStat(StrifeStat.ENERGY_ON_HIT) > 0) {
       lore.add(FaceColor.TEAL.getColor() + "Energy On Hit: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
           mob.getStat(StrifeStat.ENERGY_ON_HIT)));
@@ -88,6 +89,8 @@ public class StatsMiscMenuItem extends MenuItem {
           mob.getStat(StrifeStat.ENERGY_WHEN_HIT)));
     }
     lore.add(breakLine);
+    lore.add(FaceColor.TEAL.getColor() + "Character Size: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
+        3 + mob.getStat(StrifeStat.CHARACTER_SIZE)));
     lore.add(FaceColor.TEAL.getColor() + "Movement Speed: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         mob.getStat(StrifeStat.MOVEMENT_SPEED)));
     lore.add(breakLine);
@@ -125,7 +128,7 @@ public class StatsMiscMenuItem extends MenuItem {
     }
     lore.add(FaceColor.TEAL + "Mining Speed: " + FaceColor.WHITE + "+" +
         StatsMenu.INT_FORMAT.format(mob.getStat(StrifeStat.MINING_SPEED)) + "%");
-    lore.add(FaceColor.TEAL+ "Mining Gems: " + FaceColor.WHITE + "+" +
+    lore.add(FaceColor.TEAL + "Mining Gems: " + FaceColor.WHITE + "+" +
         StatsMenu.INT_FORMAT.format(mob.getStat(StrifeStat.MINING_GEMS)) + "%");
     lore.add(FaceColor.TEAL + "Gathering Speed: " + FaceColor.WHITE + "+" +
         StatsMenu.INT_FORMAT.format(mob.getStat(StrifeStat.GATHERING_SPEED)) + "%");

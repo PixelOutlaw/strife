@@ -20,6 +20,8 @@ package land.face.strife.listeners;
 
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.events.BlockEvent;
+import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.StrifeDamageEvent;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.LogUtil;
@@ -147,6 +149,32 @@ public class MinionListener implements Listener {
       }
       if (mob.getTarget() == null || !mob.getTarget().isValid()) {
         mob.setTarget((LivingEntity) attacker);
+      }
+    }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onMasterDodge(final EvadeEvent event) {
+    StrifeMob hitEnt = event.getEvader();
+    for (StrifeMob minion : hitEnt.getMinions()) {
+      if (!(minion.getEntity() instanceof Mob mob)) {
+        continue;
+      }
+      if (mob.getTarget() == null || !mob.getTarget().isValid()) {
+        mob.setTarget(event.getAttacker().getEntity());
+      }
+    }
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onMasterBlock(final BlockEvent event) {
+    StrifeMob hitEnt = event.getBlocker();
+    for (StrifeMob minion : hitEnt.getMinions()) {
+      if (!(minion.getEntity() instanceof Mob mob)) {
+        continue;
+      }
+      if (mob.getTarget() == null || !mob.getTarget().isValid()) {
+        mob.setTarget(event.getAttacker().getEntity());
       }
     }
   }

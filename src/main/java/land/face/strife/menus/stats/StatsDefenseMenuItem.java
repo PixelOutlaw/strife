@@ -81,6 +81,9 @@ public class StatsDefenseMenuItem extends MenuItem {
     if (!mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) && mob.getMaxBarrier() > 0) {
       lore.add(addStat("Maximum Barrier: ", StatUtil.getStat(mob, StrifeStat.BARRIER), INT_FORMAT));
       lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(mob) * 10, PER_TEN, INT_FORMAT));
+      var rechargeSeconds = ((float) DamageUtil.BASE_RECHARGE_TICKS) / 20f;
+      float barrierDelayMultiplier = 1 + mob.getStat(StrifeStat.BARRIER_START_SPEED) / 100;
+      lore.add(addStat("Barrier Delay: ", rechargeSeconds / barrierDelayMultiplier, "s", TWO_DECIMAL));
       if (mob.getStat(StrifeStat.BARRIER_REGEN) > 0) {
         lore.add(addStat("Barrier Regeneration: ", StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN), PER_TEN, INT_FORMAT));
       }

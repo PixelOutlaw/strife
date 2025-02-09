@@ -24,6 +24,17 @@ public class SpawnListener implements Listener {
     SKELETON_WAND = buildSkeletonWand();
   }
 
+  @EventHandler
+  public void onJockeySpawn(CreatureSpawnEvent event) {
+    switch (event.getEntityType()) {
+      case ZOMBIFIED_PIGLIN, SKELETON, ZOMBIE -> {
+        if (event.getEntity().getVehicle() != null) {
+          event.getEntity().getVehicle().remove();
+        }
+      }
+    }
+  }
+
   @EventHandler(priority = EventPriority.HIGH)
   public void onCreatureSpawnHighest(CreatureSpawnEvent event) {
     if (event.isCancelled() || event.getEntity().hasMetadata("NPC") ||

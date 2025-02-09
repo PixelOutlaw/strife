@@ -15,12 +15,14 @@ public class MovingCondition extends Condition {
   public boolean isMet(StrifeMob caster, StrifeMob target) {
     if (getCompareTarget() == CompareTarget.SELF) {
       if (!(caster.getEntity() instanceof Player)) {
-        throw new IllegalArgumentException("Move condition can only be used on players");
+        //throw new IllegalArgumentException("Move condition can only be used on players");
+        return true;
       }
       return MoveUtil.hasMoved((Player) caster.getEntity()) == state;
     } else {
       if (!(target.getEntity() instanceof Player)) {
-        throw new IllegalArgumentException("Move condition can only be used on players");
+        //throw new IllegalArgumentException("Move condition can only be used on players");
+        return true;
       }
       return MoveUtil.hasMoved((Player) target.getEntity()) == state;
     }

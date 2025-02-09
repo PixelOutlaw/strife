@@ -37,6 +37,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Tameable;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
@@ -116,6 +117,14 @@ public class TargetingUtil {
   }
 
   public static boolean isFriendly(LivingEntity attacker, LivingEntity defender) {
+    return isFriendly(StrifePlugin.getInstance().getStrifeMobManager().getStatMob(attacker),
+        StrifePlugin.getInstance().getStrifeMobManager().getStatMob(defender));
+  }
+
+  public static boolean isFriendly(Projectile projectile, LivingEntity defender) {
+    if (!(projectile.getShooter() instanceof LivingEntity attacker)) {
+      return false;
+    }
     return isFriendly(StrifePlugin.getInstance().getStrifeMobManager().getStatMob(attacker),
         StrifePlugin.getInstance().getStrifeMobManager().getStatMob(defender));
   }
@@ -214,7 +223,7 @@ public class TargetingUtil {
     Location detectionLocation = loc.toCenterLocation().clone();
     for (int i = 0; i < verticalRange; i++) {
       if (detectionLocation.getBlock().getRelative(BlockFace.DOWN, i).getType().isSolid()) {
-        detectionLocation.add(0, -i + 0.6, 0);
+        detectionLocation.add(0, -i + 0.7, 0);
         return detectionLocation;
       }
     }
@@ -393,7 +402,7 @@ public class TargetingUtil {
         }
       }
       default -> {
-        return le.getLocation().clone();
+        return le.getLocation().clone().add(0, 0.05, 0);
       }
     }
   }

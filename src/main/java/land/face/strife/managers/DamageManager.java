@@ -26,6 +26,7 @@ import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.util.BorderEffectUtil;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
@@ -101,6 +102,13 @@ public class DamageManager {
     }
     defMob.getEntity().damage(damage);
     handledDamages.remove(atkMob.getEntity().getUniqueId());
+    /*
+    if (defMob.isPlayer()) {
+      float hpPercent = (float) defMob.getLife() / defMob.getMaxLife();
+      float amount = 2 * (0.5f - hpPercent);
+      BorderEffectUtil.sendBorder((Player) defMob.getEntity(), amount, 100);
+    }
+    */
     return damage;
   }
 

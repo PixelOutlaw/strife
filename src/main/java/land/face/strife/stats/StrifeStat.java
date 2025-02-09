@@ -34,20 +34,26 @@ public enum StrifeStat {
   REGENERATION("Life Regeneration"),
 
   ENERGY("Maximum Energy"),
-  ENERGY_MULT(),
+  ENERGY_MULT("More Max. Energy"),
+
   ENERGY_REGEN("Energy Regeneration"),
+  ENERGY_REGEN_MULT("More Energy Regen"),
+
   ENERGY_ON_HIT("Energy On Hit"),
   ENERGY_ON_KILL("Energy On Kill"),
   ENERGY_WHEN_HIT("Energy When Hit"),
 
   BARRIER("Maximum Barrier"),
-  BARRIER_MULT(),
+  BARRIER_MULT("More Max. Barrier"),
   BARRIER_SPEED("Barrier Recharge Rate"),
   BARRIER_REGEN("Barrier Regeneration"),
   BARRIER_START_SPEED("Shorter Barrier Delay"),
   DAMAGE_TO_BARRIERS("Damage To Barriers"),
 
   PHYSICAL_DAMAGE("Physical Damage"),
+  PHYSICAL_MULT("More Physical Damage"),
+  MELEE_PHYSICAL_MULT("Melee Physical Damage"),
+  RANGED_PHYSICAL_MULT("Ranged Physical Damage"),
 
   ABILITY_DAMAGE("Ability Damage"),
 
@@ -97,6 +103,13 @@ public enum StrifeStat {
   EARTH_DAMAGE("Earth Damage"),
   LIGHT_DAMAGE("Light Damage"),
   DARK_DAMAGE("Shadow Damage"),
+
+  FIRE_MULT("More Fire Damage"),
+  LIGHTNING_MULT("More Lightning Damage"),
+  ICE_MULT("More Ice Damage"),
+  EARTH_MULT("More Earth Damage"),
+  LIGHT_MULT("More Light Damage"),
+  DARK_MULT("More Shadow Damage"),
 
   ELEMENTAL_STATUS("Elemental Status Chance"),
   MAX_EARTH_RUNES("Max Earth Runes"),
@@ -170,19 +183,15 @@ public enum StrifeStat {
 
   DOGE("Doge Chance"),
 
-  HEALTH_MULT(),
-  REGEN_MULT(),
-  ARMOR_MULT(),
-  EVASION_MULT(),
-
-  MELEE_PHYSICAL_MULT(),
-  RANGED_PHYSICAL_MULT(),
-  PHYSICAL_MULT(),
+  HEALTH_MULT("More Max. Life"),
+  REGEN_MULT("More Life Regeneration"),
+  ARMOR_MULT("More Armor"),
+  EVASION_MULT("More Evasion"),
 
   DAMAGE_MULT("Damage"),
   DAMAGE_TAKEN("Damage Taken"),
   ELEMENTAL_MULT("Elemental Damage"),
-  ACCURACY_MULT(),
+  ACCURACY_MULT("More Accuracy"),
   MINION_MULT_INTERNAL(),
 
   LIFE_FROM_POTIONS("Life From Potions"),

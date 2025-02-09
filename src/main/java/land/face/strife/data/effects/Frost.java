@@ -21,7 +21,7 @@ public class Frost extends Effect {
       if (trueDuration > 0) {
         target.addFrost((int) trueDuration);
       } else {
-        target.removeFrost((int) trueDuration);
+        target.removeFrost((int) -trueDuration);
       }
     }
   }

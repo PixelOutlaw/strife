@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.ContinuousModelData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.TargetingUtil;
@@ -31,22 +32,12 @@ public class CreateModelAnimation extends LocationEffect {
   private List<String> animations = new ArrayList<>();
   private String startAnimation;
   private String endAnimation;
-  private float lerpIn;
-  private float lerpOut;
-  private float speed = 1;
-  private float scale = 1;
-  private float directionOffset = 0;
-  private int forceGroundBlocks = 0;
-  private int lifespan;
+  private float lerpIn, lerpOut, speed = 1, scale = 1, directionOffset = 0;
+  private int lifespan, forceGroundBlocks = 0;
   private AnimationType animationType;
-  private boolean entityLock;
-  private boolean rotationLock;
-  private boolean strictDuration;
-  private boolean areaScaling;
-  private boolean reachScaling;
+  private boolean entityLock, rotationLock, strictDuration, areaScaling, reachScaling,
+      hasCheckedEquipBones = false, hasEquipBones = false, refreshModel = false;
   private Color color = null;
-  private boolean hasCheckedEquipBones = false;
-  private boolean hasEquipBones = false;
 
   public static Location TEMP_LOC;
 
@@ -58,6 +49,16 @@ public class CreateModelAnimation extends LocationEffect {
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
+
+    var modelthing = ContinuousModelData.fetch(target.getEntity(), this);
+    if (modelthing != null) {
+      float effectDuration = strictDuration ? 1f : 1f + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
+      float realSpeed = speed / effectDuration;
+      int realLifespan = getTrueLifespan(modelthing.getModel(), effectDuration, realSpeed);
+      modelthing.refresh(realLifespan);
+      return;
+    }
+
     ActiveModel model = ModelEngineAPI.createActiveModel(modelId);
     if (model == null) {
       Bukkit.getLogger().warning("[Strife] Failed to create model animation! No model!" + getId());
@@ -96,6 +97,16 @@ public class CreateModelAnimation extends LocationEffect {
 
   @Override
   public void applyAtLocation(StrifeMob caster, Location loc) {
+
+    var modelthing = ContinuousModelData.fetch(caster.getEntity(), this);
+    if (modelthing != null) {
+      float effectDuration = strictDuration ? 1f : 1f + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
+      float realSpeed = speed / effectDuration;
+      int realLifespan = getTrueLifespan(modelthing.getModel(), effectDuration, realSpeed);
+      modelthing.refresh(realLifespan);
+      return;
+    }
+
     ActiveModel model = ModelEngineAPI.createActiveModel(modelId);
     if (model == null) {
       Bukkit.getLogger().warning("[Strife] Failed to create model animation! No model!" + getId());
@@ -147,7 +158,7 @@ public class CreateModelAnimation extends LocationEffect {
       }
     }
 
-    applyModelStuff(caster, null, loc, model);
+    applyModelStuff(caster, caster, loc, model);
   }
 
   private void applyModelStuff(StrifeMob caster, StrifeMob target, Location loc, ActiveModel model) {
@@ -197,36 +208,11 @@ public class CreateModelAnimation extends LocationEffect {
 
     float effectDuration = strictDuration ? 1f : 1f + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     float realSpeed = speed / effectDuration;
+    int realLifespan = getTrueLifespan(model, effectDuration, realSpeed);
 
-    int realLifespan = lifespan;
-    if (!animations.isEmpty()) {
-      if (lifespan == -1) {
-        Collections.shuffle(animations);
-        double animationDuration =
-            model.getBlueprint().getAnimations().get(animations.getFirst()).getLength() / realSpeed;
-        realLifespan = (int) Math.floor(20 * animationDuration) + 1;
-      } else {
-        realLifespan = (int) (lifespan * effectDuration);
-      }
-    }
-    if (realLifespan == -1) {
-      Bukkit.getLogger().warning(
-          "[Strife] You screwed up effect " + getId() + " only supply -1 lifespan if an animation-id is defined!");
-      realLifespan = 20;
-    }
-    if (!animations.isEmpty()) {
-      Collections.shuffle(animations);
-      model.getAnimationHandler().forceStopAllAnimations();
-      model.getAnimationHandler().playAnimation(animations.getFirst(), lerpIn, lerpOut, realSpeed, true);
-    }
-    if (startAnimation != null) {
-      model.getAnimationHandler().playAnimation(startAnimation, 0, 0, 1, true);
-    }
+    int endTicks = 0;
     if (endAnimation != null) {
-      int endTicks = (int) (20f * model.getBlueprint().getAnimations().get(endAnimation).getLength());
-      Bukkit.getScheduler().runTaskLater(getPlugin(), () ->
-              model.getAnimationHandler().playAnimation(endAnimation, 0, 0, 1, true),
-          Math.max(1, 1 + realLifespan - endTicks));
+      endTicks = (int) (20f * model.getBlueprint().getAnimations().get(endAnimation).getLength());
     }
 
     if (hasEquipBones || !hasCheckedEquipBones) {
@@ -234,33 +220,26 @@ public class CreateModelAnimation extends LocationEffect {
       hasCheckedEquipBones = true;
     }
 
-    if (entityLock && target != null) {
-      BukkitRunnable runnable = new BukkitRunnable() {
-        @Override
-        public void run() {
-          if (dummy.isRemoved()) {
-            this.cancel();
-            return;
-          }
-          Location newLoc = TargetingUtil.getOriginLocation(target.getEntity(), getOrigin());
-          Vector direction = target.getEntity().getEyeLocation().getDirection();
-          float pitch = target.getEntity().getPitch();
-          float yaw = target.getEntity().getYaw();
-          if (!rotationLock) {
-            newLoc.setDirection(direction);
-            dummy.setLocation(newLoc);
-            dummy.setYBodyRot(yaw);
-            dummy.setXHeadRot(pitch);
-            dummy.setYHeadRot(yaw);
-          } else {
-            dummy.setLocation(newLoc);
-          }
-        }
-      };
-      runnable.runTaskTimer(getPlugin(), 1L, 1L);
-    }
+    ContinuousModelData.create(this, model, dummy, target, realSpeed, realLifespan, endTicks);
+  }
 
-    Bukkit.getScheduler().runTaskLater(getPlugin(), () -> dummy.setRemoved(true), 1 + realLifespan);
+  private int getTrueLifespan(ActiveModel model, float effectDuration, float realSpeed) {
+    int realLifespan = lifespan;
+    if (!animations.isEmpty()) {
+      if (lifespan == -1) {
+        Collections.shuffle(animations);
+        double animationDuration = model.getBlueprint().getAnimations().get(animations.getFirst()).getLength() / realSpeed;
+        realLifespan = (int) Math.floor(20 * animationDuration) + 1;
+      } else {
+        realLifespan = (int) ((float) lifespan * effectDuration);
+      }
+    }
+    if (realLifespan == -1) {
+      Bukkit.getLogger().warning(
+          "[Strife] You screwed up effect " + getId() + " only supply -1 lifespan if an animation-id is defined!");
+      realLifespan = 20;
+    }
+    return realLifespan;
   }
 
   public static void equipModel(StrifeMob caster, ActiveModel model) {

@@ -50,6 +50,10 @@ public record ProjectileHitListener(StrifePlugin plugin) implements Listener {
       }
       if (event.getHitEntity() instanceof LivingEntity le) {
         ProjectileUtil.disableCollision(event.getEntity(), le);
+        if (TargetingUtil.isFriendly(event.getEntity(), le)) {
+          event.setCancelled(true);
+          return;
+        }
         int pierce = ProjectileUtil.getPierce(event.getEntity());
         if (pierce > 0) {
           deleteProjectile = false;
@@ -81,10 +85,6 @@ public record ProjectileHitListener(StrifePlugin plugin) implements Listener {
     event.setCancelled(true);
 
     var shooter = event.getEntity().getShooter();
-    if (shooter instanceof LivingEntity && TargetingUtil.isFriendly((LivingEntity) shooter, hitEntity)) {
-      // Friendly fire, don't bother checking for pierce or projectile removal
-      return;
-    }
 
     StrifeMob attacker;
     if (shooter instanceof LivingEntity) {

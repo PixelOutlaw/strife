@@ -141,7 +141,7 @@ public class RuneTimer extends BukkitRunnable {
   }
 
   public void orbitRunes(Location center, Set<Hologram> runeHolograms) {
-    if (runeHolograms.size() == 0) {
+    if (runeHolograms.isEmpty()) {
       return;
     }
     int total = Math.min(runeHolograms.size(), 10);

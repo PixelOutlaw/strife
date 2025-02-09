@@ -1,7 +1,10 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
+import info.faceland.loot.data.pdc.EquipmentData;
+import info.faceland.loot.data.pdc.ItemDetails;
 import info.faceland.loot.listeners.VagabondEquipListener;
+import info.faceland.loot.utils.PersistHelper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,6 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.ItemDataBundle;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.VagabondClass;
 import land.face.strife.data.ability.Ability;
@@ -39,6 +43,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Skeleton;
+import org.bukkit.inventory.ItemStack;
 
 public class VagabondManager {
 
@@ -144,18 +149,25 @@ public class VagabondManager {
       if (stack == null || stack.getType() == Material.AIR) {
         continue;
       }
-      if (slot.equals("OFF_HAND")) {
-        Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(stack, dualWield ? 0.65f : 1.0f);
-        equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);
-      } else {
-        Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(stack);
+      var statBundle = getItemData(stack);
+      if (statBundle != null) {
+        Map<StrifeStat, Float> newMap = new HashMap<>(statBundle.getStats());
+        if (slot.equals("OFF_HAND") && dualWield) {
+          statBundle.getStats().forEach((key, value) -> newMap.put(key, value * 0.65f));
+        }
         equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);
       }
     }
     var handStack = vagabondData.getItems().get("HAND");
     if (handStack != null && handStack.getType() != Material.AIR) {
-      Map<StrifeStat, Float> newMap = plugin.getStatUpdateManager().getItemStats(handStack, dualWield ? 0.65f : 1.0f);
-      equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);
+      var statBundle = getItemData(handStack);
+      if (statBundle != null) {
+        Map<StrifeStat, Float> newMap = new HashMap<>(statBundle.getStats());
+        if (dualWield) {
+          statBundle.getStats().forEach((key, value) -> newMap.put(key, value * 0.65f));
+        }
+        equipmentStats = StatUpdateManager.combineMaps(equipmentStats, newMap);
+      }
     }
 
     Map<StrifeStat, Float> baseStats = plugin.getMonsterManager()
@@ -193,6 +205,19 @@ public class VagabondManager {
 
     VagabondSpawnEvent vagabondSpawnEvent = new VagabondSpawnEvent(mob);
     Bukkit.getPluginManager().callEvent(vagabondSpawnEvent);
+  }
+
+  private ItemDataBundle getItemData(ItemStack stack) {
+    var bundle = new ItemDataBundle();
+    EquipmentData data = PersistHelper.getEquipmentData(stack);
+    if (data != null) {
+      ItemDetails details = data.buildItemDetails();
+      bundle.setStats(details.getStats());
+      bundle.setTraits(details.getTraits());
+      bundle.setAbilities(details.getLoreAbilities());
+      return bundle;
+    }
+    return null;
   }
 
   public void loadClasses(ConfigurationSection vSection) {

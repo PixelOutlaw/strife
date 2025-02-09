@@ -77,7 +77,7 @@ public class DisplayRunner {
     textData.setPersistent(false);
 
     Hologram holo = manager.create(textData);
-    holo.createHologram();
+    //holo.createHologram();
 
     var players = Bukkit.getOnlinePlayers();
     Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () -> {

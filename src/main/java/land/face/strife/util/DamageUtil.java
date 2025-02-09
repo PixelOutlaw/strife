@@ -64,6 +64,7 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -176,7 +177,7 @@ public class DamageUtil {
       return false;
     }
 
-    if (defender instanceof Player) {
+    if (defender.isPlayer()) {
       plugin.getStealthManager().unstealthPlayer((Player) defender.getEntity(), true);
     }
 
@@ -279,7 +280,7 @@ public class DamageUtil {
           }
         }
         if (defMob.hasTrait(StrifeTrait.IRON_SCARS)) {
-          critMult += 0.4F;
+          critMult *= 0.4F;
         }
       }
     }
@@ -356,7 +357,11 @@ public class DamageUtil {
       );
     }
 
-    rawDamage += damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
+    float trueDamage = damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
+    if (criticalHit && atkMob.hasTrait(StrifeTrait.SHARP_EDGE)) {
+      trueDamage *= critMult;
+    }
+    rawDamage += trueDamage;
     rawDamage += DamageUtil.getKnowledgeMult(atkMob, defMob);
 
     if (mods.getAbilityMods().containsKey(AbilityMod.MAX_DAMAGE)) {
@@ -402,7 +407,7 @@ public class DamageUtil {
           damageString += "\uF802✸";
         }
         plugin.getIndicatorManager().addIndicator(atkMob, defMob.getEntity(), IndicatorStyle.RANDOM_POPOFF,
-            9, damageString, 0.6f, 1.1f, 0.3f, false);
+            10, damageString, 0.8f, 1.1f, 0.1f, false);
       }
     } else if (mods.isShowPopoffs() && atkMob.getMaster() != null &&
         atkMob.getMaster().getEntity() instanceof Player) {
@@ -652,22 +657,28 @@ public class DamageUtil {
     }
     float elementalMult = 1 + attacker.getStat(StrifeStat.ELEMENTAL_MULT) / 100;
     if (damageMap.containsKey(DamageType.FIRE)) {
-      damageMap.put(DamageType.FIRE, damageMap.get(DamageType.FIRE) * elementalMult);
+      float mult = elementalMult + attacker.getStat(StrifeStat.FIRE_MULT) / 100;
+      damageMap.put(DamageType.FIRE, damageMap.get(DamageType.FIRE) * mult);
     }
     if (damageMap.containsKey(DamageType.ICE)) {
-      damageMap.put(DamageType.ICE, damageMap.get(DamageType.ICE) * elementalMult);
+      float mult = elementalMult + attacker.getStat(StrifeStat.ICE_MULT) / 100;
+      damageMap.put(DamageType.ICE, damageMap.get(DamageType.ICE) * mult);
     }
     if (damageMap.containsKey(DamageType.LIGHTNING)) {
-      damageMap.put(DamageType.LIGHTNING, damageMap.get(DamageType.LIGHTNING) * elementalMult);
+      float mult = elementalMult + attacker.getStat(StrifeStat.LIGHTNING_MULT) / 100;
+      damageMap.put(DamageType.LIGHTNING, damageMap.get(DamageType.LIGHTNING) * mult);
     }
     if (damageMap.containsKey(DamageType.EARTH)) {
-      damageMap.put(DamageType.EARTH, damageMap.get(DamageType.EARTH) * elementalMult);
+      float mult = elementalMult + attacker.getStat(StrifeStat.EARTH_MULT) / 100;
+      damageMap.put(DamageType.EARTH, damageMap.get(DamageType.EARTH) * mult);
     }
     if (damageMap.containsKey(DamageType.DARK)) {
-      damageMap.put(DamageType.DARK, damageMap.get(DamageType.DARK) * elementalMult);
+      float mult = elementalMult + attacker.getStat(StrifeStat.DARK_MULT) / 100;
+      damageMap.put(DamageType.DARK, damageMap.get(DamageType.DARK) * mult);
     }
     if (damageMap.containsKey(DamageType.LIGHT)) {
-      damageMap.put(DamageType.LIGHT, damageMap.get(DamageType.LIGHT) * elementalMult);
+      float mult = elementalMult + attacker.getStat(StrifeStat.LIGHT_MULT) / 100;
+      damageMap.put(DamageType.LIGHT, damageMap.get(DamageType.LIGHT) * mult);
     }
   }
 
@@ -933,8 +944,7 @@ public class DamageUtil {
 
   public static void attemptFreeze(StrifeMob attacker, StrifeMob defender) {
     LivingEntity defendEntity = defender.getEntity();
-    defendEntity.getWorld().playSound(defendEntity.getEyeLocation(),
-        Sound.BLOCK_GLASS_BREAK, 1f, 1.3f);
+    defendEntity.getWorld().playSound(defendEntity.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1.3f);
     float frost = 15;
     frost *= 1 - defender.getStat(StrifeStat.ICE_RESIST) / 100;
     DamageUtil.addFrost(attacker, defender, frost);
@@ -1233,7 +1243,10 @@ public class DamageUtil {
         defender.flagPvp();
       }
     }
-    DamageUtil.dealRawDamage(attacker, reflectDamage);
+    reflectDamage = defender.damageBarrier(attacker, reflectDamage);
+    if (reflectDamage > 0) {
+      DamageUtil.dealRawDamage(attacker, reflectDamage);
+    }
     defender.cacheReflect(attacker.getEntity().getUniqueId());
   }
 
@@ -1332,10 +1345,17 @@ public class DamageUtil {
       damage = DamageUtil.doPreDeath(mob, damage);
     }
     if (le.getHealth() <= damage) {
-      le.setHealth(0);
+      le.damage(damage);
     } else {
       le.setHealth(le.getHealth() - damage);
     }
+    /*
+    if (mob.isPlayer()) {
+      float hpPercent = (float) mob.getLife() / mob.getMaxLife();
+      float amount = 0.5f - hpPercent;
+      BorderEffectUtil.sendBorder((Player) mob.getEntity(), amount, 100);
+    }
+    */
   }
 
   private static int getMissingArmorItems(Player player) {

@@ -182,6 +182,7 @@ public class ChaserEntity {
     if (guided && target.get() != null) {
       if (location.getWorld() != target.get().getLocation().getWorld()) {
         delete();
+        return;
       }
       Location targetCoords = target.get().getLocation().clone();
       targetCoords.setY(targetCoords.getY() + target.get().getHeight() / 2 + 0.07);

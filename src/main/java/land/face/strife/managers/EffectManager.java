@@ -774,6 +774,7 @@ public class EffectManager {
         Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
             ((BuffEffect) finalEffect).setLoadedBuff(plugin.getBuffManager().getBuffFromId(buffId)), 10L);
         ((BuffEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", false));
+        ((BuffEffect) effect).setStacks(cs.getInt("stacks", 1));
         ((BuffEffect) effect).setUniversal(cs.getBoolean("global", false));
       }
       case REMOVE_BUFF -> {
@@ -891,6 +892,7 @@ public class EffectManager {
         ((CreateModelAnimation) effect).setDirectionOffset((float) cs.getDouble("direction-offset", 0));
         ((CreateModelAnimation) effect).setLifespan(cs.getInt("lifespan", 50));
         ((CreateModelAnimation) effect).setEntityLock(cs.getBoolean("entity-lock", false));
+        ((CreateModelAnimation) effect).setRefreshModel(cs.getBoolean("refresh-model", false));
         ((CreateModelAnimation) effect).setAnimationType(
             AnimationType.valueOf(cs.getString("rotation-type", "RANDOM_ROTATION")));
         ((CreateModelAnimation) effect).setRotationLock(cs.getBoolean("rotation-lock", false));
@@ -944,8 +946,7 @@ public class EffectManager {
       }
       case MODIFY_PROJECTILE -> {
         effect = new ModifyProjectile();
-        ((ModifyProjectile) effect).setFriendlyProjectiles(
-            cs.getBoolean("friendly-projectiles", false));
+        ((ModifyProjectile) effect).setFriendlyProjectiles(cs.getBoolean("friendly-projectiles", false));
         ((ModifyProjectile) effect).setRange(cs.getDouble("range", 1));
         ((ModifyProjectile) effect).setRemove(cs.getBoolean("remove", true));
         ((ModifyProjectile) effect).setSpeedMult(cs.getDouble("speed-mult", 0.5));

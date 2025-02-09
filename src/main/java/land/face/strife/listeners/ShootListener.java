@@ -42,7 +42,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntitySpellCastEvent;
-import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -126,9 +125,12 @@ public class ShootListener implements Listener {
     if (mainHand.getType() != Material.BOW) {
       return;
     }
-    ItemStack offHand = DeluxeInvyPlugin.getInstance().getPlayerManager()
-        .getPlayerData(event.getPlayer()).getEquipmentItem(DeluxeSlot.OFF_HAND);
-    if (offHand.getType() == Material.ARROW) {
+    var data = DeluxeInvyPlugin.getInstance().getPlayerManager().getPlayerData(event.getPlayer());
+    if (data == null) {
+      return;
+    }
+    ItemStack offHand = data.getEquipmentItem(DeluxeSlot.OFF_HAND);
+    if (offHand == null || offHand.getType() == Material.ARROW) {
       return;
     }
     if (ItemUtil.isFlintlock(mainHand)) {

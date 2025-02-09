@@ -211,6 +211,10 @@ public class StrifeMob {
     setBlock(Math.min(block, maxBlock));
   }
 
+  public double getLife() {
+    return livingEntity.getHealth();
+  }
+
   public void changeBarrier(StrifeMob source, float amount) {
     if (amount > 0) {
       restoreBarrier(amount);
@@ -312,7 +316,7 @@ public class StrifeMob {
   }
 
   public void endRageTask() {
-    if (getEntity() instanceof Player) {
+    if (isPlayer()) {
       StrifePlugin.getInstance().getGuiManager().getGui((Player) getEntity()).update(
           new GUIComponent("rage-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
     }
@@ -588,14 +592,19 @@ public class StrifeMob {
   }
 
   public void addBuff(LoadedBuff loadedBuff, UUID source, float duration) {
+    addBuff(loadedBuff, source, 1, duration);
+  }
+
+  public void addBuff(LoadedBuff loadedBuff, UUID source, int stacks, float duration) {
     Buff buff = LoadedBuff.toRunningBuff(this, source, duration, loadedBuff);
     Buff oldBuff = getBuff(buff.getParent().getId(), buff.getSource());
     cacheNeeded = true;
     if (oldBuff == null) {
+      buff.setStacks(stacks);
       buff.refreshBuff(duration);
       runningBuffs.add(buff);
     } else {
-      oldBuff.bumpBuff(duration);
+      oldBuff.bumpBuff(stacks, duration);
     }
     if (loadedBuff.isTriggerRefresh()) {
       cacheStats();

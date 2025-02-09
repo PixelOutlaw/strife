@@ -44,7 +44,7 @@ public class PopoffUtil {
     var manager = FancyHologramsPlugin.get().getHologramManager();
 
     Hologram holo = manager.create(textData);
-    holo.createHologram();
+    //holo.createHologram();
 
     Bukkit.getScheduler().runTaskAsynchronously(StrifePlugin.getInstance(), () -> holo.forceShowHologram(player));
 
@@ -78,12 +78,16 @@ public class PopoffUtil {
     float percent = (float) indicator.getLife() / indicator.getMaxLife();
     float scale;
     if (percent > 0.5) {
-      scale = indicator.getMidScale() + ((percent - 0.5f) * 2 * (indicator.getEndScale() - indicator.getMidScale()));
+      percent = 2 * (percent - 0.5f);
+      float difference = indicator.getEndScale() - indicator.getMidScale();
+      scale = indicator.getMidScale() + percent * difference;
     } else {
-      scale = indicator.getStartScale() + (percent * 2 * (indicator.getMidScale() - indicator.getStartScale()));
+      percent = 2 * percent;
+      float difference = indicator.getMidScale() - indicator.getStartScale();
+      scale = indicator.getStartScale() + percent * difference;
     }
     ((DisplayHologramData) hologram.getData()).getTranslation().add((float) velocity.getX(), (float) velocity.getY(), 0);
-    ((DisplayHologramData) hologram.getData()).getScale().set(new Vector3f(scale));
+    ((DisplayHologramData) hologram.getData()).getScale().set(scale);
     //hologram.forceShowHologram(indicator.getViewer());
     Bukkit.getScheduler().runTaskAsynchronously(LootPlugin.getInstance(), hologram::refreshForViewers);
     return false;

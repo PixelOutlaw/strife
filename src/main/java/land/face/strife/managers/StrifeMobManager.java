@@ -66,6 +66,13 @@ public class StrifeMobManager {
     return trackedEntities;
   }
 
+  public StrifeMob getStatMob(LivingEntity entity, boolean forceUpdate) {
+    if (forceUpdate) {
+      trackedEntities.remove(entity);
+    }
+    return getStatMob(entity);
+  }
+
   public StrifeMob getStatMob(LivingEntity entity) {
     if (entity == null || entity.hasMetadata("NPC") || entity.hasMetadata("pet")) {
       return null;
@@ -299,7 +306,7 @@ public class StrifeMobManager {
             ItemUtil.isAccessory(equipment.getItemInMainHand().getType())) {
           return dataBundle;
         }
-        dataBundle.setStats(plugin.getStatUpdateManager().getItemStats(equipment.getItemInMainHand()));
+        dataBundle.setStats(plugin.getStatUpdateManager().getItemStatsFromLore(equipment.getItemInMainHand()));
         dataBundle.setAbilities(plugin.getLoreAbilityManager().getAbilities(equipment.getItemInMainHand()));
         dataBundle.setTraits(ItemUtil.getTraits(equipment.getItemInMainHand()));
         return dataBundle;
@@ -315,14 +322,14 @@ public class StrifeMobManager {
         if (!ItemUtil.isValidOffhand(equipment.getItemInMainHand(), offhandItem)) {
           return dataBundle;
         }
-        dataBundle.setStats(plugin.getStatUpdateManager().getItemStats(offhandItem));
+        dataBundle.setStats(plugin.getStatUpdateManager().getItemStatsFromLore(offhandItem));
         dataBundle.setAbilities(plugin.getLoreAbilityManager().getAbilities(offhandItem));
         dataBundle.setTraits(ItemUtil.getTraits(offhandItem));
         return dataBundle;
       }
       default -> {
         ItemStack stack2 = invyData.getEquipmentItem(DeluxeSlot.valueOf(slot));
-        dataBundle.setStats(plugin.getStatUpdateManager().getItemStats(stack2));
+        dataBundle.setStats(plugin.getStatUpdateManager().getItemStatsFromLore(stack2));
         dataBundle.setAbilities(plugin.getLoreAbilityManager().getAbilities(stack2));
         dataBundle.setTraits(ItemUtil.getTraits(stack2));
         return dataBundle;

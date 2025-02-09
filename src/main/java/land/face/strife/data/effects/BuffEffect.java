@@ -7,14 +7,13 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import lombok.Setter;
 
+@Setter
 public class BuffEffect extends Effect {
 
-  @Setter
   private LoadedBuff loadedBuff;
-  @Setter
   private boolean strictDuration;
-  @Setter
   private boolean universal;
+  private int stacks;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -24,6 +23,6 @@ public class BuffEffect extends Effect {
       durationMult *= 1 + caster.getStat(StrifeStat.EFFECT_DURATION) / 100;
     }
     UUID source = universal ? null : caster.getEntity().getUniqueId();
-    target.addBuff(loadedBuff, source, (float) (loadedBuff.getSeconds() * durationMult));
+    target.addBuff(loadedBuff, source, stacks, (float) (loadedBuff.getSeconds() * durationMult));
   }
 }

@@ -3,9 +3,9 @@ package land.face.strife.data.effects;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.TargetingUtil;
+import lombok.Setter;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
@@ -13,6 +13,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.ShulkerBullet;
 
+@Setter
 public class ModifyProjectile extends Effect {
 
   private boolean remove;
@@ -25,7 +26,7 @@ public class ModifyProjectile extends Effect {
     Collection<Entity> entities = target.getEntity().getWorld()
         .getNearbyEntities(target.getEntity().getLocation(), range, range, range)
         .stream().filter(this::isValidProjectile)
-        .collect(Collectors.toList());
+        .toList();
 
     if (entities.isEmpty()) {
       return;
@@ -40,7 +41,7 @@ public class ModifyProjectile extends Effect {
 
     for (Entity entity : entities) {
       Projectile projectile = (Projectile) entity;
-      if (!projectileSources.contains(projectile.getShooter())) {
+      if (!projectileSources.contains((LivingEntity) projectile.getShooter())) {
         continue;
       }
       if (remove || entity instanceof Fireball) {
@@ -58,22 +59,6 @@ public class ModifyProjectile extends Effect {
 
   private boolean isValidProjectile(Entity e) {
     return e instanceof Projectile && ((Projectile) e).getShooter() instanceof LivingEntity;
-  }
-
-  public void setRemove(boolean remove) {
-    this.remove = remove;
-  }
-
-  public void setSpeedMult(double speedMult) {
-    this.speedMult = speedMult;
-  }
-
-  public void setRange(double range) {
-    this.range = range;
-  }
-
-  public void setFriendlyProjectiles(boolean friendlyProjectiles) {
-    this.friendlyProjectiles = friendlyProjectiles;
   }
 
 }

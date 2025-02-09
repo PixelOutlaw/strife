@@ -346,15 +346,6 @@ public class UniqueEntityManager {
     if (uniqueEntity.isIgnoreSneak()) {
       SpecialStatusUtil.setSneakImmune(le);
     }
-    if (StringUtils.isNotBlank(uniqueEntity.getMount())) {
-      Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
-        StrifeMob mountMob = spawnUnique(uniqueEntity.getMount(), location);
-        if (mountMob != null) {
-          mountMob.getEntity().addPassenger(mob.getEntity());
-          mob.addMinion(mountMob, 0, false);
-        }
-      }, 2L);
-    }
 
     mob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
 
@@ -424,7 +415,6 @@ public class UniqueEntityManager {
           uniqueEntity.setPowered(cs.getBoolean("powered", false));
         }
         uniqueEntity.setShowName(cs.getBoolean("show-name", true));
-        uniqueEntity.setMount(cs.getString("mount-id", ""));
         uniqueEntity.setFollowRange(cs.getInt("follow-range", -1));
         uniqueEntity.setSize(cs.getInt("size", -1));
         uniqueEntity.getFactions().addAll(cs.getStringList("factions"));

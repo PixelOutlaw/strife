@@ -81,9 +81,9 @@ public class Buff extends BukkitRunnable {
     secondsRemaining = Math.max((float) duration, secondsRemaining);
   }
 
-  public void bumpBuff(double duration) {
+  public void bumpBuff(int addStacks, double duration) {
     secondsRemaining = Math.max((float) duration, secondsRemaining);
-    stacks = Math.min(stacks + 1, maxStacks);
+    stacks = Math.min(stacks + addStacks, maxStacks);
     // Bukkit.getLogger().warning(" Stacks: " + stacks + "/" + maxStacks);
   }
 }

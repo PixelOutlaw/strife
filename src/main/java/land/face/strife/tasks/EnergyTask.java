@@ -75,18 +75,21 @@ public class EnergyTask extends BukkitRunnable {
       if (player.isDead() || player.getGameMode() == GameMode.CREATIVE) {
         return;
       }
-
-      if (player.isSprinting() && !mob.hasTrait(StrifeTrait.RUNNER)) {
+      if (player.isSprinting()) {
         if (mob.getEnergy() < 0.5) {
           player.setSprinting(false);
           player.setFoodLevel(4);
         } else {
           energyChange *= StrifePlugin.RUN_COST_PERCENT;
-          energyChange -= StrifePlugin.RUN_COST * getAgilityMult(mob);
+          if (!mob.hasTrait(StrifeTrait.RUNNER)) {
+            energyChange -= StrifePlugin.RUN_COST * getAgilityMult(mob);
+          }
         }
       } else if (MoveUtil.hasMoved(player)) {
         energyChange *= StrifePlugin.WALK_COST_PERCENT;
-        energyChange -= StrifePlugin.WALK_COST * getAgilityMult(mob);
+        if (!mob.hasTrait(StrifeTrait.RUNNER)) {
+          energyChange -= StrifePlugin.WALK_COST * getAgilityMult(mob);
+        }
         player.setFoodLevel(19);
       }
     }
@@ -147,7 +150,7 @@ public class EnergyTask extends BukkitRunnable {
     cachedSprintCosts.put(-1, 1.1f);
     cachedSprintCosts.put(0, 1.0f);
     for (int i = 1; i <= 120; i++) {
-      cachedSprintCosts.put(i, (float) Math.pow(0.98, i - 1));
+      cachedSprintCosts.put(i, (float) Math.pow(0.99, i - 1));
     }
     return cachedSprintCosts;
   }

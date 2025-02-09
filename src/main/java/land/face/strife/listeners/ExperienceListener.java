@@ -18,8 +18,6 @@
  */
 package land.face.strife.listeners;
 
-import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
-
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +31,6 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.events.StrifeCombatXpEvent;
 import land.face.strife.events.UniqueKillEvent;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;

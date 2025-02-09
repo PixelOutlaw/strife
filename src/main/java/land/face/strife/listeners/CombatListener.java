@@ -131,15 +131,17 @@ public class CombatListener implements Listener {
 
     boolean isSneakAttack = hitDirection != HitDirection.FRONT && attacker.getEntity() instanceof Player &&
         plugin.getStealthManager().canSneakAttack((Player) attacker.getEntity());
+    boolean isFromAbility = ProjectileUtil.isAbilityProjectile(projectile);
 
     DamageModifiers mods = new DamageModifiers();
     mods.setAttackType(AttackType.PROJECTILE);
     mods.setAttackMultiplier(attackMultiplier);
     mods.setHealMultiplier(Math.min(1.0f, attackMultiplier));
     mods.setDamageReductionRatio(0.5f + attackMultiplier / 2f);
-    mods.setScaleChancesWithAttack(true);
+    mods.setScaleChancesWithAttack(!isFromAbility);
     mods.setApplyOnHitEffects(StrifePlugin.RNG.nextFloat() < onHitChance);
     mods.setSneakAttack(isSneakAttack);
+    mods.setFromAbility(isFromAbility);
     mods.setBlocking(blocked);
 
     /*

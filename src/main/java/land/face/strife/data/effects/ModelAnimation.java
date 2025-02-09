@@ -14,6 +14,7 @@ public class ModelAnimation extends Effect {
   private float speed = 1f;
   private int unionDelay = 0;
   private int lockTicks = 0;
+  private boolean force = true;
 
   @Override
   public void apply(StrifeMob caster, StrifeMob target) {
@@ -25,7 +26,7 @@ public class ModelAnimation extends Effect {
             target.getModelEntity().setModelRotationLocked(false), lockTicks);
       }
       for (ActiveModel model : target.getModelEntity().getModels().values()) {
-        model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, speed, true);
+        model.getAnimationHandler().playAnimation(animationId, lerpIn, lerpOut, speed, force);
       }
       return;
     }

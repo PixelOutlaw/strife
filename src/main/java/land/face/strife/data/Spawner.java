@@ -152,11 +152,6 @@ public class Spawner extends BukkitRunnable {
         SpecialStatusUtil.setMobLevel(mob.getEntity(), spawner.getLevel());
       }
 
-      if (StringUtils.isBlank(spawner.getUniqueEntity().getMount())
-          && mob.getEntity().getVehicle() != null) {
-        mob.getEntity().getVehicle().remove();
-      }
-
       ChunkUtil.setDespawnOnUnload(mob.getEntity());
       spawner.addEntity(mob.getEntity());
 

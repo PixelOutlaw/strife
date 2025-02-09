@@ -292,8 +292,8 @@ public class ProjectileUtil {
 
   public static void createBullet(LivingEntity shooter, double attackMult, float power, float speedMult, float pierce,
       double spread) {
-    Vector velocity = getProjectileVelocity(shooter, power, spread, 0);
-    Location location = shooter.getEyeLocation().clone().add(0, -0.35, 0);
+    Vector velocity = getProjectileVelocity(shooter, power, spread, 0.075);
+    Location location = shooter.getEyeLocation().clone().add(0, -0.20, 0);
     location.setDirection(velocity);
     HANDLED_PROJECTILE.add(shooter.getUniqueId());
     Arrow arrow = shooter.getWorld().spawn(location, Arrow.class, e -> {

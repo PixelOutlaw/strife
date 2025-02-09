@@ -145,28 +145,6 @@ public class StatsOffenseMenuItem extends MenuItem {
     }
 
     lore.add(damageDisplay.toString());
-    float critMult = mob.getStat(StrifeStat.CRITICAL_DAMAGE) / 100;
-    if (!mob.hasTrait(StrifeTrait.NO_CRIT_MULT) || critMult < 0.1) {
-      float critDamage = physical + fire + ice + lightning + earth + light + shadow;
-      float critChance = Math.min(1, Math.max(mob.getStat(StrifeStat.CRITICAL_RATE), 0) / 100);
-      total += critChance * critDamage * critMult;
-    }
-    if (mob.getStat(StrifeStat.BLEED_CHANCE) > 0) {
-      float bleedBonus = 0.5f * (1 + mob.getStat(StrifeStat.BLEED_DAMAGE) / 100);
-      bleedBonus *= mob.getStat(StrifeStat.BLEED_CHANCE) / 100;
-      total += (physical + physical * (1 + critMult)) * bleedBonus;
-    }
-    if (mob.getStat(StrifeStat.POISON_CHANCE) > 0) {
-      float poisonDmg = POISON_FLAT_DAMAGE + mob.getLevel() * POISON_LEVEL_DAMAGE;
-      poisonDmg *= 5;
-      poisonDmg *= (float) Math.pow(mob.getStat(StrifeStat.POISON_CHANCE) / 100, 2);
-      total += poisonDmg;
-    }
-    if (mob.getStat(StrifeStat.MULTISHOT) > 0) {
-      total *= (float) (1 + (0.3 * (mob.getStat(StrifeStat.MULTISHOT) / 100)));
-    }
-    float dps = total * (1 / StatUtil.getAttackTime(mob));
-    lore.add(addStat("Estimated DPS: ", dps, " Damage", INT_FORMAT));
     lore.add(addStat("Accuracy Rating: ", 90 + mob.getStat(StrifeStat.ACCURACY), INT_FORMAT));
     String as = addStat("Attack Speed: ", StatUtil.getAttackTime(mob), "s", TWO_DECIMAL);
     float attackSpeed = mob.getStat(StrifeStat.ATTACK_SPEED);

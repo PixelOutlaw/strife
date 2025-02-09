@@ -176,7 +176,7 @@ public class StealthManager {
     for (Player p : Bukkit.getOnlinePlayers()) {
       p.hidePlayer(plugin, player);
     }
-    player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, ticks * 3, 0, false, false));
+    player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, ticks * 3, 0, false, false, true));
   }
 
   public void unstealthPlayer(Player player, boolean fromHit) {
@@ -227,9 +227,9 @@ public class StealthManager {
       }
     }
     if (SkillRank.isRank(data.getInitialRank(), SkillRank.JOURNEYMAN)) {
-      player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 5, 1, true, false));
-    } else {
       player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 5, 0, true, false));
+    } else {
+      player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 5, 1, true, false));
     }
     double sneakSkill = SkillRank.isRank(data.getInitialRank(), SkillRank.APPRENTICE) ? data.getInitialLevel() : 1;
     sneakSkill *= data.getInitialStealthBonus();

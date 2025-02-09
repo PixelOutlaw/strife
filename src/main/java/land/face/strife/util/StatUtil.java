@@ -91,12 +91,14 @@ public class StatUtil {
         return getLifeRegen(mob);
       }
       case ENERGY_REGEN -> {
-        float amount = stats.getOrDefault(StrifeStat.ENERGY_REGEN, 0f);
+        float amount = stats.getOrDefault(StrifeStat.ENERGY_REGEN, 0f) *
+            (1 + stats.getOrDefault(StrifeStat.ENERGY_REGEN_MULT, 0f) / 100);
+        if (mob.getEntity().hasPotionEffect(HERO_OF_THE_VILLAGE)) {
+          amount *= 1.02f;
+          amount += 2;
+        }
         if (!mob.isInCombat() && plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.THREE)) {
           amount += 10;
-        }
-        if (mob.getEntity().hasPotionEffect(HERO_OF_THE_VILLAGE)) {
-          amount += 2;
         }
         return amount;
       }
@@ -199,19 +201,23 @@ public class StatUtil {
         return Math.min(amount, 95);
       }
       case BARRIER_REGEN -> {
-        if (mob.hasTrait(StrifeTrait.OVERSHIELD) && mob.getEntity().getHealth() > mob.getMaxLife() - 0.01) {
+        float conversionFromLifeRegen = (mob.hasTrait(StrifeTrait.OVERSHIELD) ? 0.5f : 0) +
+          (mob.hasTrait(StrifeTrait.OVERSHIELD_PATH) ? 0.5f : 0);
+        if (conversionFromLifeRegen > 0 && mob.getEntity().getHealth() > mob.getMaxLife() - 0.01) {
           float amount = stats.getOrDefault(StrifeStat.BARRIER_REGEN, 0f);
           float lifeRegen = mob.getStatRaw(StrifeStat.REGENERATION) * (1 + mob.getStatRaw(StrifeStat.REGEN_MULT) / 100);
-          amount += lifeRegen * 0.5f;
+          amount += lifeRegen * conversionFromLifeRegen;
           return amount;
-        } else
+        } else {
           return stats.getOrDefault(StrifeStat.BARRIER_REGEN, 0f);
+        }
       }
       case ACCURACY -> {
         float amount = stats.getOrDefault(StrifeStat.ACCURACY, 0f) *
             (1 + stats.getOrDefault(StrifeStat.ACCURACY_MULT, 0f) / 100);
         if (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.FOUR)) {
-          amount *= 1.06f;
+          amount *= 1.085f;
+          amount += 3;
         }
         return amount;
       }

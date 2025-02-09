@@ -46,11 +46,11 @@ public class StatUpdateManager {
     this.plugin = plugin;
   }
 
-  public Map<StrifeStat, Float> getItemStats(ItemStack stack) {
-    return getItemStats(stack, 1.0f);
+  public Map<StrifeStat, Float> getItemStatsFromLore(ItemStack stack) {
+    return getItemStatsFromLore(stack, 1.0f);
   }
 
-  public Map<StrifeStat, Float> getItemStats(ItemStack stack, float multiplier) {
+  public Map<StrifeStat, Float> getItemStatsFromLore(ItemStack stack, float multiplier) {
     if (stack == null || stack.getType() == Material.AIR) {
       return new HashMap<>();
     }

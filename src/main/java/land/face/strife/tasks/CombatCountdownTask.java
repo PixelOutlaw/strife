@@ -78,8 +78,10 @@ public class CombatCountdownTask extends BukkitRunnable {
     }
 
     ticks--;
-    if (ticks < 1 && !delayDueToPvpDamageOverTime(mob)) {
-      endTask(mob);
+    if (ticks < 1) {
+      if (!shouldCombatExitBeDelayed(mob)) {
+        endTask(mob);
+      }
       return;
     }
 
@@ -223,15 +225,8 @@ public class CombatCountdownTask extends BukkitRunnable {
     mob.getChampion().getDetailsContainer().award(mob.getChampion());
   }
 
-  private static boolean delayDueToPvpDamageOverTime(StrifeMob mob) {
-    if (!mob.isInPvp()) {
-      return false;
-    }
-    if (mob.getEntity().isOnGround()) {
-      return true;
-    }
-    return mob.getBleed() > 0 ||
-        mob.getEntity().hasPotionEffect(PotionEffectType.POISON) ||
+  private static boolean shouldCombatExitBeDelayed(StrifeMob mob) {
+    return mob.getBleed() > 0 || mob.getEntity().hasPotionEffect(PotionEffectType.POISON) ||
         mob.getEntity().getFireTicks() > 0;
   }
 }
