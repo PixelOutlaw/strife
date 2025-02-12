@@ -14,9 +14,11 @@ import land.face.strife.util.StatUtil;
 import org.bukkit.GameMode;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.util.Vector;
+import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
 
 public class LaunchAndLandListener implements Listener {
 
@@ -63,9 +65,13 @@ public class LaunchAndLandListener implements Listener {
     Vector oldVelocity = event.getPlayer().getVelocity().clone()
         .setY(Math.max(0, event.getPlayer().getVelocity().getY()));
     event.getPlayer().setVelocity(oldVelocity.add(bonusVelocity));
-    event.getPlayer().getWorld()
-        .spawnParticle(Particle.CRIT, event.getPlayer().getLocation(), 20, 0, 0, 0, 0.4);
-    event.getPlayer().getWorld()
-        .playSound(event.getPlayer().getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+
+    if (HoneyImHomeAPI.isPlayerInHouse(event.getPlayer())) {
+      event.getPlayer().spawnParticle(Particle.CRIT, event.getPlayer().getLocation(), 20, 0, 0, 0, 0.4);
+      event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+    } else {
+      event.getPlayer().getWorld().spawnParticle(Particle.CRIT, event.getPlayer().getLocation(), 20, 0, 0, 0, 0.4);
+      event.getPlayer().getWorld().playSound(event.getPlayer().getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+    }
   }
 }

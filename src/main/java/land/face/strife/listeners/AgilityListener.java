@@ -31,6 +31,7 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
 
 public class AgilityListener implements Listener {
 
@@ -223,8 +224,14 @@ public class AgilityListener implements Listener {
     PotionListener.ignoreFx = false;
 
     player.setVelocity(dodgeVector.multiply(rollPower).setY(rollAscent));
-    player.getWorld().spawnParticle(particle, player.getLocation(), 10, 0, 0, 0, longParticleSpeed);
-    player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+
+    if (HoneyImHomeAPI.isPlayerInHouse(player)) {
+      player.spawnParticle(particle, player.getLocation(), 10, 0, 0, 0, longParticleSpeed);
+      player.playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+    } else {
+      player.getWorld().spawnParticle(particle, player.getLocation(), 10, 0, 0, 0, longParticleSpeed);
+      player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+    }
   }
 
   private void doAirJump(StrifeMob mob, Player player, int jumps, float cost) {
@@ -261,13 +268,25 @@ public class AgilityListener implements Listener {
     player.setVelocity(velocity.add(bonusVelocity));
     MoveUtil.setVelocity(player);
 
-    flingParticle(player);
-    player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+    if (HoneyImHomeAPI.isPlayerInHouse(player)) {
+      flingParticle2(player);
+      player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+    } else {
+      flingParticle(player);
+      player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
+    }
   }
 
   private void flingParticle(Player player) {
     for (Integer step : cachedJumpAnimation.keySet()) {
       player.getWorld().spawnParticle(particle, player.getLocation(), 0,
+          cachedJumpAnimation.get(step).getX(), 0.1, cachedJumpAnimation.get(step).getZ(), particleSpeed);
+    }
+  }
+
+  private void flingParticle2(Player player) {
+    for (Integer step : cachedJumpAnimation.keySet()) {
+      player.spawnParticle(particle, player.getLocation(), 0,
           cachedJumpAnimation.get(step).getX(), 0.1, cachedJumpAnimation.get(step).getZ(), particleSpeed);
     }
   }

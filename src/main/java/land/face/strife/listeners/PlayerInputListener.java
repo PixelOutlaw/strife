@@ -11,6 +11,8 @@ import land.face.strife.data.StrifeMob;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
+import soujah.dev.honeyImHome.HoneyImHome;
 
 public class PlayerInputListener implements Listener {
 
@@ -43,8 +45,13 @@ public class PlayerInputListener implements Listener {
         EquipmentMenu menu = new EquipmentMenu(DeluxeInvyPlugin.getInstance());
         menu.open(event.getPlayer());
       }, 0L);
-      case SWAP_HAND -> Bukkit.getScheduler().runTaskLater(plugin,
-          () -> plugin.getPrayerManager().getPrayerMenu().open(event.getPlayer()), 0L);
+      case SWAP_HAND -> Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        if (HoneyImHomeAPI.isPlayerInHouse(event.getPlayer())) {
+          event.getPlayer().performCommand("home edit");
+        } else {
+          plugin.getPrayerManager().getPrayerMenu().open(event.getPlayer());
+        }
+      }, 0L);
     }
   }
 }

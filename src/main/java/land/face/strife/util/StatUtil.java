@@ -63,7 +63,7 @@ public class StatUtil {
     }
     if (!mob.isInCombat()) {
       if (mob.getEntity().getType() == EntityType.PLAYER && !mob.isInCombat()) {
-        amount *= 1.5F;
+        amount *= 1.15F;
         amount += 4;
       }
       if (plugin.getPrayerManager().isPrayerActive(mob.getEntity(), Prayer.THREE)) {

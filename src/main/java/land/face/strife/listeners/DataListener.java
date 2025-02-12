@@ -80,6 +80,8 @@ import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
+import soujah.dev.honeyImHome.Events.EnterHouseEvent;
 
 public record DataListener(StrifePlugin plugin) implements Listener {
 
@@ -105,6 +107,11 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     event.setCanCreatePortal(false);
     event.setSearchRadius(1);
     event.setCancelled(true);
+  }
+
+  @EventHandler
+  public void onHomeEnter(final EnterHouseEvent event) {
+    plugin.getAbilityManager().unToggleAll(event.getPlayer());
   }
 
   @EventHandler

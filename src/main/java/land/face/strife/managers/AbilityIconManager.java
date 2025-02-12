@@ -30,6 +30,7 @@ import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
 
 public class AbilityIconManager {
 
@@ -148,7 +149,11 @@ public class AbilityIconManager {
     if (slot == AbilitySlot.INVALID) {
       return;
     }
-
+    if (HoneyImHomeAPI.isPlayerInHouse(player)) {
+      StrifePlugin.getInstance().getGuiManager().postNotice(player, GuiManager.NOTICE_INVALID_TARGET, 10);
+      player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.6f);
+      return;
+    }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
     Ability ability = mob.getChampion().getAbility(slot);
     if (ability == null) {

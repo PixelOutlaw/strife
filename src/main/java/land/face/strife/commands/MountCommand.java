@@ -34,6 +34,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
+import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
 
 @CommandAlias("mount|mounts")
 public class MountCommand extends BaseCommand {
@@ -81,6 +82,10 @@ public class MountCommand extends BaseCommand {
     Material floorMaterial = sender.getLocation().clone().add(-0, -0.1, 0).getBlock().getType();
     if (!floorMaterial.isSolid()) {
       PaletteUtil.sendMessage(sender, onlyOnGround);
+      return;
+    }
+    if (HoneyImHomeAPI.isPlayerInHouse(sender)) {
+      PaletteUtil.sendMessage(sender, invalidLocation);
       return;
     }
     if (JumpUtil.isRooted(sender)) {
