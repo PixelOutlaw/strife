@@ -156,6 +156,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>soujah.dev</groupId>
+      <artifactId>HoneyImHome</artifactId>
+      <version>1.0.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>com.comphenix.protocol</groupId>
       <artifactId>ProtocolLib</artifactId>
       <version>5.1.0</version>

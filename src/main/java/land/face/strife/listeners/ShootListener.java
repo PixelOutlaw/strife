@@ -31,6 +31,7 @@ import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
@@ -46,6 +47,7 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
 
 public class ShootListener implements Listener {
 
@@ -67,8 +69,7 @@ public class ShootListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGH)
   public void onPlayerArrowShoot(ProjectileLaunchEvent event) {
-    if (!(event.getEntity().getShooter() instanceof Player player)
-        || !(event.getEntity() instanceof Arrow)) {
+    if (!(event.getEntity().getShooter() instanceof Player player) || !(event.getEntity() instanceof Arrow)) {
       return;
     }
     if (ProjectileUtil.HANDLED_PROJECTILE.contains(player.getUniqueId())) {
@@ -83,6 +84,12 @@ public class ShootListener implements Listener {
 
     float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(mob, 1);
     attackMultiplier = (float) Math.pow(attackMultiplier, 1.5f);
+
+
+    if (HoneyImHomeAPI.isPlayerInHouse(player)) {
+      event.setCancelled(true);
+      return;
+    }
 
     if (attackMultiplier < 0.1) {
       event.setCancelled(true);
