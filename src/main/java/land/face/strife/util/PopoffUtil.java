@@ -34,6 +34,7 @@ public class PopoffUtil {
 
     TextHologramData textData = new TextHologramData(UUID.randomUUID().toString(), location);
     textData.setText(List.of(text));
+    textData.setInterpolationDuration(1);
     textData.setBackground(Hologram.TRANSPARENT);
     textData.setBillboard(Billboard.CENTER);
     textData.setBrightness(new Brightness(13, 13));

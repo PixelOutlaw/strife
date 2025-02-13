@@ -2,11 +2,8 @@ package land.face.strife.tasks;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import de.oliver.fancyholograms.api.FancyHologramsPlugin;
-import de.oliver.fancyholograms.api.data.DisplayHologramData;
-import de.oliver.fancyholograms.api.data.HologramData;
 import de.oliver.fancyholograms.api.data.TextHologramData;
 import de.oliver.fancyholograms.api.hologram.Hologram;
-import de.oliver.fancyholograms.api.hologram.HologramType;
 import java.util.List;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
@@ -71,6 +68,7 @@ public class DisplayRunner {
     TextHologramData textData = new TextHologramData(UUID.randomUUID().toString(), loc);
     textData.setText(List.of(""));
     textData.setBackground(Hologram.TRANSPARENT);
+    textData.setInterpolationDuration(1);
     textData.setBillboard(Billboard.CENTER);
     textData.setBrightness(new Brightness(10, 10));
     textData.setTextShadow(false);

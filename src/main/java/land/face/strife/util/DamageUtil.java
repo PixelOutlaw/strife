@@ -438,8 +438,6 @@ public class DamageUtil {
         mods.getAbilityMods().getOrDefault(AbilityMod.HEALTH_ON_HIT, 0f));
     DamageUtil.applyEnergyOnHit(attacker, ratio);
 
-    DamageUtil.doReflectedDamage(defender, attacker);
-
     if (attacker.getStat(StrifeStat.RAGE_ON_HIT) > 0.1) {
       attacker.changeRage(attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
     }
@@ -457,6 +455,7 @@ public class DamageUtil {
     if (defender.getStat(StrifeStat.ENERGY_WHEN_HIT) > 0.1) {
       StatUtil.changeEnergy(defender, defender.getStat(StrifeStat.ENERGY_WHEN_HIT));
     }
+    DamageUtil.doReflectedDamage(defender, attacker);
     plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_HIT);
     switch (attackType) {
       case MELEE -> plugin.getAbilityManager().abilityCast(defender, attacker, TriggerAbilityType.WHEN_MELEE_HIT);
@@ -1243,7 +1242,7 @@ public class DamageUtil {
         defender.flagPvp();
       }
     }
-    reflectDamage = defender.damageBarrier(attacker, reflectDamage);
+    reflectDamage = attacker.damageBarrier(defender, reflectDamage);
     if (reflectDamage > 0) {
       DamageUtil.dealRawDamage(attacker, reflectDamage);
     }
