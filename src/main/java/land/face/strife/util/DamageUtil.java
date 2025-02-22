@@ -1235,8 +1235,7 @@ public class DamageUtil {
     if (attacker.getEntity() instanceof Player) {
       ((Player) attacker.getEntity()).spawnParticle(Particle.DAMAGE_INDICATOR,
           TargetingUtil.getOriginLocation(attacker.getEntity(), OriginLocation.CENTER),
-          (int) reflectDamage, 0.3, 0.3,
-          0.3, 0.1);
+          (int) reflectDamage, 0.3, 0.3, 0.3, 0.1);
       if (defender.getEntity() instanceof Player && attacker != defender) {
         attacker.flagPvp();
         defender.flagPvp();

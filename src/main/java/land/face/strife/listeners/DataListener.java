@@ -82,6 +82,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
 import soujah.dev.honeyImHome.Events.EnterHouseEvent;
+import soujah.dev.honeyImHome.Events.LoadHomesPluginEvent;
+import soujah.dev.honeyImHome.Events.UnloadHomesPluginEvent;
 
 public record DataListener(StrifePlugin plugin) implements Listener {
 
@@ -107,6 +109,16 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     event.setCanCreatePortal(false);
     event.setSearchRadius(1);
     event.setCancelled(true);
+  }
+
+  @EventHandler
+  public void onHomeLoad(final LoadHomesPluginEvent event) {
+    plugin.setHomePluginHook(event.getPlugin());
+  }
+
+  @EventHandler
+  public void onHomeUnload(final UnloadHomesPluginEvent event) {
+    plugin.setHomePluginHook(null);
   }
 
   @EventHandler

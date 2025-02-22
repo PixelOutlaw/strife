@@ -196,6 +196,7 @@ import net.milkbowl.vault.permission.Permission;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import soujah.dev.honeyImHome.HoneyImHome;
 
 public class StrifePlugin extends FacePlugin {
 
@@ -331,6 +332,8 @@ public class StrifePlugin extends FacePlugin {
   public SnazzyPartiesHook snazzyPartiesHook;
   @Getter
   private DeluxeInvyPlugin deluxeInvyPlugin;
+  @Getter @Setter
+  private HoneyImHome homePluginHook;
   @Getter
   private PlayerPoints playerPointsPlugin;
   @Getter
@@ -623,6 +626,13 @@ public class StrifePlugin extends FacePlugin {
     if (Bukkit.getPluginManager().getPlugin("DeluxeInvy") != null) {
       deluxeInvyPlugin = (DeluxeInvyPlugin) Bukkit.getPluginManager().getPlugin("DeluxeInvy");
       Bukkit.getPluginManager().registerEvents(new DeluxeEquipListener(this), this);
+    }
+    if (Bukkit.getPluginManager().getPlugin("HoneyImHome") != null) {
+      try {
+        homePluginHook = (HoneyImHome) Bukkit.getPluginManager().getPlugin("HoneyImHome");
+      } catch (Exception ignored) {
+
+      }
     }
     if (Bukkit.getPluginManager().getPlugin("PlayerPoints") != null) {
       playerPointsPlugin = (PlayerPoints) Bukkit.getPluginManager().getPlugin("PlayerPoints");
@@ -1042,6 +1052,13 @@ public class StrifePlugin extends FacePlugin {
       LogUtil.printDebug("Saved spawner " + spawnerId + ".");
     }
     spawnerYAML.save();
+  }
+
+  public boolean isInHome(Player player) {
+    if (homePluginHook == null || !homePluginHook.isEnabled()) {
+      return false;
+    }
+    return homePluginHook.getHouseManager().getHomeDataFromPlayerId(player.getUniqueId()).isInHouse();
   }
 
   public AbilityMenu getAbilityPicker() {

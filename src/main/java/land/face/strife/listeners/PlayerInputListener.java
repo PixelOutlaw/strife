@@ -46,7 +46,7 @@ public class PlayerInputListener implements Listener {
         menu.open(event.getPlayer());
       }, 0L);
       case SWAP_HAND -> Bukkit.getScheduler().runTaskLater(plugin, () -> {
-        if (HoneyImHomeAPI.isPlayerInHouse(event.getPlayer())) {
+        if (plugin.isInHome(event.getPlayer())) {
           event.getPlayer().performCommand("home edit");
         } else {
           plugin.getPrayerManager().getPrayerMenu().open(event.getPlayer());

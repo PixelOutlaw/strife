@@ -3,6 +3,7 @@ package land.face.strife.data.effects;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.ArrayList;
 import java.util.List;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.util.TargetingUtil;
@@ -36,7 +37,7 @@ public class Teleport extends LocationEffect {
         return;
       }
     }
-    if (caster.isPlayer() && HoneyImHomeAPI.isPlayerInHouse((Player) caster.getEntity())) {
+    if (caster.isPlayer() && getPlugin().isInHome((Player) caster.getEntity())) {
       return;
     }
 

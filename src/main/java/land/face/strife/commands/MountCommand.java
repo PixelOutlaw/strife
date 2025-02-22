@@ -84,7 +84,7 @@ public class MountCommand extends BaseCommand {
       PaletteUtil.sendMessage(sender, onlyOnGround);
       return;
     }
-    if (HoneyImHomeAPI.isPlayerInHouse(sender)) {
+    if (plugin.isInHome(sender)) {
       PaletteUtil.sendMessage(sender, invalidLocation);
       return;
     }

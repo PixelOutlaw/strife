@@ -225,7 +225,7 @@ public class AgilityListener implements Listener {
 
     player.setVelocity(dodgeVector.multiply(rollPower).setY(rollAscent));
 
-    if (HoneyImHomeAPI.isPlayerInHouse(player)) {
+    if (plugin.isInHome(player)) {
       player.spawnParticle(particle, player.getLocation(), 10, 0, 0, 0, longParticleSpeed);
       player.playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
     } else {
@@ -268,7 +268,7 @@ public class AgilityListener implements Listener {
     player.setVelocity(velocity.add(bonusVelocity));
     MoveUtil.setVelocity(player);
 
-    if (HoneyImHomeAPI.isPlayerInHouse(player)) {
+    if (plugin.isInHome(player)) {
       flingParticle2(player);
       player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
     } else {

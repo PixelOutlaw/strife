@@ -36,15 +36,19 @@ public class CooldownTracker extends BukkitRunnable {
     this.holder = holder;
     this.ability = ability;
     this.slot = slot;
+    chargesLeft = ability.getMaxCharges();
+    setStart();
+    toggleState = false;
+    runTaskTimer(StrifePlugin.getInstance(), 0L, TICK_TIME);
+  }
+
+  public void setStart() {
     float cdReduction = 1f - StatUtil.getStat(holder, StrifeStat.COOLDOWN_REDUCTION) / 100f;
     float cooldown = holder.getEntity().isSneaking() ? ability.getSneakCooldown() : ability.getCooldown();
     float newCooldown = Math.max(ability.getMinCooldown(), cdReduction * cooldown);
     maxDuration = (int) (newCooldown * 20 / TICK_TIME);
     duration = maxDuration;
-    chargesLeft = ability.getMaxCharges();
     startTime = System.currentTimeMillis();
-    toggleState = false;
-    runTaskTimer(StrifePlugin.getInstance(), 0L, TICK_TIME);
   }
 
   @Override
@@ -76,7 +80,7 @@ public class CooldownTracker extends BukkitRunnable {
   public void reduce(int ticks) {
     duration -= ticks;
     while (duration < 1) {
-      chargesLeft++;
+      chargesLeft = ability.isFullRecharge() ? ability.getMaxCharges() : chargesLeft + 1;
       if (chargesLeft >= ability.getMaxCharges()) {
         if (ability.getMaxCharges() > 1) {
           AbilityGainChargeEvent e = new AbilityGainChargeEvent(holder, this);

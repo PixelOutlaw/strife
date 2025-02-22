@@ -400,6 +400,9 @@ public class AbilityManager {
       }
     }
     tracker.setChargesLeft(tracker.getChargesLeft() - 1);
+    if (ability.isFullRecharge()) {
+      tracker.setStart();
+    }
   }
 
   /*
@@ -702,6 +705,7 @@ public class AbilityManager {
         .weightScaling(weightScaling)
         .maxTargets(cs.getInt("max-targets", 8))
         .healthCost(cs.getBoolean("health-cost", false))
+        .fullRecharge(cs.getBoolean("full-recharge", false))
         .build();
 
     ability.getPassiveStats().putAll(StatUtil.getStatMapFromSection(

@@ -1,5 +1,6 @@
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.Arrays;
@@ -84,10 +85,17 @@ public class FishingListener implements Listener {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
     if (StrifePlugin.RNG.nextFloat() < mob.getStat(StrifeStat.AUTO_FISH_CHANCE) / 100) {
       event.setCancelled(true);
-      AutoFishEvent autoFishEvent = new AutoFishEvent(mob, event.getHook().getLocation());
-      Bukkit.getPluginManager().callEvent(autoFishEvent);
+      //if (event.getPlayer().getEquipment().getItemInOffHand().getType() == Material.BARRIER ||
+      //    event.getPlayer().getEquipment().getItemInOffHand().getType() == Material.WHEAT_SEEDS) {
+
+      Bukkit.getPluginManager().callEvent(new AutoFishEvent(mob, event.getHook().getLocation()));
+
       consumeBait(mob);
       degradeRod(event.getPlayer().getEquipment().getItemInMainHand());
+      //} else {
+      //  PaletteUtil.sendMessage(event.getPlayer(), "|yellow|You cannot auto fish with equipment in your offhand!");
+      //  event.getHook().remove();
+      //}
     }
     applyWaitTime(mob, event.getPlayer().getEquipment().getItemInMainHand(), event.getHook());
   }
@@ -150,27 +158,25 @@ public class FishingListener implements Listener {
   }
 
   private void consumeBait(StrifeMob mob) {
-    if (mob.getEntity().getEquipment().getItemInOffHand() == null ||
-        mob.getEntity().getEquipment().getItemInOffHand().getType() != Material.WHEAT_SEEDS) {
+    if (mob.getEntity().getEquipment().getItemInOffHand().getType() != Material.WHEAT_SEEDS) {
       return;
     }
     if (StrifePlugin.RNG.nextFloat() < mob.getStat(StrifeStat.FISH_BAIT_KEEP) / 100) {
       return;
     }
-    PlayerData data = DeluxeInvyPlugin.getInstance().getPlayerManager()
-        .getPlayerData((Player) mob.getEntity());
+    PlayerData data = DeluxeInvyPlugin.getInstance().getPlayerManager().getPlayerData((Player) mob.getEntity());
     if (data == null) {
       return;
     }
     ItemStack stack = data.getEquipmentItem(DeluxeSlot.OFF_HAND);
-    if (stack == null) {
+    if (stack == null || stack.getType() != Material.WHEAT_SEEDS) {
       return;
     }
     if (stack.getAmount() == 1) {
       data.setEquipmentItem(DeluxeSlot.OFF_HAND, new ItemStack(Material.AIR));
     } else {
       stack.setAmount(stack.getAmount() - 1);
-      mob.getEntity().getEquipment().getItemInOffHand().setAmount(stack.getAmount());
+      data.setEquipmentItem(DeluxeSlot.OFF_HAND, stack);
     }
 
   }
@@ -180,6 +186,7 @@ public class FishingListener implements Listener {
       return;
     }
     double repairMod = 100;
+    /*
     for (String loreLine : TextUtils.getLore(stack)) {
       if (!loreLine.endsWith(" Increased Durability")) {
         continue;
@@ -187,6 +194,7 @@ public class FishingListener implements Listener {
       String strippedLore = ChatColor.stripColor(loreLine);
       repairMod += Double.parseDouble(pattern.matcher(strippedLore).replaceAll(""));
     }
+    */
     if (StrifePlugin.RNG.nextFloat() < 0.05 / (repairMod / 100)) {
       stack.setDurability((short) (stack.getDurability() + 1));
     }

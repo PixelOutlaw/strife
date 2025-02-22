@@ -149,7 +149,7 @@ public class AbilityIconManager {
     if (slot == AbilitySlot.INVALID) {
       return;
     }
-    if (HoneyImHomeAPI.isPlayerInHouse(player)) {
+    if (plugin.isInHome(player)) {
       StrifePlugin.getInstance().getGuiManager().postNotice(player, GuiManager.NOTICE_INVALID_TARGET, 10);
       player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.6f);
       return;

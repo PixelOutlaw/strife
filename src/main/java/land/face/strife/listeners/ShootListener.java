@@ -86,7 +86,7 @@ public class ShootListener implements Listener {
     attackMultiplier = (float) Math.pow(attackMultiplier, 1.5f);
 
 
-    if (HoneyImHomeAPI.isPlayerInHouse(player)) {
+    if (plugin.isInHome(player)) {
       event.setCancelled(true);
       return;
     }
