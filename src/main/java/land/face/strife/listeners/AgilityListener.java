@@ -31,7 +31,6 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
-import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
 
 public class AgilityListener implements Listener {
 

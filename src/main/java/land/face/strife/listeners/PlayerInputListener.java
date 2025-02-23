@@ -11,8 +11,6 @@ import land.face.strife.data.StrifeMob;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
-import soujah.dev.honeyImHome.HoneyImHome;
 
 public class PlayerInputListener implements Listener {
 

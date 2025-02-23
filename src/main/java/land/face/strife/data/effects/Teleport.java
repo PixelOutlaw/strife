@@ -1,19 +1,15 @@
 package land.face.strife.data.effects;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.ArrayList;
 import java.util.List;
-import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.util.TargetingUtil;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
-import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
 
 public class Teleport extends LocationEffect {
 

@@ -47,7 +47,6 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
 
 public class ShootListener implements Listener {
 

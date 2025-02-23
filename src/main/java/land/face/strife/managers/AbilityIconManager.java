@@ -30,7 +30,6 @@ import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import soujah.dev.honeyImHome.API.HoneyImHomeAPI;
 
 public class AbilityIconManager {
 

@@ -157,7 +157,7 @@
     </dependency>
     <dependency>
       <groupId>soujah.dev</groupId>
-      <artifactId>HoneyImHome</artifactId>
+      <artifactId>HoneyImHome2</artifactId>
       <version>1.0.1</version>
       <scope>provided</scope>
     </dependency>
