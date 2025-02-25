@@ -237,7 +237,7 @@ public class AbilityIconManager {
         charges = charges + StringUtils.repeat("☋", abilityA.getMaxCharges() - cd.getChargesLeft());
       }
       plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-a-charges",
-          GuiManager.noShadow(new TextComponent(charges)), charges.length() * 3, -89, Alignment.LEFT));
+          GuiManager.noShadow(GuiManager.adventureIsRetarded(charges)), charges.length() * 3, -89, Alignment.LEFT));
     }
 
     if (abilityB == null || abilityB.getMaxCharges() < 2) {
@@ -253,7 +253,7 @@ public class AbilityIconManager {
         charges = charges + StringUtils.repeat("☋", abilityB.getMaxCharges() - cd.getChargesLeft());
       }
       plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-b-charges",
-          GuiManager.noShadow(new TextComponent(charges)), charges.length() * 3, -69, Alignment.LEFT));
+          GuiManager.noShadow(GuiManager.adventureIsRetarded(charges)), charges.length() * 3, -69, Alignment.LEFT));
     }
 
     if (abilityC == null || abilityC.getMaxCharges() < 2) {
@@ -269,7 +269,7 @@ public class AbilityIconManager {
         charges = charges + StringUtils.repeat("☋", abilityC.getMaxCharges() - cd.getChargesLeft());
       }
       plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-c-charges",
-          GuiManager.noShadow(new TextComponent(charges)), charges.length() * 3, -49, Alignment.LEFT));
+          GuiManager.noShadow(GuiManager.adventureIsRetarded(charges)), charges.length() * 3, -49, Alignment.LEFT));
     }
 
     if (abilityD == null || abilityD.getMaxCharges() < 2) {
@@ -285,7 +285,7 @@ public class AbilityIconManager {
         charges = charges + StringUtils.repeat("☋", abilityD.getMaxCharges() - cd.getChargesLeft());
       }
       plugin.getGuiManager().updateComponent(player, new GUIComponent("slot-d-charges",
-          GuiManager.noShadow(new TextComponent(charges)), charges.length() * 3, -29, Alignment.LEFT));
+          GuiManager.noShadow(GuiManager.adventureIsRetarded(charges)), charges.length() * 3, -29, Alignment.LEFT));
     }
   }
 

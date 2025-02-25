@@ -21,6 +21,7 @@ import static land.face.strife.menus.stats.StatsMenu.TWO_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.text.DecimalFormat;
@@ -65,9 +66,8 @@ public class StatsOffenseMenuItem extends MenuItem {
 
 
   StatsOffenseMenuItem(StatsMenu statsMenu) {
-    super(FaceColor.ORANGE.s() + FaceColor.BOLD.s() + "Damage Stats", new ItemStack(Material.BARRIER));
+    super(FaceColor.ORANGE.s() + FaceColor.BOLD.s() + "Damage Stats", ItemUtils.BLANK.clone());
     this.statsMenu = statsMenu;
-    ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
     POISON_FLAT_DAMAGE = (float) StrifePlugin.getInstance().getSettings()
         .getDouble("config.mechanics.poison-flat-damage");
     POISON_LEVEL_DAMAGE = (float) StrifePlugin.getInstance().getSettings()

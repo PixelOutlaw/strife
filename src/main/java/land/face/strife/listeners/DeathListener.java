@@ -93,8 +93,7 @@ public class DeathListener implements Listener {
       return;
     }
     if (event.getEntity().getType() == EntityType.VILLAGER && event.getEntity().getKiller() != null) {
-      ToastUtils.sendToast(event.getEntity().getKiller(), FaceColor.NO_SHADOW +
-          UnicodeUtil.unicodePlacehold("<toast_karma_down>"), ItemUtils.BLANK);
+      ToastUtils.sendToast(event.getEntity().getKiller(), UnicodeUtil.unicodePlacehold("<toast_karma_down>"), ItemUtils.BLANK);
     }
     if (SpecialStatusUtil.isSpawnerMob(event.getEntity())) {
       return;

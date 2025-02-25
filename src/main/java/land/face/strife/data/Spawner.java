@@ -1,7 +1,7 @@
 package land.face.strife.data;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
-import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.events.SpawnerSpawnEvent;
+import land.face.strife.managers.GuiManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.patch.ReturnHomeGoal;
 import land.face.strife.util.DateTimeUtil;
@@ -17,11 +18,10 @@ import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import lombok.Getter;
 import lombok.Setter;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ClickEvent.Action;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.ClickEvent.Action;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -198,15 +198,14 @@ public class Spawner extends BukkitRunnable {
       Vector diff = location.toVector().subtract(p.getLocation().toVector());
       if (diff.lengthSquared() < 6400) {
         p.playSound(location, Sound.BLOCK_BEACON_AMBIENT, 100, 0.8F);
-        TextComponent text = new TextComponent(StringExtensionsKt.chatColorize(
+        var text = GuiManager.adventureIsRetarded(StringExtensionsKt.chatColorize(
             "&7&o&lWoah!! &f" + mob.getEntity().getCustomName() + "&f has spawned nearby!\n "));
-        TextComponent waypointButton = new TextComponent("[Click For Waypoint]");
-        waypointButton.setColor(ChatColor.AQUA);
-        waypointButton.setClickEvent(new ClickEvent(Action.RUN_COMMAND,
+        var waypointButton = GuiManager.adventureIsRetarded("[Click For Waypoint]");
+        waypointButton.color(TextColor.color(FaceColor.CYAN.getRawColor().getRGB()));
+        waypointButton.clickEvent(ClickEvent.clickEvent(Action.RUN_COMMAND,
             "/waypointer point " + location.getX() + " " + (location.getY() + 2) + " " + location.getZ() + " "
                 + location.getWorld().getName() + " Mob_Spawn"));
-
-        p.spigot().sendMessage(new ComponentBuilder(text).append(waypointButton).create());
+        p.sendMessage(text.append(waypointButton));
       }
     }
   }

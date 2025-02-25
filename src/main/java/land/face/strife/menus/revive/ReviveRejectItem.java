@@ -18,6 +18,7 @@
  */
 package land.face.strife.menus.revive;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import ninja.amp.ampmenus.events.ItemClickEvent;
@@ -32,8 +33,7 @@ public class ReviveRejectItem extends MenuItem {
   private static final String DISPLAY_NAME = StringExtensionsKt.chatColorize("&c&nReject Revive");
 
   ReviveRejectItem(ReviveMenu reviveMenu) {
-    super("", new ItemStack(Material.BARRIER));
-    ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
+    super("", ItemUtils.BLANK.clone());
     ItemStackExtensionsKt.setDisplayName(getIcon(), DISPLAY_NAME);
     this.reviveMenu = reviveMenu;
   }

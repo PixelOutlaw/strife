@@ -75,18 +75,18 @@ public class StealthManager {
       .getSettings().getInt("config.mechanics.sneak.stealth-levels-per-removed-particle", 25);
 
   public static final List<GUIComponent> STEALTH_IND = List.of(
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岓")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岔")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岕")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岖")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岗")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岘")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岙")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岚")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岛")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岜")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岝")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岞")), 45, 0, Alignment.CENTER)
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岓")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岔")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岕")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岖")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岗")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岘")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岙")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岚")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岛")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岜")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岝")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("岞")), 45, 0, Alignment.CENTER)
   );
   private static final int STEALTH_LEN = STEALTH_IND.size();
 

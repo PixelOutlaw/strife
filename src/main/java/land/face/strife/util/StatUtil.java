@@ -44,8 +44,8 @@ public class StatUtil {
 
   public static void refreshPlugin(StrifePlugin strifePlugin) {
     plugin = strifePlugin;
-    COMBAT_ENTER_TOAST = FaceColor.NO_SHADOW + UnicodeUtil.unicodePlacehold("<toast_enter_combat>");
-    COMBAT_EXIT_TOAST = FaceColor.NO_SHADOW + UnicodeUtil.unicodePlacehold("<toast_exit_combat>");
+    COMBAT_ENTER_TOAST = UnicodeUtil.unicodePlacehold("<toast_enter_combat>");
+    COMBAT_EXIT_TOAST = UnicodeUtil.unicodePlacehold("<toast_exit_combat>");
 
     ARMOR_DENOMINATOR = (float) plugin.getSettings().getDouble("config.mechanics.defense.armor-denominator", 110);
   }

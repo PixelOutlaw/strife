@@ -22,6 +22,7 @@ import static land.face.strife.menus.stats.StatsMenu.ONE_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -51,9 +52,8 @@ public class StatsMiscMenuItem extends MenuItem {
   private final Map<Player, ItemStack> cachedIcon = new WeakHashMap<>();
 
   StatsMiscMenuItem(StatsMenu statsMenu) {
-    super(FaceColor.TEAL.s() + FaceColor.BOLD.getColor() + "Miscellaneous Stats", new ItemStack(Material.BARRIER));
+    super(FaceColor.TEAL.s() + FaceColor.BOLD.getColor() + "Miscellaneous Stats", ItemUtils.BLANK.clone());
     this.statsMenu = statsMenu;
-    ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
   }
 
   @Override

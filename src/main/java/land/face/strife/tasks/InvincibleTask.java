@@ -13,9 +13,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class InvincibleTask extends BukkitRunnable {
 
   private final static GUIComponent INVINCIBLE =
-      new GUIComponent("invincible",  GuiManager.noShadow(new TextComponent("㒥")), 181, -1, Alignment.CENTER);
+      new GUIComponent("invincible",  GuiManager.noShadow(GuiManager.adventureIsRetarded("㒥")), 181, -1, Alignment.CENTER);
   private final static GUIComponent EMPTY =
-      new GUIComponent("invincible", new TextComponent(""), 0, 0, Alignment.CENTER);
+      new GUIComponent("invincible", GuiManager.adventureIsRetarded(""), 0, 0, Alignment.CENTER);
 
   private final WeakReference<StrifeMob> parentMob;
   private int ticks;

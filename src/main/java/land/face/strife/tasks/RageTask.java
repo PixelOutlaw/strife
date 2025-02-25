@@ -27,7 +27,7 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.util.LogUtil;
 import lombok.Getter;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Particle;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -43,16 +43,16 @@ public class RageTask extends BukkitRunnable {
 
   @SuppressWarnings("deprecation")
   private static final List<TextComponent> rageLevels = List.of(
-      new TextComponent("\uD809\uDC15"),
-      new TextComponent("\uD809\uDC16"),
-      new TextComponent("\uD809\uDC17"),
-      new TextComponent("\uD809\uDC18"),
-      new TextComponent("\uD809\uDC19"),
-      new TextComponent("\uD809\uDC1A"),
-      new TextComponent("\uD809\uDC1B"),
-      new TextComponent("\uD809\uDC1C"),
-      new TextComponent("\uD809\uDC1D"),
-      new TextComponent("\uD809\uDC1E")
+      GuiManager.adventureIsRetarded("\uD809\uDC15"),
+      GuiManager.adventureIsRetarded("\uD809\uDC16"),
+      GuiManager.adventureIsRetarded("\uD809\uDC17"),
+      GuiManager.adventureIsRetarded("\uD809\uDC18"),
+      GuiManager.adventureIsRetarded("\uD809\uDC19"),
+      GuiManager.adventureIsRetarded("\uD809\uDC1A"),
+      GuiManager.adventureIsRetarded("\uD809\uDC1B"),
+      GuiManager.adventureIsRetarded("\uD809\uDC1C"),
+      GuiManager.adventureIsRetarded("\uD809\uDC1D"),
+      GuiManager.adventureIsRetarded("\uD809\uDC1E")
   );
 
   private static final int MAX_GRACE_TICKS = 32;

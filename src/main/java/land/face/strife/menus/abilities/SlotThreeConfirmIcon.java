@@ -20,6 +20,7 @@ package land.face.strife.menus.abilities;
 
 import com.sk89q.worldedit.command.tool.brush.SmoothBrush;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
@@ -46,8 +47,7 @@ public class SlotThreeConfirmIcon extends MenuItem {
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    ItemStack stack = new ItemStack(Material.BARRIER);
-    ItemStackExtensionsKt.setCustomModelData(stack, 50);
+    ItemStack stack = ItemUtils.BLANK.clone();
     ItemStackExtensionsKt.setDisplayName(stack, FaceColor.GREEN + "Swap Ability!!");
     TextUtils.setLore(stack, List.of(FaceColor.LIGHT_GRAY + "Put this ability in this slot!"), false);
     return stack;

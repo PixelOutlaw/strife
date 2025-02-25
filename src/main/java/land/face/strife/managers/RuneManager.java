@@ -79,6 +79,6 @@ public class RuneManager {
       return;
     }
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("rune-display", GuiManager.noShadow(new TextComponent(StringUtils.repeat("㆞", runes))), runes * 5, -88, Alignment.LEFT));
+        new GUIComponent("rune-display", GuiManager.noShadow(GuiManager.adventureIsRetarded(StringUtils.repeat("㆞", runes))), runes * 5, -88, Alignment.LEFT));
   }
 }

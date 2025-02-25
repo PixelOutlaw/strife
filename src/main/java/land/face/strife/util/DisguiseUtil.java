@@ -214,7 +214,7 @@ public class DisguiseUtil {
             Material material = Material.valueOf(section.getString("material", "STONE"));
             int modelData = section.getInt("model-data", 0);
             ItemStack stack = new ItemStack(material);
-            ItemStackExtensionsKt.setCustomModelData(stack, modelData);
+            //ItemStackExtensionsKt.setCustomModelData(stack, modelData);
             if (material == Material.PLAYER_HEAD) {
               String base64 = section.getString("base64",
                   "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNTIyODRlMTMyYmZkNjU5YmM2YWRhNDk3YzRmYTMwOTRjZDkzMjMxYTZiNTA1YTEyY2U3Y2Q1MTM1YmE4ZmY5MyJ9fX0=");

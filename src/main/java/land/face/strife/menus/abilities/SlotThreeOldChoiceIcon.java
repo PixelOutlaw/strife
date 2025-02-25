@@ -19,6 +19,7 @@
 package land.face.strife.menus.abilities;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
@@ -46,8 +47,7 @@ public class SlotThreeOldChoiceIcon extends MenuItem {
     String abilityId = menu.getChampion().getSaveData().getAbility(slot);
     Ability ability = menu.getPlugin().getAbilityManager().getAbility(abilityId);
     if (ability == null) {
-      ItemStack stack = new ItemStack(Material.BARRIER);
-      ItemStackExtensionsKt.setCustomModelData(stack, 50);
+      ItemStack stack = ItemUtils.BLANK.clone();
       ItemStackExtensionsKt.setDisplayName(stack, FaceColor.YELLOW + "Nothing!");
       TextUtils.setLore(stack, List.of(FaceColor.LIGHT_GRAY + "You should probably pick this one!"), false);
       return stack;

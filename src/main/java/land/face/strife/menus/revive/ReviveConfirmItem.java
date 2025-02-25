@@ -18,6 +18,7 @@
  */
 package land.face.strife.menus.revive;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
@@ -43,8 +44,7 @@ public class ReviveConfirmItem extends MenuItem {
   private final Map<Player, ItemStack> cachedIcon = new WeakHashMap<>();
 
   ReviveConfirmItem(ReviveMenu reviveMenu) {
-    super("", new ItemStack(Material.BARRIER));
-    ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
+    super("", ItemUtils.BLANK.clone());
     this.reviveMenu = reviveMenu;
   }
 

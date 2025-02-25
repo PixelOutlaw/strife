@@ -45,35 +45,35 @@ public class EveryTickTask extends BukkitRunnable {
   private final Map<Player, Integer> lastAttackProgress = new WeakHashMap<>();
 
   private final List<GUIComponent> attackIndication = List.of(
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兰")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("共")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兲")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("关")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兴")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兵")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("其")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("具")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("典")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兹")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兺")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("养")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("兼")), 45, 0, Alignment.CENTER)
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("兰")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("共")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("兲")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("关")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("兴")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("兵")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("其")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("具")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("典")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("兹")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("兺")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("养")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("兼")), 45, 0, Alignment.CENTER)
   );
   private final List<GUIComponent> overdrawIndicator = List.of(
       // Skip phase1 to show the bar is not empty?
-      // new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("夞")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("够")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峂")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峃")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峅")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峆")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峇")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峈")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峉")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峊")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峋")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峌")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("峍")), 45, 0, Alignment.CENTER)
+      // new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("夞")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("够")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("峂")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("峃")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("峅")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("峆")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("峇")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("峈")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("峉")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("峊")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("峋")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("峌")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", GuiManager.noShadow(GuiManager.adventureIsRetarded("峍")), 45, 0, Alignment.CENTER)
   );
   private final int arrLen = attackIndication.size();
   private final int arrLen2 = overdrawIndicator.size();

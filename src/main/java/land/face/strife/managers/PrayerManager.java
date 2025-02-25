@@ -44,7 +44,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.Sound.Source;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.LivingEntity;
@@ -384,43 +384,43 @@ public class PrayerManager {
   }
 
   private static final List<TextComponent> ACTIVE_PRAYER_ICONS = List.of(
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE)),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侏")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侎")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侍")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侌")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "例")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侊")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侉")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侈")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侇")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "來")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侅")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侄")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侃")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侂")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侁")),
-      noShadow(new TextComponent(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侀"))
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE)),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侏")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侎")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侍")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侌")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "例")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侊")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侉")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侈")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侇")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "來")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侅")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侄")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侃")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侂")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侁")),
+      noShadow(GuiManager.adventureIsRetarded(ACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侀"))
   );
 
   private static final List<TextComponent> INACTIVE_PRAYER_ICONS = List.of(
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE)),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侏")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侎")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侍")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侌")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "例")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侊")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侉")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侈")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侇")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "來")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侅")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侄")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侃")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侂")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侁")),
-      noShadow(new TextComponent(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侀"))
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE)),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侏")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侎")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侍")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侌")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "例")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侊")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侉")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侈")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侇")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "來")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侅")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侄")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侃")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侂")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侁")),
+      noShadow(GuiManager.adventureIsRetarded(INACTIVE_PRAYER_BASE + BAR_NEGATIVE_SPACE + "侀"))
   );
 
   public enum Prayer {

@@ -18,6 +18,7 @@
  */
 package land.face.strife.menus.stats;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -46,9 +47,8 @@ public class StatsEffectMenuItem extends MenuItem {
   private final Map<Player, ItemStack> cachedIcon = new WeakHashMap<>();
 
   StatsEffectMenuItem(StatsMenu statsMenu) {
-    super(StringExtensionsKt.chatColorize("&6&lAdditional Effects"), new ItemStack(Material.BARRIER));
+    super(StringExtensionsKt.chatColorize("&6&lAdditional Effects"), ItemUtils.BLANK.clone());
     this.statsMenu = statsMenu;
-    ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
   }
 
   @Override

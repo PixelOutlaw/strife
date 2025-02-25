@@ -6,6 +6,7 @@ import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
+import java.awt.Color;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -16,8 +17,10 @@ import land.face.strife.data.NoticeData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import lombok.Getter;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.ShadowColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -29,17 +32,15 @@ public class GuiManager {
   private final Map<Player, NoticeData> noticeMap = new WeakHashMap<>();
 
   private static final DecimalFormat XP_FORMAT = new DecimalFormat("0.0");
-  // #FBFBFB
-  public static final ChatColor NO_SHADOW = FaceColor.NO_SHADOW.getColor();
 
   private final GUIComponent healthBase = new GUIComponent("status-base",
-      noShadow(new TextComponent("➲")), 236, 0, Alignment.CENTER);
+      noShadow(adventureIsRetarded("➲")), 236, 0, Alignment.CENTER);
   private final GUIComponent bitsBase = new GUIComponent("bits-base",
-      noShadow(new TextComponent("₿")), 14, 199, Alignment.CENTER);
+      noShadow(adventureIsRetarded("₿")), 14, 199, Alignment.CENTER);
   private final GUIComponent gemsBase = new GUIComponent("gems-base",
-      noShadow(new TextComponent("௹")) , 15, 198, Alignment.CENTER);
+      noShadow(adventureIsRetarded("௹")) , 15, 198, Alignment.CENTER);
   private final GUIComponent notifsBase = new GUIComponent("notifs-base",
-      noShadow(new TextComponent("偀")) , 67, -181, Alignment.CENTER);
+      noShadow(adventureIsRetarded("偀")) , 67, -181, Alignment.CENTER);
 
   private final Map<Integer, TextComponent> levelStringNumbers = new HashMap<>();
   private final Map<Integer, TextComponent> moneyStringNumbers = new HashMap<>();
@@ -50,24 +51,24 @@ public class GuiManager {
   @Getter
   private final Map<Integer, GUIComponent> energySeparators = new HashMap<>();
 
-  public static final TextComponent EMPTY = new TextComponent("");
+  public static final TextComponent EMPTY = adventureIsRetarded("");
 
   public static final GUIComponent NOTICE_COOLDOWN =
-      new GUIComponent("notices", noShadow(new TextComponent("᳥")), 171, 0, Alignment.CENTER);
+      new GUIComponent("notices", noShadow(adventureIsRetarded("᳥")), 171, 0, Alignment.CENTER);
   public static final GUIComponent NOTICE_ENERGY =
-      new GUIComponent("notices", noShadow(new TextComponent("᳣")), 171, 0, Alignment.CENTER);
+      new GUIComponent("notices", noShadow(adventureIsRetarded("᳣")), 171, 0, Alignment.CENTER);
   public static final GUIComponent NOTICE_ENERGY_JEB =
-      new GUIComponent("notices", noShadow(new TextComponent("砣")), 171, 0, Alignment.CENTER);
+      new GUIComponent("notices", noShadow(adventureIsRetarded("砣")), 171, 0, Alignment.CENTER);
   public static final GUIComponent NOTICE_REQUIREMENT =
-      new GUIComponent("notices", noShadow(new TextComponent("᳤")), 171, 0, Alignment.CENTER);
+      new GUIComponent("notices", noShadow(adventureIsRetarded("᳤")), 171, 0, Alignment.CENTER);
   public static final GUIComponent NOTICE_INVALID_TARGET =
-      new GUIComponent("notices", noShadow(new TextComponent("᳢")), 171, 0, Alignment.CENTER);
+      new GUIComponent("notices", noShadow(adventureIsRetarded("᳢")), 171, 0, Alignment.CENTER);
   public static final GUIComponent NOTICE_DODGE =
-      new GUIComponent("notices", noShadow(new TextComponent("丞")), 171, 0, Alignment.CENTER);
+      new GUIComponent("notices", noShadow(adventureIsRetarded("丞")), 171, 0, Alignment.CENTER);
   public static final GUIComponent NOTICE_BLOCK =
-      new GUIComponent("notices", noShadow(new TextComponent("丟")), 171, 0, Alignment.CENTER);
+      new GUIComponent("notices", noShadow(adventureIsRetarded("丟")), 171, 0, Alignment.CENTER);
   public static final GUIComponent NOTICE_COUNTER =
-      new GUIComponent("notices", noShadow(new TextComponent("俺")), 171, 0, Alignment.CENTER);
+      new GUIComponent("notices", noShadow(adventureIsRetarded("俺")), 171, 0, Alignment.CENTER);
 
   private final GUIComponent NOTIF_EMPTY_MAIL = new GUIComponent("notif-mail", EMPTY, 0, 0, Alignment.CENTER);
   private final GUIComponent NOTIF_EMPTY_FRIEND = new GUIComponent("notif-friend", EMPTY, 0, 0, Alignment.CENTER);
@@ -85,83 +86,83 @@ public class GuiManager {
 
   @SuppressWarnings("deprecation")
   private final List<GUIComponent> xpBar = List.of(
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷀")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷁")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷂")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷃")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷄")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷅")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷆")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷇")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷈")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷊")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷋")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷌")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷍")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷎")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷏")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷐")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷑")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷒")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷔")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷕")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷖")),27, 104, Alignment.CENTER),
-       new GUIComponent("xp-bar", noShadow(new TextComponent("䷗")),27, 104, Alignment.CENTER)
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷀")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷁")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷂")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷃")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷄")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷅")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷆")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷇")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷈")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷊")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷋")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷌")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷍")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷎")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷏")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷐")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷑")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷒")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷔")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷕")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷖")),27, 104, Alignment.CENTER),
+       new GUIComponent("xp-bar", noShadow(adventureIsRetarded("䷗")),27, 104, Alignment.CENTER)
   );
 
   @SuppressWarnings("deprecation")
   private final List<GUIComponent> catchupXpBar = List.of(
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷙")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷚")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷛")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷜")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷝")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷞")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷟")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷠")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷡")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷣")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷤")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷥")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷦")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷧")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷨")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷩")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷪")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷫")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷭")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷮")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷯")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷰")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("䷱")), 27, 104, Alignment.CENTER),
-      new GUIComponent("cxp-bar", noShadow(new TextComponent("懙")), 27, 104, Alignment.CENTER)
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷙")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷚")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷛")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷜")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷝")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷞")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷟")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷠")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷡")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷣")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷤")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷥")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷦")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷧")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷨")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷩")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷪")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷫")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷭")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷮")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷯")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷰")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("䷱")), 27, 104, Alignment.CENTER),
+      new GUIComponent("cxp-bar", noShadow(adventureIsRetarded("懙")), 27, 104, Alignment.CENTER)
   );
 
   @SuppressWarnings("deprecation")
   private static final GUIComponent emptyAirBar = new GUIComponent("air-bar", EMPTY, 0, 0, Alignment.CENTER);
   public static final List<GUIComponent> oxygenBar = List.of(
-      new GUIComponent("air-bar", noShadow(new TextComponent("懀")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懁")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懂")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懃")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懄")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懅")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懆")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懇")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懈")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懊")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懋")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懌")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懍")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懎")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懏")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懐")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懑")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懒")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懔")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懕")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懖")), 27, 104, Alignment.CENTER),
-      new GUIComponent("air-bar", noShadow(new TextComponent("懗")), 27, 104, Alignment.CENTER)
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懀")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懁")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懂")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懃")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懄")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懅")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懆")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懇")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懈")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懊")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懋")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懌")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懍")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懎")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懏")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懐")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懑")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懒")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懔")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懕")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懖")), 27, 104, Alignment.CENTER),
+      new GUIComponent("air-bar", noShadow(adventureIsRetarded("懗")), 27, 104, Alignment.CENTER)
   );
 
   public static final Map<Integer, GUIComponent> HP_BAR = new HashMap<>();
@@ -172,11 +173,11 @@ public class GuiManager {
   public static final Map<Integer, String> HEALTH_BAR_TARGET = new HashMap<>();
   public static final Map<Integer, String> BARRIER_BAR_TARGET = new HashMap<>();
 
-  public static final TextComponent notifMail = noShadow(new TextComponent("偁"));
-  public static final TextComponent notifMarket = noShadow(new TextComponent("偂"));
-  public static final TextComponent notifDaily = noShadow(new TextComponent("偃"));
-  public static final TextComponent notifVote = noShadow(new TextComponent("偄"));
-  public static final TextComponent notifFriend = noShadow(new TextComponent("偅"));
+  public static final TextComponent notifMail = noShadow(adventureIsRetarded("偁"));
+  public static final TextComponent notifMarket = noShadow(adventureIsRetarded("偂"));
+  public static final TextComponent notifDaily = noShadow(adventureIsRetarded("偃"));
+  public static final TextComponent notifVote = noShadow(adventureIsRetarded("偄"));
+  public static final TextComponent notifFriend = noShadow(adventureIsRetarded("偅"));
 
   public GuiManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -205,7 +206,7 @@ public class GuiManager {
       s = s.replaceAll("0", "懩\uF802");
       s = s.replaceAll("\\.", "懫\uF802");
       s += "懪";
-      GUIComponent component = new GUIComponent("xp-text", noShadow(new TextComponent(s)), width, 105, Alignment.CENTER);
+      GUIComponent component = new GUIComponent("xp-text", noShadow(adventureIsRetarded(s)), width, 105, Alignment.CENTER);
       values.put(i, component);
     }
     return values;
@@ -213,17 +214,16 @@ public class GuiManager {
 
   @SuppressWarnings("unused")
   public static TextComponent shadow(TextComponent t) {
-    t.setColor(ChatColor.RESET);
     return t;
   }
 
   public static TextComponent noShadow(TextComponent t) {
-    t.setColor(NO_SHADOW);
+    t = t.shadowColor(ShadowColor.none());
     return t;
   }
 
-  public static TextComponent color(TextComponent t, ChatColor c) {
-    t.setColor(c);
+  public static TextComponent color(TextComponent t, Color c) {
+    t = t.color(TextColor.color(c.getRed(), c.getGreen(), c.getBlue()));
     return t;
   }
 
@@ -374,7 +374,7 @@ public class GuiManager {
       str.append("䎘"); // wing no
       empty--;
     }
-    TextComponent textComponent = GuiManager.noShadow(new TextComponent(str.toString()));
+    TextComponent textComponent = GuiManager.noShadow(adventureIsRetarded(str.toString()));
     updateComponent((Player) mob.getEntity(),
         new GUIComponent("jump-wings", textComponent, totalElements * 13, 86, Alignment.CENTER));
   }
@@ -393,7 +393,7 @@ public class GuiManager {
       String sepStrang = GUI.spacesOf(pixelDiff - 1) + "\uF801拾\uF804";
       sepStrang = StringUtils.repeat(sepStrang, lineSeparators);
       GUIComponent component = new GUIComponent("life-segments",
-          GuiManager.noShadow(new TextComponent(sepStrang)), size, -89, Alignment.LEFT);
+          GuiManager.noShadow(adventureIsRetarded(sepStrang)), size, -89, Alignment.LEFT);
       lifeSeparators.put(i, component);
     }
   }
@@ -412,7 +412,7 @@ public class GuiManager {
       String sepStrang = GUI.spacesOf(pixelDiff - 1) + "\uF801拿\uF804";
       sepStrang = StringUtils.repeat(sepStrang, lineSeparators);
       GUIComponent component = new GUIComponent("energy-segments",
-          GuiManager.noShadow(new TextComponent(sepStrang)), size, -89, Alignment.LEFT);
+          GuiManager.noShadow(adventureIsRetarded(sepStrang)), size, -89, Alignment.LEFT);
       energySeparators.put(i, component);
     }
   }
@@ -572,15 +572,15 @@ public class GuiManager {
       }
 
       HP_BAR.put(i,
-          new GUIComponent("missing-life", noShadow(new TextComponent(hpBar.toString())), i, 88, Alignment.RIGHT));
+          new GUIComponent("missing-life", noShadow(adventureIsRetarded(hpBar.toString())), i, 88, Alignment.RIGHT));
       ENERGY_BAR.put(i,
-          new GUIComponent("missing-energy", noShadow(new TextComponent(eBar.toString())), i, 88, Alignment.RIGHT));
+          new GUIComponent("missing-energy", noShadow(adventureIsRetarded(eBar.toString())), i, 88, Alignment.RIGHT));
       BARRIER_BAR_1.put(i,
-          new GUIComponent("barrier-bar", noShadow(new TextComponent(barrierBar1.toString())), i, -90, Alignment.LEFT));
+          new GUIComponent("barrier-bar", noShadow(adventureIsRetarded(barrierBar1.toString())), i, -90, Alignment.LEFT));
       BARRIER_BAR_2.put(i,
-          new GUIComponent("barrier-bar", noShadow(new TextComponent(barrierBar2.toString())), i, -90, Alignment.LEFT));
+          new GUIComponent("barrier-bar", noShadow(adventureIsRetarded(barrierBar2.toString())), i, -90, Alignment.LEFT));
       BARRIER_BAR_3.put(i,
-          new GUIComponent("barrier-bar", noShadow(new TextComponent(barrierBar3.toString())), i, -90, Alignment.LEFT));
+          new GUIComponent("barrier-bar", noShadow(adventureIsRetarded(barrierBar3.toString())), i, -90, Alignment.LEFT));
     }
     Bukkit.getLogger().info("[Strife] Missing life/energy bars built!");
   }
@@ -601,7 +601,7 @@ public class GuiManager {
         .replaceAll("8", "慧\uF801")
         .replaceAll("9", "慨\uF801")
         .replaceAll("0", "慩\uF801");
-    TextComponent tc = noShadow(new TextComponent(s));
+    TextComponent tc = noShadow(adventureIsRetarded(s));
     levelStringNumbers.put(i, tc);
     return tc;
   }
@@ -622,7 +622,7 @@ public class GuiManager {
         .replaceAll("8", "⑧")
         .replaceAll("9", "⑨")
         .replaceAll("0", "⑩");
-    TextComponent tc = color(new TextComponent(s), FaceColor.YELLOW.getColor());
+    TextComponent tc = color(adventureIsRetarded(s), FaceColor.YELLOW.getRawColor());
     moneyStringNumbers.put(i, tc);
     return tc;
   }
@@ -643,8 +643,12 @@ public class GuiManager {
         .replaceAll("8", "⓲")
         .replaceAll("9", "⓳")
         .replaceAll("0", "⓴");
-    TextComponent tc = color(new TextComponent(s), FaceColor.PURPLE.getColor());
+    TextComponent tc = color(adventureIsRetarded(s), FaceColor.PURPLE.getRawColor());
     gemStringNumbers.put(i, tc);
     return tc;
+  }
+  
+  public static TextComponent adventureIsRetarded(String str) {
+    return Component.text().append(Component.text(str)).build();
   }
 }
