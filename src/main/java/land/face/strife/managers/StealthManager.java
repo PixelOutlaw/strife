@@ -18,6 +18,17 @@
  */
 package land.face.strife.managers;
 
+import static land.face.strife.util.UberConfig.BASE_SNEAK_ATTACK_EXP;
+import static land.face.strife.util.UberConfig.BASE_SNEAK_EXP;
+import static land.face.strife.util.UberConfig.BASE_STEALTH_PARTICLES;
+import static land.face.strife.util.UberConfig.MAX_STEALTH_PARTICLES;
+import static land.face.strife.util.UberConfig.MOVEMENT_PARTICLE_MULT;
+import static land.face.strife.util.UberConfig.SNEAK_ATTACK_EXP_PER_LEVEL;
+import static land.face.strife.util.UberConfig.SNEAK_DISABLE_MS;
+import static land.face.strife.util.UberConfig.SNEAK_EXP_PER_LEVEL;
+import static land.face.strife.util.UberConfig.SNEAK_SKILL_PARTICLE_REDUCTION;
+import static land.face.strife.util.UberConfig.SPRINT_PARTICLE_MULT;
+
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
@@ -52,27 +63,6 @@ public class StealthManager {
   private final StrifePlugin plugin;
   @Getter
   private final Map<UUID, StealthData> stealthedPlayers = new HashMap<>();
-
-  private final int DISABLE_MS = StrifePlugin.getInstance().getSettings()
-      .getInt("config.mechanics.sneak.disable-duration");
-  private final float BASE_SNEAK_EXP = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.sneak.base-sneak-exp");
-  private final float SNEAK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.sneak.sneak-exp-per-level");
-  private final float BASE_SNEAK_ATTACK_EXP = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.sneak.base-sneak-attack-exp");
-  private final float SNEAK_ATTACK_EXP_PER_LEVEL = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.sneak.sneak-attack-exp-per-level");
-  private final float BASE_STEALTH_PARTICLES = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.sneak.base-particles", 2);
-  private final float MOVEMENT_PARTICLE_MULT = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.sneak.movement-particle-penalty", 2);
-  private final float SPRINT_PARTICLE_MULT = (float) StrifePlugin.getInstance().getSettings()
-      .getDouble("config.mechanics.sneak.sprint-particle-penalty", 2);
-  private final float MAX_STEALTH_PARTICLES = (float) StrifePlugin.getInstance().getSettings()
-      .getInt("config.mechanics.sneak.max-stealth-particles", 2);
-  private final float SNEAK_SKILL_PARTICLE_REDUCTION = (float) StrifePlugin.getInstance()
-      .getSettings().getInt("config.mechanics.sneak.stealth-levels-per-removed-particle", 25);
 
   public static final List<GUIComponent> STEALTH_IND = List.of(
       new GUIComponent("attack-bar", GuiManager.noShadow(new TextComponent("岓")), 45, 0, Alignment.CENTER),
@@ -167,7 +157,7 @@ public class StealthManager {
     stealthedPlayers.put(player.getUniqueId(), new StealthData(
         ticks,
         ticks,
-        System.currentTimeMillis() + DISABLE_MS,
+        System.currentTimeMillis() + SNEAK_DISABLE_MS,
         rank,
         skillLevel.getLevel(),
         1 + mob.getStat(StrifeStat.STEALTH_BONUS) / 100,

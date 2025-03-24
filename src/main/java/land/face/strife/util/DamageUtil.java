@@ -6,6 +6,7 @@ import static land.face.strife.listeners.LoreAbilityListener.executeFiniteEffect
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_DEATH;
 import static land.face.strife.util.StatUtil.getArmorMult;
 import static land.face.strife.util.StatUtil.getDefenderArmor;
+import static land.face.strife.util.UberConfig.PHYSICAL_BLEED_PERCENT;
 
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.world.World;
@@ -83,17 +84,6 @@ public class DamageUtil {
 
   private static StrifePlugin plugin;
 
-  public static float BASE_ATTACK_SECONDS = 1.4f;
-
-  public static int BASE_RECHARGE_TICKS;
-  public static long TICK_RATE;
-  public static int DELAY_TICKS;
-  public static float FLAT_BARRIER_PER_SECOND;
-  public static float PERCENT_BARRIER_PER_SECOND;
-
-  public static TextComponent deathMessage;
-  public static List<TextComponent> sillyDeathMsgs;
-
   private static final DamageModifier[] MODIFIERS = EntityDamageEvent.DamageModifier.values();
   public static final DamageType[] DMG_TYPES = DamageType.values();
 
@@ -108,22 +98,6 @@ public class DamageUtil {
 
   public static void refresh(StrifePlugin refreshedPlugin) {
     plugin = refreshedPlugin;
-
-    BASE_ATTACK_SECONDS = (float) plugin.getSettings().getDouble("config.mechanics.attack-speed.base-attack-time", 1.4);
-
-    BASE_RECHARGE_TICKS = plugin.getSettings().getInt("config.mechanics.barrier.base-delay-ticks", 100);
-    TICK_RATE = plugin.getSettings().getInt("config.mechanics.barrier.task-tick-rate", 3);
-    DELAY_TICKS = (int) ((float) BASE_RECHARGE_TICKS / TICK_RATE);
-    FLAT_BARRIER_PER_SECOND = plugin.getSettings().getInt("config.mechanics.barrier.flat-per-second", 4);
-    PERCENT_BARRIER_PER_SECOND = (float) plugin.getSettings()
-        .getDouble("config.mechanics.barrier.percent-per-second", 0.08);
-
-    deathMessage = BossBarManager.covertStringToRetardComponent(
-        PaletteUtil.color(plugin.getSettings().getString("language.enemy-killed-title")));
-    sillyDeathMsgs = new ArrayList<>();
-    for (String s : plugin.getSettings().getStringList("language.silly-enemy-killed-titles")) {
-      sillyDeathMsgs.add(BossBarManager.covertStringToRetardComponent(PaletteUtil.color(s)));
-    }
   }
 
   public static boolean isGuildAlly(StrifeMob attacker, StrifeMob defender) {
@@ -240,15 +214,7 @@ public class DamageUtil {
   public static float calculateFinalDamage(StrifeMob atkMob, StrifeMob defMob, AttackType attackType,
       Map<DamageType, Float> damageMap, DamageModifiers mods) {
 
-    double physicalDamage = damageMap.getOrDefault(DamageType.PHYSICAL, 0f);
-    double elementalDamage = damageMap.getOrDefault(DamageType.FIRE, 0f) +
-        damageMap.getOrDefault(DamageType.ICE, 0f) +
-        damageMap.getOrDefault(DamageType.LIGHTNING, 0f) +
-        damageMap.getOrDefault(DamageType.DARK, 0f) +
-        damageMap.getOrDefault(DamageType.EARTH, 0f) +
-        damageMap.getOrDefault(DamageType.LIGHT, 0f);
-
-    float critMult = 0;
+    float critMult = 1;
     boolean criticalHit = false;
     boolean isSneakAttack = false;
 
@@ -267,26 +233,13 @@ public class DamageUtil {
 
     if (mods.isCanCrit()) {
       criticalHit = isCriticalHit(atkMob, defMob, mods) && !atkMob.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2);
-      if (criticalHit && !atkMob.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
-        critMult = (atkMob.getStat(StrifeStat.CRITICAL_DAMAGE) +
-            mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_DAMAGE, 0f)) / 100;
-        if (atkMob.hasTrait(StrifeTrait.LETHAL_STRIKE)) {
-          float chance = atkMob.getStat(StrifeStat.CRITICAL_RATE) +
-              mods.getAbilityMods().getOrDefault(AbilityMod.CRITICAL_CHANCE, 0f);
-          if (chance > 100) {
-            if (DamageUtil.isLethalHit(atkMob, defMob, chance - 100)) {
-              critMult *= 2f;
-            }
-          }
-        }
-        if (defMob.hasTrait(StrifeTrait.IRON_SCARS)) {
-          critMult *= 0.4F;
-        }
+      if (criticalHit) {
+        critMult = calculateCriticalMult(atkMob, defMob, mods);
       }
     }
 
-    if (atkMob.hasTrait(StrifeTrait.ICE_PICK)) {
-      physicalDamage *= 1 + (defMob.getFrost() / 100);
+    if (atkMob.hasTrait(StrifeTrait.ICE_PICK) && damageMap.containsKey(DamageType.PHYSICAL)) {
+      damageMap.put(DamageType.PHYSICAL, damageMap.get(DamageType.PHYSICAL) * (1 + defMob.getFrost() / 100));
     }
 
     float generalDamageMultiplier = 1f;
@@ -301,18 +254,16 @@ public class DamageUtil {
     }
     float minionDamageMultiplier = DamageUtil.getMinionMult(atkMob);
 
-    physicalDamage += physicalDamage * critMult;
-    physicalDamage *= potionMult;
-    physicalDamage *= generalDamageMultiplier;
-    physicalDamage *= minionDamageMultiplier;
+    float totalMult = critMult * potionMult * generalDamageMultiplier * minionDamageMultiplier;
+    float trueDamage = damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
 
-    elementalDamage += elementalDamage * critMult;
-    elementalDamage *= potionMult;
-    elementalDamage *= generalDamageMultiplier;
-    elementalDamage *= minionDamageMultiplier;
+    damageMap.remove(DamageType.TRUE_DAMAGE);
+    damageMap.replaceAll((key, value) -> value * totalMult);
+    float sumOfAllDamage = damageMap.values().stream().reduce(0f, Float::sum);
+    damageMap.put(DamageType.TRUE_DAMAGE, trueDamage);
 
     float damageReduction = defMob.getStat(StrifeStat.DAMAGE_REDUCTION) * mods.getDamageReductionRatio();
-    float rawDamage = (float) Math.max(0D, (physicalDamage + elementalDamage) - damageReduction);
+    float rawDamage = (float) Math.max(0D, sumOfAllDamage - damageReduction);
 
     if (mods.getAttackType() == AttackType.PROJECTILE) {
       rawDamage *= DamageUtil.getProjectileMultiplier(atkMob, defMob);
@@ -322,11 +273,14 @@ public class DamageUtil {
 
     if (attackType != AttackType.BONUS) {
       if (atkMob.getEntity().getFreezeTicks() > 0 && !(atkMob.getEntity() instanceof Player)) {
-        rawDamage *=
-            1 - 0.3f * ((float) atkMob.getEntity().getFreezeTicks() / atkMob.getEntity().getMaxFreezeTicks());
+        rawDamage *= 1 - 0.3f * ((float) atkMob.getEntity().getFreezeTicks() / atkMob.getEntity().getMaxFreezeTicks());
       }
       if (defMob.hasTrait(StrifeTrait.STONE_SKIN)) {
         rawDamage *= 1 - (0.03f * defMob.getEarthRunes());
+      }
+      if (defMob.getBarrier() > 0.9 && defMob.hasTrait(StrifeTrait.BARRIERMAN)) {
+        var reduction = 0.3f * (defMob.getBarrier() / defMob.getMaxBarrier());
+        rawDamage *= reduction;
       }
       if (mods.isFromAbility()) {
         rawDamage *= 1 + atkMob.getStat(StrifeStat.ABILITY_DAMAGE) / 100;
@@ -347,7 +301,8 @@ public class DamageUtil {
           velocity = velocity.clone();
           velocity.setY(3);
           atkMob.getEntity().setVelocity(velocity);
-          atkMob.getEntity().getWorld().playSound(atkMob.getEntity().getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 1.5f);
+          atkMob.getEntity().getWorld()
+              .playSound(atkMob.getEntity().getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 1.5f);
         }
       }
       DamageUtil.applyLifeSteal(atkMob, defMob,
@@ -357,11 +312,10 @@ public class DamageUtil {
       );
     }
 
-    float trueDamage = damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
     if (criticalHit && atkMob.hasTrait(StrifeTrait.SHARP_EDGE)) {
-      trueDamage *= critMult;
+      damageMap.put(DamageType.TRUE_DAMAGE, damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) * critMult);
     }
-    rawDamage += trueDamage;
+    rawDamage += damageMap.get(DamageType.TRUE_DAMAGE);
     rawDamage += DamageUtil.getKnowledgeMult(atkMob, defMob);
 
     if (mods.getAbilityMods().containsKey(AbilityMod.MAX_DAMAGE)) {
@@ -396,24 +350,8 @@ public class DamageUtil {
       }
     }
 
-    String damageString;
-    if (mods.isShowPopoffs() && atkMob.getEntity() instanceof Player && atkMob != defMob) {
-      if (rawDamage == 0) {
-        plugin.getIndicatorManager().addIndicator(atkMob, defMob.getEntity(),
-            IndicatorStyle.RANDOM_POPOFF, 9, "<aqua>０", 0.6f, 1.1f, 0.3f, false);
-      } else {
-        damageString = buildDamageString(Math.round(rawDamage));
-        if (criticalHit) {
-          damageString += "\uF802✸";
-        }
-        plugin.getIndicatorManager().addIndicator(atkMob, defMob.getEntity(), IndicatorStyle.RANDOM_POPOFF,
-            10, damageString, 0.8f, 1.1f, 0.1f, false);
-      }
-    } else if (mods.isShowPopoffs() && atkMob.getMaster() != null &&
-        atkMob.getMaster().getEntity() instanceof Player) {
-      damageString = buildDamageString(Math.round(rawDamage));
-      plugin.getIndicatorManager().addIndicator(atkMob.getMaster(), defMob.getEntity(),
-          IndicatorStyle.RANDOM_POPOFF, 9, "<gray>" + damageString, 0.6f, 1.1f, 0.3f, false);
+    if (mods.isShowPopoffs()) {
+      displayDamagePopoff(atkMob, defMob, rawDamage, criticalHit, mods);
     }
 
     if (isSneakAttack) {
@@ -439,7 +377,7 @@ public class DamageUtil {
     DamageUtil.applyEnergyOnHit(attacker, ratio);
 
     if (attacker.getStat(StrifeStat.RAGE_ON_HIT) > 0.1) {
-      attacker.changeRage(attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
+      attacker.changeRage(0.01f * attacker.getMaxRage() * attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
     }
     doWhenHit(attacker, defender, mods.getAttackType());
     if (plugin.getPrayerManager().isPrayerActive(defender.getEntity(), Prayer.TEN)) {
@@ -450,7 +388,7 @@ public class DamageUtil {
 
   public static void doWhenHit(StrifeMob attacker, StrifeMob defender, AttackType attackType) {
     if (defender.getStat(StrifeStat.RAGE_WHEN_HIT) > 0.1) {
-      defender.changeRage(defender.getStat(StrifeStat.RAGE_WHEN_HIT));
+      defender.changeRage(0.01f * defender.getMaxRage() * defender.getStat(StrifeStat.RAGE_WHEN_HIT));
     }
     if (defender.getStat(StrifeStat.ENERGY_WHEN_HIT) > 0.1) {
       StatUtil.changeEnergy(defender, defender.getStat(StrifeStat.ENERGY_WHEN_HIT));
@@ -504,7 +442,7 @@ public class DamageUtil {
     if (mods.isScaleChancesWithAttack()) {
       attackPenalty = mods.getAttackMultiplier();
     }
-    float critChance = StatUtil.getCriticalChance(attacker, attackPenalty, mods.getAbilityMods()
+    float critChance = StatUtil.getCriticalChance(attacker, defender, attackPenalty, mods.getAbilityMods()
         .getOrDefault(AbilityMod.CRITICAL_CHANCE, 0f));
     boolean success = critChance >= rollDouble(hasLuck(attacker.getEntity()));
     if (success) {
@@ -565,12 +503,18 @@ public class DamageUtil {
       case CASTER_MISSING_ENERGY -> amount * (caster.getMaxEnergy() - StatUtil.getEnergy(caster));
       case TARGET_MAX_ENERGY -> amount * target.getMaxEnergy();
       case CASTER_MAX_ENERGY -> amount * caster.getMaxEnergy();
-      case TARGET_CURRENT_RAGE -> amount * target.getRage();
-      case CASTER_CURRENT_RAGE -> amount * caster.getRage();
+      case TARGET_CURRENT_RAGE -> amount * target.getRageForEffectScaling();
+      case CASTER_CURRENT_RAGE -> amount * caster.getRageForEffectScaling();
       case TARGET_CURRENT_CORRUPTION -> amount * target.getCorruption();
       case CASTER_CURRENT_CORRUPTION -> amount * caster.getCorruption();
       case TARGET_MAX_RAGE -> amount * target.getMaxRage();
       case CASTER_MAX_RAGE -> amount * caster.getMaxRage();
+      case TARGET_CURRENT_AIR -> amount * target.getEntity().getRemainingAir();
+      case CASTER_CURRENT_AIR -> amount * caster.getEntity().getRemainingAir();
+      case TARGET_MAX_AIR -> amount * target.getEntity().getMaximumAir();
+      case CASTER_MAX_AIR -> amount * caster.getEntity().getMaximumAir();
+      case TARGET_MISSING_AIR -> amount * (target.getEntity().getMaximumAir() - target.getEntity().getRemainingAir());
+      case CASTER_MISSING_AIR -> amount * (caster.getEntity().getMaximumAir() - target.getEntity().getRemainingAir());
       case TARGET_MAX_BLOCK -> amount * target.getMaxBlock();
       case CASTER_MAX_BLOCK -> amount * caster.getMaxBlock();
       case CASTER_ATTRIBUTE -> amount * caster.getChampion().getAttributeLevel(bonusDamage.getAttribute());
@@ -703,8 +647,7 @@ public class DamageUtil {
       chance *= (float) Math.min(1.0, mods.getAttackMultiplier());
     }
     if (!DamageUtil.rollBool(chance, true)) {
-      if (!attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2) ||
-          !isCriticalHit(attacker, defender, mods)) {
+      if (!attacker.hasTrait(StrifeTrait.ELEMENTAL_CRITS_2) || !isCriticalHit(attacker, defender, mods)) {
         return;
       }
     }
@@ -868,8 +811,8 @@ public class DamageUtil {
       return 1;
     }
     double percent = maximumEffect ? 0 : defender.getEntity().getHealth() / defender.getEntity().getMaxHealth();
-    float maxReduction = 1 - (float) Math.pow(0.5f, defender.getStat(StrifeStat.TENACITY) / 200);
-    return 1 - (maxReduction * (float) Math.pow(1 - percent, 1.5));
+    float maxReduction = Math.min(0.6f, defender.getStat(StrifeStat.TENACITY) * 0.01f);
+    return 1 - (maxReduction * (float) Math.pow(1 - percent, 1.15));
   }
 
   public static float getKnowledgeMult(StrifeMob attacker, StrifeMob defender) {
@@ -1077,7 +1020,8 @@ public class DamageUtil {
         def.getStat(StrifeStat.PROJECTILE_REDUCTION)) / 100f);
   }
 
-  public static void applyLifeSteal(StrifeMob attackMob, StrifeMob defendMob, double damage, double healMultiplier, double bonus) {
+  public static void applyLifeSteal(StrifeMob attackMob, StrifeMob defendMob, double damage, double healMultiplier,
+      double bonus) {
     if (attackMob.getEntity().hasPotionEffect(PotionEffectType.WITHER)) {
       return;
     }
@@ -1119,7 +1063,7 @@ public class DamageUtil {
       chance *= Math.min(1f, mods.getAttackMultiplier());
     }
     if (chance >= rollDouble()) {
-      float damage = rawPhysical * DOTUtil.PHYSICAL_BLEED_PERCENT;
+      float damage = rawPhysical * PHYSICAL_BLEED_PERCENT;
       float bleedDamage = attacker.getStat(StrifeStat.BLEED_DAMAGE) +
           mods.getAbilityMods().getOrDefault(AbilityMod.BLEED_DAMAGE, 0f);
       damage *= 1 + (bleedDamage / 100);
@@ -1217,18 +1161,15 @@ public class DamageUtil {
     if (!defender.canReflectAt(attacker.getEntity().getUniqueId())) {
       return;
     }
-    if (defender.getStat(StrifeStat.DAMAGE_REFLECT) < 0.1) {
-      return;
-    }
-    if (!attacker.getEntity().isValid()) {
-      return;
-    }
-    if (defender.isInvincible()) {
+    if (!attacker.getEntity().isValid() || defender.isInvincible()) {
       return;
     }
     float reflectDamage = defender.getStat(StrifeStat.DAMAGE_REFLECT);
     if (reflectDamage <= 0.1) {
       return;
+    }
+    if (defender.getStat(StrifeStat.PVP_ATTACK) > 0 && attacker.getStat(StrifeStat.PVP_ATTACK) > 0) {
+      reflectDamage *= defender.getStat(StrifeStat.PVP_ATTACK) / attacker.getStat(StrifeStat.PVP_DEFENCE);
     }
     defender.getEntity().getWorld().playSound(defender.getEntity().getLocation(),
         Sound.BLOCK_LANTERN_STEP, SoundCategory.HOSTILE, 2f, 1.5f);
@@ -1245,6 +1186,9 @@ public class DamageUtil {
     if (reflectDamage > 0) {
       DamageUtil.dealRawDamage(attacker, reflectDamage);
     }
+    String str = "<#985ec0>" + DamageUtil.buildDamageString((int) reflectDamage);
+    StrifePlugin.getInstance().getIndicatorManager().addIndicator(defender, attacker.getEntity(),
+        IndicatorStyle.RANDOM_POPOFF, 8, str, 0.4f, 0.8f, 0.1f, false);
     defender.cacheReflect(attacker.getEntity().getUniqueId());
   }
 
@@ -1356,6 +1300,28 @@ public class DamageUtil {
     */
   }
 
+  private static float calculateCriticalMult(StrifeMob atkMob, StrifeMob defMob, DamageModifiers mods) {
+    if (atkMob.hasTrait(StrifeTrait.NO_CRIT_MULT)) {
+      return 1f;
+    }
+    float totalMult = atkMob.getStat(StrifeStat.CRITICAL_DAMAGE) + mods.valueOf(AbilityMod.CRITICAL_DAMAGE);
+    totalMult /= 100;
+    if (atkMob.hasTrait(StrifeTrait.LETHAL_STRIKE)) {
+      float chance = atkMob.getStat(StrifeStat.CRITICAL_RATE) + mods.valueOf(AbilityMod.CRITICAL_CHANCE) - 100;
+      if (chance > 0 && DamageUtil.isLethalHit(atkMob, defMob, chance)) {
+        mods.setLethalStrike(true);
+        totalMult *= 2f;
+      }
+    }
+    if (defMob.hasTrait(StrifeTrait.IRON_SCARS)) {
+      totalMult *= 0.4F;
+    }
+    if (mods.isFromAbility()) {
+      totalMult *= 0.9f;
+    }
+    return 1 + totalMult;
+  }
+
   private static int getMissingArmorItems(Player player) {
     PlayerData data = DeluxeInvyPlugin.getInstance().getPlayerManager().getPlayerData(player);
     int amount = 0;
@@ -1409,6 +1375,44 @@ public class DamageUtil {
         .replaceAll("9", "９\uF801");
   }
 
+  private static void displayDamagePopoff(StrifeMob atk, StrifeMob def, float dmg, boolean crit, DamageModifiers mods) {
+    String damageString;
+    if (atk.getEntity() instanceof Player && atk != def) {
+      if (dmg == 0) {
+        plugin.getIndicatorManager().addIndicator(atk, def.getEntity(), IndicatorStyle.RANDOM_POPOFF,
+            9, "<aqua>０", 0.5f, 0.9f, 0.1f, false);
+        return;
+      }
+      float scale = 1;
+      String color = "<#ffea2f>";
+      damageString = buildDamageString(Math.round(dmg));
+      float critScalar = Math.max((atk.getStat(StrifeStat.CRITICAL_DAMAGE) / 100) - 1, 2);
+      if (critScalar > 0) {
+        scale = crit ? 1f + 0.025f * critScalar : 1f - 0.1f * critScalar;
+      }
+      if (crit) {
+        damageString += "\uF802✸";
+        if (mods.isLethalStrike()) {
+          color = "<#c45334>";
+          scale *= 1.05f;
+        } else {
+          color = "<#ffd42f>";
+          scale *= 1.025f;
+        }
+      } else {
+        scale *= 0.975f;
+      }
+      plugin.getIndicatorManager().addIndicator(atk, def.getEntity(), IndicatorStyle.RANDOM_POPOFF,
+          10, color + damageString, scale * 0.8f, scale * 1.1f, 0.1f, false);
+      return;
+    }
+    if (atk.getMaster() != null && atk.getMaster().getEntity() instanceof Player) {
+      damageString = buildDamageString(Math.round(dmg));
+      plugin.getIndicatorManager().addIndicator(atk.getMaster(), def.getEntity(), IndicatorStyle.RANDOM_POPOFF,
+          9, "<#a98c50>" + damageString, 0.5f, 0.9f, 0.2f, false);
+    }
+  }
+
   public enum DamageScale {
     FLAT,
     CASTER_STAT_PERCENT,
@@ -1434,6 +1438,12 @@ public class DamageUtil {
     CASTER_MISSING_ENERGY,
     TARGET_MAX_ENERGY,
     CASTER_MAX_ENERGY,
+    TARGET_CURRENT_AIR,
+    CASTER_CURRENT_AIR,
+    TARGET_MAX_AIR,
+    CASTER_MAX_AIR,
+    TARGET_MISSING_AIR,
+    CASTER_MISSING_AIR,
     TARGET_CURRENT_RAGE,
     CASTER_CURRENT_RAGE,
     TARGET_CURRENT_CORRUPTION,

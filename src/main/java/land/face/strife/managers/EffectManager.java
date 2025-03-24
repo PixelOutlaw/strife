@@ -709,6 +709,11 @@ public class EffectManager {
         ((Bleed) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
         ((Bleed) effect).setApplyBleedMods(cs.getBoolean("apply-bleed-mods", true));
       }
+      case CHANGE_AIR -> {
+        effect = new ChangeAir();
+        ((ChangeAir) effect).setAmount((float) cs.getDouble("amount", 10));
+        ((ChangeAir) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+      }
       case CORRUPT -> {
         effect = new Corrupt();
         ((Corrupt) effect).setAmount((float) cs.getDouble("amount", 10));
@@ -1292,7 +1297,7 @@ public class EffectManager {
         condition = new WeaponsCondition(equipmentItemData, strict);
         break;
       case MOVING:
-        condition = new MovingCondition(cs.getBoolean("state", true));
+        condition = new MovingCondition(cs.getBoolean("state", true), cs.getInt("ms-leeway"));
         break;
       case MINION:
         condition = new MinionCondition(cs.getBoolean("is-owner", false));
@@ -1387,6 +1392,10 @@ public class EffectManager {
         break;
       case FLYING:
         condition = new FlyingCondition();
+        break;
+      case ENRAGED:
+        condition = new EnrageCondition();
+        ((EnrageCondition) condition).setOnRageCooldown(cs.getBoolean("on-rage-cooldown", false));
         break;
       case VELOCITY:
         VelocityType velocityType = VelocityType.valueOf(cs.getString("type", "TOTAL"));

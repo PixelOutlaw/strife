@@ -16,7 +16,8 @@ import lombok.Setter;
 import org.bukkit.entity.Projectile;
 import org.bukkit.util.Vector;
 
-@Getter @Setter
+@Getter
+@Setter
 public class DamageModifiers {
 
   private static final Map<DamageType, Float> baseDamageMults = buildBaseDamageMults();
@@ -43,6 +44,7 @@ public class DamageModifiers {
   private boolean bypassBarrier = false;
   private boolean guardBreak = false;
   private boolean fromAbility = false;
+  private boolean lethalStrike = false;
 
   private static Map<DamageType, Float> buildBaseDamageMults() {
     Map<DamageType, Float> base = new HashMap<>();
@@ -50,6 +52,10 @@ public class DamageModifiers {
       base.put(type, 1f);
     }
     return base;
+  }
+
+  public float valueOf(AbilityMod mod) {
+    return abilityMods.getOrDefault(mod, 0f);
   }
 
   public enum ElementalStatus {

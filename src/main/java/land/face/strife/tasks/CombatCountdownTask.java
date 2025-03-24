@@ -1,5 +1,8 @@
 package land.face.strife.tasks;
 
+import static land.face.strife.util.UberConfig.DEATH_MSG;
+import static land.face.strife.util.UberConfig.SILLY_DEATH_MSGS;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
@@ -12,7 +15,6 @@ import land.face.strife.events.CombatChangeEvent.NewCombatState;
 import land.face.strife.managers.BossBarManager;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -154,9 +156,9 @@ public class CombatCountdownTask extends BukkitRunnable {
       ticks = Math.max(DEATH_TICKS, ticks);
       TextComponent title;
       if (StrifePlugin.RNG.nextFloat() < 0.025) {
-        title = DamageUtil.sillyDeathMsgs.get(StrifePlugin.RNG.nextInt(DamageUtil.sillyDeathMsgs.size()));
+        title = SILLY_DEATH_MSGS.get(StrifePlugin.RNG.nextInt(SILLY_DEATH_MSGS.size()));
       } else {
-        title = DamageUtil.deathMessage;
+        title = DEATH_MSG;
       }
       TextComponent s = (TextComponent) MiniMessage.miniMessage()
           .deserialize(healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138));

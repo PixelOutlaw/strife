@@ -22,6 +22,7 @@ import static land.face.strife.menus.stats.StatsMenu.INT_FORMAT;
 import static land.face.strife.menus.stats.StatsMenu.ONE_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.TWO_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.breakLine;
+import static land.face.strife.util.UberConfig.BARRIER_RECHARGE_TICKS;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
@@ -81,7 +82,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     if (!mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) && mob.getMaxBarrier() > 0) {
       lore.add(addStat("Maximum Barrier: ", StatUtil.getStat(mob, StrifeStat.BARRIER), INT_FORMAT));
       lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(mob) * 10, PER_TEN, INT_FORMAT));
-      var rechargeSeconds = ((float) DamageUtil.BASE_RECHARGE_TICKS) / 20f;
+      var rechargeSeconds = ((float) BARRIER_RECHARGE_TICKS) / 20f;
       float barrierDelayMultiplier = 1 + mob.getStat(StrifeStat.BARRIER_START_SPEED) / 100;
       lore.add(addStat("Barrier Delay: ", rechargeSeconds / barrierDelayMultiplier, "s", TWO_DECIMAL));
       if (mob.getStat(StrifeStat.BARRIER_REGEN) > 0) {
@@ -111,8 +112,9 @@ public class StatsDefenseMenuItem extends MenuItem {
     lore.add(addStat("Armor Rating: ", armor, INT_FORMAT) + physReduction);
 
     float tenacity = StatUtil.getStat(mob, StrifeStat.TENACITY);
-    if (tenacity > 4) {
-      lore.add(addStat("Tenacity: ", tenacity, INT_FORMAT));
+    tenacity = Math.min(tenacity, 60);
+    if (tenacity > 0.1) {
+      lore.add(addStat("Tenacity: ", tenacity, INT_FORMAT) + (tenacity == 60 ? (FaceColor.ORANGE + "(MAX)") : ""));
       float amount = 100f * (1 - DamageUtil.getTenacityMult(mob, true));
       lore.add(FaceColor.GRAY.s() + " 0% ~ " + INT_FORMAT.format(amount) + "% Damage Reduction");
     }

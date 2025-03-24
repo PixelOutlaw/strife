@@ -18,6 +18,9 @@
  */
 package land.face.strife.managers;
 
+import static land.face.strife.util.UberConfig.FLAT_CORRUPT_PER_TICK;
+import static land.face.strife.util.UberConfig.PERCENT_CORRUPT_PER_TICK;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -34,17 +37,11 @@ import org.bukkit.entity.LivingEntity;
 public class CorruptionManager {
 
   private final StrifePlugin plugin;
-  private final float flatCorruptPerTick;
-  private final float percentCorruptPerTick;
 
   private final Map<UUID, CorruptionTimer> corruptMap = new HashMap<>();
 
   public CorruptionManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    flatCorruptPerTick = (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.mechanics.base-corrupt-loss", 0.15);
-    percentCorruptPerTick = 1f - (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.mechanics.config.mechanics.percent-corrupt-loss", 0.05);
   }
 
   public boolean addCorruption(StrifeMob mob, float amount, boolean silent) {
@@ -69,8 +66,8 @@ public class CorruptionManager {
   }
 
   public void tickCorruption(StrifeMob mob) {
-    float newCorruption = mob.getCorruption() * percentCorruptPerTick;
-    newCorruption -= flatCorruptPerTick;
+    float newCorruption = mob.getCorruption() * PERCENT_CORRUPT_PER_TICK;
+    newCorruption -= FLAT_CORRUPT_PER_TICK;
     mob.setCorruption(newCorruption);
     spawnCorruptionParticles(mob.getEntity(), mob.getCorruption());
   }

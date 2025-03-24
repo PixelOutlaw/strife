@@ -18,12 +18,13 @@
  */
 package land.face.strife.timers;
 
+import static land.face.strife.util.UberConfig.BLOCK_TICK;
+
 import java.lang.ref.WeakReference;
 import java.util.UUID;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.BlockManager;
-import land.face.strife.managers.CorruptionManager;
 import lombok.Setter;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -39,7 +40,7 @@ public class BlockTimer extends BukkitRunnable {
     this.target = new WeakReference<>(mob);
     this.blockManager = blockManager;
     savedUUID = mob.getEntity().getUniqueId();
-    runTaskTimer(StrifePlugin.getInstance(), 0L, BlockManager.BLOCK_TICK);
+    runTaskTimer(StrifePlugin.getInstance(), 0L, BLOCK_TICK);
   }
 
   @Override

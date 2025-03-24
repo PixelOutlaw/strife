@@ -160,6 +160,7 @@ public class CombatListener implements Listener {
     DamageUtil.applyAttackTypeMods(attacker, mods.getAttackType(), damage);
     DamageUtil.applyElementalEffects(attacker, defender, damage, mods);
     DamageUtil.reduceDamage(attacker, defender, damage, mods);
+
     float finalDamage = DamageUtil.calculateFinalDamage(attacker, defender, AttackType.PROJECTILE, damage, mods);
 
     StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, mods);
@@ -177,7 +178,7 @@ public class CombatListener implements Listener {
         (float) strifeDamageEvent.getFinalDamage(), mods);
 
     if (damage.containsKey(DamageType.PHYSICAL) && mods.isApplyOnHitEffects()) {
-      DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL), mods, true,false);
+      DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL), mods, true, false);
     }
 
     if (mods.isApplyOnHitEffects()) {
@@ -430,7 +431,7 @@ public class CombatListener implements Listener {
       StatUtil.changeEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));
     }
     if (killer.getStat(StrifeStat.RAGE_ON_KILL) > 0.1) {
-      killer.changeRage(killer.getStat(StrifeStat.RAGE_ON_KILL));
+      killer.changeRage(0.01f * killer.getMaxRage() * killer.getStat(StrifeStat.RAGE_ON_KILL));
     }
   }
 

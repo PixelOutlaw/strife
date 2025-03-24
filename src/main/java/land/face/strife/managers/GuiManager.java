@@ -277,7 +277,8 @@ public class GuiManager {
     gui.putOnTop(new GUIComponent("level-display", EMPTY, 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("attack-bar", EMPTY, 0, 0, Alignment.CENTER));
-    gui.putOnTop(new GUIComponent("rage-bar", EMPTY, 0, 0, Alignment.CENTER));
+    gui.putOnTop(new GUIComponent("attack-bar2", EMPTY, 0, 0, Alignment.CENTER));
+
     gui.putOnTop(new GUIComponent("block-ind", EMPTY, 0, 0, Alignment.CENTER));
 
     gui.putOnTop(new GUIComponent("notif-friend", EMPTY, 0, 0, Alignment.CENTER));

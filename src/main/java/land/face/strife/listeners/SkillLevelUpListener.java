@@ -23,10 +23,9 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.TitleUtils;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
-import io.pixeloutlaw.minecraft.spigot.config.MasterConfiguration;
 import java.util.Map;
 import java.util.WeakHashMap;
-import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.StrifePlugin;
 import land.face.strife.events.SkillLevelUpEvent;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.key.Key;
@@ -49,9 +48,9 @@ public class SkillLevelUpListener implements Listener {
   private final Map<Player, Long> xpSoundMercyMap = new WeakHashMap<>();
 
 
-  public SkillLevelUpListener(MasterConfiguration settings) {
-    SELF_MESSAGE = PaletteUtil.color(settings.getString("language.skills.lvl-up-self"));
-    BROADCAST_MESSAGE = PaletteUtil.color(settings.getString("language.skills.lvl-up-broadcast"));
+  public SkillLevelUpListener(StrifePlugin plugin) {
+    SELF_MESSAGE = PaletteUtil.color(plugin.getLangYAML().getString("skills.lvl-up-self"));
+    BROADCAST_MESSAGE = PaletteUtil.color(plugin.getLangYAML().getString("skills.lvl-up-broadcast"));
   }
 
   @EventHandler(priority = EventPriority.NORMAL)

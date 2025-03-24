@@ -2,6 +2,7 @@ package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
@@ -10,6 +11,7 @@ import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -375,8 +377,11 @@ public class UniqueEntityManager {
     cachedDisguises.put(uniqueEntity.getId(), disguise);
   }
 
-  public void loadUniques(List<SmartYamlConfiguration> files) {
+  public void reloadUniques(List<SmartYamlConfiguration> files) {
+
+    List<UniqueEntity> newAndChangedUniques = new ArrayList<>();
     List<LoadedKnowledge> knowledge = new ArrayList<>();
+
     for (SmartYamlConfiguration uniqueEnemiesYAML : files) {
       for (String entityNameKey : uniqueEnemiesYAML.getKeys(false)) {
         if (!uniqueEnemiesYAML.isConfigurationSection(entityNameKey)) {
@@ -398,6 +403,7 @@ public class UniqueEntityManager {
 
         uniqueEntity.setId(entityNameKey);
         uniqueEntity.setName(PaletteUtil.color(cs.getString("name", "|white|SET |red|A NAME")));
+        uniqueEntity.setCustomAttackRange((float) cs.getDouble("attack-range", 2.25));
         uniqueEntity.setBonusExperience(cs.getInt("bonus-experience", 0));
         uniqueEntity.setDisplaceMultiplier(cs.getDouble("displace-multiplier", 1.0));
         uniqueEntity.setExperienceMultiplier((float) cs.getDouble("experience-multiplier", 1));
@@ -497,13 +503,39 @@ public class UniqueEntityManager {
           loadedKnowledge.getPerkThree().add(PaletteUtil.color("|yellow|◆ +10% Loot From This Mob"));
           knowledge.add(loadedKnowledge);
         }
-        if (loadedUniquesMap.containsKey(entityNameKey)) {
-          Bukkit.getLogger().warning("[Strife] Loaded duplicate unique entity " + entityNameKey
-              + " from " + uniqueEnemiesYAML.getFileName());
-        }
-        addUniqueEntity(entityNameKey, uniqueEntity);
+        newAndChangedUniques.add(uniqueEntity);
       }
     }
+
+    newAndChangedUniques.removeIf(ue ->
+        loadedUniquesMap.containsKey(ue.getId()) && loadedUniquesMap.get(ue.getId()).equals(ue));
+    String[] names = newAndChangedUniques.stream().map(UniqueEntity::getId).toArray(String[]::new);
+    int removed = 0;
+    for (var mob : plugin.getStrifeMobManager().getMobs().values()) {
+      if (mob.getUniqueEntity() == null) {
+        continue;
+      }
+      if (Arrays.stream(names).anyMatch(n -> n.equals(mob.getUniqueEntity().getId()))) {
+        removed++;
+        mob.getEntity().remove();
+      }
+    }
+    for (var ue : newAndChangedUniques) {
+      addUniqueEntity(ue.getId(), ue);
+    }
+    int spawners = 0;
+    for (var spawner : plugin.getSpawnerManager().getSpawnerMap().values()) {
+      if (Arrays.stream(names).anyMatch(n -> n.equals(spawner.getUniqueEntity().getId()))) {
+        spawners++;
+        spawner.setUniqueEntity(loadedUniquesMap.get(spawner.getUniqueId()));
+      }
+    }
+    if (!newAndChangedUniques.isEmpty()) {
+      Bukkit.getLogger().info("[Strife] Reloaded or added " + newAndChangedUniques.size() + " unique mobs");
+      Bukkit.getLogger().info("[Strife] Killed " + removed + " unique mobs");
+      Bukkit.getLogger().info("[Strife] Updated " + spawners + " mob spawners");
+    }
+
     LearninBooksPlugin.instance.getKnowledgeManager().addExternalKnowledge(knowledge);
   }
 }

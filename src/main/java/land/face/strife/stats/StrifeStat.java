@@ -20,6 +20,7 @@ package land.face.strife.stats;
 
 import java.util.HashMap;
 import java.util.Map;
+import lombok.Getter;
 
 public enum StrifeStat {
 
@@ -34,24 +35,24 @@ public enum StrifeStat {
   REGENERATION("Life Regeneration"),
 
   ENERGY("Maximum Energy"),
-  ENERGY_MULT("More Max. Energy"),
+  ENERGY_MULT("More Max. Energy", "Less Max. Energy"),
 
   ENERGY_REGEN("Energy Regeneration"),
-  ENERGY_REGEN_MULT("More Energy Regen"),
+  ENERGY_REGEN_MULT("More Energy Regen", "Less Energy Regen"),
 
   ENERGY_ON_HIT("Energy On Hit"),
   ENERGY_ON_KILL("Energy On Kill"),
   ENERGY_WHEN_HIT("Energy When Hit"),
 
   BARRIER("Maximum Barrier"),
-  BARRIER_MULT("More Max. Barrier"),
+  BARRIER_MULT("More Max. Barrier", "Less Max. Barrier"),
   BARRIER_SPEED("Barrier Recharge Rate"),
   BARRIER_REGEN("Barrier Regeneration"),
   BARRIER_START_SPEED("Shorter Barrier Delay"),
   DAMAGE_TO_BARRIERS("Damage To Barriers"),
 
   PHYSICAL_DAMAGE("Physical Damage"),
-  PHYSICAL_MULT("More Physical Damage"),
+  PHYSICAL_MULT("More Physical Damage", "Less Physical Damage"),
   MELEE_PHYSICAL_MULT("Melee Physical Damage"),
   RANGED_PHYSICAL_MULT("Ranged Physical Damage"),
 
@@ -104,17 +105,19 @@ public enum StrifeStat {
   LIGHT_DAMAGE("Light Damage"),
   DARK_DAMAGE("Shadow Damage"),
 
-  FIRE_MULT("More Fire Damage"),
-  LIGHTNING_MULT("More Lightning Damage"),
-  ICE_MULT("More Ice Damage"),
-  EARTH_MULT("More Earth Damage"),
-  LIGHT_MULT("More Light Damage"),
-  DARK_MULT("More Shadow Damage"),
+  FIRE_MULT("More Fire Damage", "Less Fire Damage"),
+  LIGHTNING_MULT("More Lightning Damage", "Less Lightning Damage"),
+  ICE_MULT("More Ice Damage", "Less Ice Damage"),
+  EARTH_MULT("More Earth Damage", "Less Earth Damage"),
+  LIGHT_MULT("More Light Damage", "Less Light Damage"),
+  DARK_MULT("More Shadow Damage", "Less Shadow Damage"),
 
   ELEMENTAL_STATUS("Elemental Status Chance"),
   MAX_EARTH_RUNES("Max Earth Runes"),
 
   MAXIMUM_RAGE("Maximum Rage"),
+  MAXIMUM_RAGE_MULT("More Max. Rage", "Less Max. Rage"),
+  ENRAGE_DURATION("Enrage Duration"),
   RAGE_ON_HIT("Rage On Hit"),
   RAGE_WHEN_HIT("Rage When Hit"),
   RAGE_ON_KILL("Rage On Kill"),
@@ -183,15 +186,15 @@ public enum StrifeStat {
 
   DOGE("Doge Chance"),
 
-  HEALTH_MULT("More Max. Life"),
-  REGEN_MULT("More Life Regeneration"),
-  ARMOR_MULT("More Armor"),
-  EVASION_MULT("More Evasion"),
+  HEALTH_MULT("More Max. Life", "Less Max. Life"),
+  REGEN_MULT("More Life Regeneration", "Less Life Regeneration"),
+  ARMOR_MULT("More Armor", "Less Armor"),
+  EVASION_MULT("More Evasion", "Less Evasion"),
 
   DAMAGE_MULT("Damage"),
   DAMAGE_TAKEN("Damage Taken"),
   ELEMENTAL_MULT("Elemental Damage"),
-  ACCURACY_MULT("More Accuracy"),
+  ACCURACY_MULT("More Accuracy", "Less Accuracy"),
   MINION_MULT_INTERNAL(),
 
   LIFE_FROM_POTIONS("Life From Potions"),
@@ -219,18 +222,22 @@ public enum StrifeStat {
     return copyOfValues.getOrDefault(name, null);
   }
 
-  private final String name;
+  @Getter
+  private final String name, negativeName;
+
+  StrifeStat(String name, String negativeName) {
+    this.name = name;
+    this.negativeName = negativeName;
+  }
 
   StrifeStat(String name) {
     this.name = name;
+    this.negativeName = name;
   }
 
   StrifeStat() {
     this.name = null;
-  }
-
-  public String getName() {
-    return name;
+    this.negativeName = null;
   }
 
 }

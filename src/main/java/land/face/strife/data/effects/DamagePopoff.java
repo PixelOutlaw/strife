@@ -11,9 +11,7 @@ import org.bukkit.util.Vector;
 public class DamagePopoff {
 
   private Player viewer;
-  private float startScale = 1;
-  private float midScale = 1;
-  private float endScale = 1;
+  private float[] sizeArray;
   private int maxLife;
   private int midLife;
   private Hologram hologram;

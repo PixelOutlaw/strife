@@ -1,5 +1,9 @@
 package land.face.strife.tasks;
 
+import static land.face.strife.util.UberConfig.BARRIER_TICK_RATE;
+import static land.face.strife.util.UberConfig.BARRIER_DELAY_TICKS;
+import static land.face.strife.util.UberConfig.BARRIER_RECHARGE_TICKS;
+
 import java.lang.ref.WeakReference;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -28,8 +32,8 @@ public class BarrierTask extends BukkitRunnable {
 
   public BarrierTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
-    this.runTaskTimer(StrifePlugin.getInstance(), 40L, DamageUtil.TICK_RATE);
-    tickMultiplier = (1 / (20f / DamageUtil.TICK_RATE)) * 0.1f;
+    this.runTaskTimer(StrifePlugin.getInstance(), 40L, BARRIER_TICK_RATE);
+    tickMultiplier = (1 / (20f / BARRIER_TICK_RATE)) * 0.1f;
   }
 
   @Override
@@ -58,18 +62,18 @@ public class BarrierTask extends BukkitRunnable {
       }
       return;
     }
-    float barrierGain = DamageUtil.TICK_RATE * StatUtil.getBarrierPerSecond(mob) / 20;
+    float barrierGain = BARRIER_TICK_RATE * StatUtil.getBarrierPerSecond(mob) / 20;
     barrierGain += StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN) * tickMultiplier * 0.1f;
     canBreak = true;
     mob.restoreBarrier(barrierGain);
   }
 
   public void bumpBarrierTime(float barrierDelayMult) {
-    delayTicks = (int) ((float) DamageUtil.DELAY_TICKS / barrierDelayMult);
+    delayTicks = (int) ((float) BARRIER_DELAY_TICKS / barrierDelayMult);
   }
 
   public void setDelayTicks(int delayTicks) {
-    this.delayTicks = Math.min(delayTicks, (int) ((float) DamageUtil.BASE_RECHARGE_TICKS / DamageUtil.TICK_RATE));
+    this.delayTicks = Math.min(delayTicks, (int) ((float) BARRIER_RECHARGE_TICKS / BARRIER_TICK_RATE));
   }
 
   public static void spawnBarrierParticles(LivingEntity entity, float amount) {

@@ -163,7 +163,6 @@ import land.face.strife.stats.AbilitySlot;
 import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
 import land.face.strife.tasks.BoostTickTask;
-import land.face.strife.tasks.EnergyTask;
 import land.face.strife.tasks.EnvironmentalTickTask;
 import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.tasks.IndicatorTask;
@@ -179,6 +178,7 @@ import land.face.strife.util.LogUtil.LogLevel;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.StrifeScriptReader;
+import land.face.strife.util.UberConfig;
 import lombok.Getter;
 import lombok.Setter;
 import ninja.amp.ampmenus.MenuListener;
@@ -213,11 +213,10 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private MasterConfiguration settings;
   @Getter
-  private SmartYamlConfiguration attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
+  private SmartYamlConfiguration configYAML, langYAML, attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
       pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML, prayerYAML, displaysYaml,
-      herdYML, contactPrefabsYml, lorebooksYml;
-  private SmartYamlConfiguration spawnerYAML;
-
+      herdYML, contactPrefabsYml, lorebooksYml, spawnerYAML, contactSpawnersYaml;
+  private List<SmartYamlConfiguration> uniques;
   @Getter
   private StrifeMobManager strifeMobManager;
   @Getter
@@ -342,11 +341,6 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private StrifeScriptReader strifeScriptReader;
 
-  public static float WALK_COST;
-  public static float WALK_COST_PERCENT;
-  public static float RUN_COST;
-  public static float RUN_COST_PERCENT;
-
   public static final DecimalFormat INT_FORMAT = new DecimalFormat("#,###,###,###,###");
 
   public static StrifePlugin getInstance() {
@@ -371,35 +365,14 @@ public class StrifePlugin extends FacePlugin {
 
     setupPermissions();
 
-    List<SmartYamlConfiguration> configurations = new ArrayList<>();
-    SmartYamlConfiguration configYAML;
-    configurations.add(configYAML = defaultSettingsLoad("config.yml"));
-    SmartYamlConfiguration langYAML;
-    configurations.add(langYAML = defaultSettingsLoad("language.yml"));
-    configurations.add(attributesYAML = defaultSettingsLoad("attributes.yml"));
-    configurations.add(baseStatsYAML = defaultSettingsLoad("base-entity-stats.yml"));
-    configurations.add(equipmentYAML = defaultSettingsLoad("equipment.yml"));
-    configurations.add(conditionYAML = defaultSettingsLoad("conditions.yml"));
-    configurations.add(effectYAML = defaultSettingsLoad("effects.yml"));
-    configurations.add(pathYAML = defaultSettingsLoad("paths.yml"));
-    configurations.add(herdYML = defaultSettingsLoad("herding-locations.yml"));
-    configurations.add(loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml"));
-    configurations.add(buffsYAML = defaultSettingsLoad("buffs.yml"));
-    configurations.add(modsYAML = defaultSettingsLoad("mob-mods.yml"));
-    configurations.add(globalBoostsYAML = defaultSettingsLoad("global-boosts.yml"));
-    configurations.add(mountsYAML = defaultSettingsLoad("mounts.yml"));
-    configurations.add(prayerYAML = defaultSettingsLoad("prayer.yml"));
-    configurations.add(contactPrefabsYml = defaultSettingsLoad("contact-prefabs.yml"));
-    configurations.add(displaysYaml = defaultSettingsLoad("display-vfx.yml"));
-    configurations.add(lorebooksYml = defaultSettingsLoad("lore.yml"));
+    loadConfigFile();
+    loadFiles();
+    loadMobFiles();
+    buildConfiguration();
 
-    SmartYamlConfiguration contactSpawnersYaml = new SmartYamlConfiguration(new File(getDataFolder(), "contact-spawners.yml"));
+    UberConfig.reload(this);
 
-    List<SmartYamlConfiguration> uniques = uniqueFileLoad();
-    spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
 
-    settings = MasterConfiguration.loadFromFiles(configYAML, langYAML);
-    storage = new FlatfileStorage(this);
     commandManager = new PaperCommandManager(this);
 
     attributeManager = new StrifeAttributeManager(attributesYAML);
@@ -437,7 +410,7 @@ public class StrifePlugin extends FacePlugin {
     wseManager = new WSEManager();
     contactObjectManager = new ContactObjectManager(this, contactSpawnersYaml);
     spawnerManager = new SpawnerManager(this);
-    mobModManager = new MobModManager(this, settings, equipmentManager);
+    mobModManager = new MobModManager(this, equipmentManager);
     abilityIconManager = new AbilityIconManager(this);
     guiManager = new GuiManager(this);
     violationManager = new ViolationManager(this);
@@ -448,15 +421,6 @@ public class StrifePlugin extends FacePlugin {
     MenuListener.getInstance().register(this);
 
     snazzyPartiesHook = new SnazzyPartiesHook();
-
-    WALK_COST = (float) settings.getDouble("config.mechanics.energy.walk-cost-flat", 3)
-        * EnergyTask.TICK_MULT;
-    WALK_COST_PERCENT = (float) settings.getDouble("config.mechanics.energy.walk-regen-percent",
-        0.75);
-    RUN_COST = (float) settings.getDouble("config.mechanics.energy.run-cost-flat", 10)
-        * EnergyTask.TICK_MULT;
-    RUN_COST_PERCENT = (float) settings.getDouble("config.mechanics.energy.run-regen-percent",
-        0.25);
 
     buildConditions();
     buildEffects();
@@ -469,7 +433,7 @@ public class StrifePlugin extends FacePlugin {
     loadScheduledBoosts();
     buildPaths();
 
-    uniqueEntityManager.loadUniques(uniques);
+    reloadUniques();
     vagabondManager.loadClasses(configYAML.getConfigurationSection("vagabonds"));
     buildMobMods();
     loadSpawners();
@@ -590,7 +554,7 @@ public class StrifePlugin extends FacePlugin {
     Bukkit.getPluginManager().registerEvents(new JoinAndLeaveListener(this), this);
     Bukkit.getPluginManager().registerEvents(new CurrencyChangeListener(this), this);
     Bukkit.getPluginManager().registerEvents(new DeathListener(this), this);
-    Bukkit.getPluginManager().registerEvents(new SkillLevelUpListener(settings), this);
+    Bukkit.getPluginManager().registerEvents(new SkillLevelUpListener(this), this);
     Bukkit.getPluginManager().registerEvents(new StatUpdateListener(this), this);
     Bukkit.getPluginManager().registerEvents(new EntityMagicListener(this), this);
     Bukkit.getPluginManager().registerEvents(new SpawnListener(this), this);
@@ -721,6 +685,47 @@ public class StrifePlugin extends FacePlugin {
     }
 
     LogUtil.printInfo("[Strife] Successfully enabled Strife-v" + getDescription().getVersion());
+  }
+
+  public void loadFiles() {
+    langYAML = defaultSettingsLoad("language.yml");
+    attributesYAML = defaultSettingsLoad("attributes.yml");
+    baseStatsYAML = defaultSettingsLoad("base-entity-stats.yml");
+    equipmentYAML = defaultSettingsLoad("equipment.yml");
+    conditionYAML = defaultSettingsLoad("conditions.yml");
+    effectYAML = defaultSettingsLoad("effects.yml");
+    pathYAML = defaultSettingsLoad("paths.yml");
+    herdYML = defaultSettingsLoad("herding-locations.yml");
+    loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml");
+    buffsYAML = defaultSettingsLoad("buffs.yml");
+    modsYAML = defaultSettingsLoad("mob-mods.yml");
+    globalBoostsYAML = defaultSettingsLoad("global-boosts.yml");
+    mountsYAML = defaultSettingsLoad("mounts.yml");
+    prayerYAML = defaultSettingsLoad("prayer.yml");
+    contactPrefabsYml = defaultSettingsLoad("contact-prefabs.yml");
+    displaysYaml = defaultSettingsLoad("display-vfx.yml");
+    lorebooksYml = defaultSettingsLoad("lore.yml");
+
+    contactSpawnersYaml = new SmartYamlConfiguration(new File(getDataFolder(), "contact-spawners.yml"));
+    spawnerYAML = new SmartYamlConfiguration(new File(getDataFolder(), "spawners.yml"));
+
+    storage = new FlatfileStorage(this);
+  }
+
+  public void loadConfigFile() {
+    configYAML = defaultSettingsLoad("config.yml");
+  }
+
+  public void loadMobFiles() {
+    uniques = uniqueFileLoad();
+  }
+
+  public void reloadUniques() {
+    uniqueEntityManager.reloadUniques(uniques);
+  }
+
+  public void buildConfiguration() {
+    settings = MasterConfiguration.loadFromFiles(configYAML, langYAML);
   }
 
   @Override

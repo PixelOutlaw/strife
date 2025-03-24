@@ -1,6 +1,8 @@
 package land.face.strife.listeners;
 
 import static land.face.strife.data.champion.LifeSkillType.AGILITY;
+import static land.face.strife.util.UberConfig.LONG_JUMP_COST_FLAT;
+import static land.face.strife.util.UberConfig.LONG_JUMP_COST_PERCENT;
 
 import com.tealcube.minecraft.bukkit.facecore.event.LaunchEvent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
@@ -43,7 +45,7 @@ public class LaunchAndLandListener implements Listener {
       return;
     }
     if (event.getPlayer().getGameMode() == GameMode.SURVIVAL || event.getPlayer().getGameMode() == GameMode.ADVENTURE) {
-      float cost = AgilityListener.LONG_JUMP_COST_FLAT + AgilityListener.LONG_JUMP_COST_PERCENT * mob.getMaxEnergy();
+      float cost = LONG_JUMP_COST_FLAT + LONG_JUMP_COST_PERCENT * mob.getMaxEnergy();
       cost *= (100 + mob.getStat(StrifeStat.WEIGHT)) / 200;
       if (mob.getEnergy() < cost) {
         plugin.getGuiManager().postNotice(event.getPlayer(), GuiManager.NOTICE_ENERGY, 10);

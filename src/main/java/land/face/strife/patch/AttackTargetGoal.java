@@ -11,14 +11,14 @@ import land.face.strife.StrifePlugin;
 import lombok.Getter;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.jetbrains.annotations.NotNull;
 
 public class AttackTargetGoal implements Goal<Mob> {
 
-  private static final NamespacedKey key = new NamespacedKey(
-      StrifePlugin.getInstance(), "attack_target");
+  private static final NamespacedKey key = new NamespacedKey(StrifePlugin.getInstance(), "attack_target");
 
   @Getter
   private static final GoalKey<Mob> goalKey = GoalKey.of(Mob.class, key);

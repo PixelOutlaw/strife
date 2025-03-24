@@ -18,6 +18,17 @@
  */
 package land.face.strife.managers;
 
+import static land.face.strife.util.UberConfig.BLOCK_TICK_MULT;
+import static land.face.strife.util.UberConfig.FLAT_BLOCK_S;
+import static land.face.strife.util.UberConfig.GUARD_BREAK_POWER;
+import static land.face.strife.util.UberConfig.MAX_BLOCK_CHANCE;
+import static land.face.strife.util.UberConfig.MELEE_FATIGUE;
+import static land.face.strife.util.UberConfig.PERCENT_BLOCK_S;
+import static land.face.strife.util.UberConfig.PERCENT_MAX_BLOCK_MIN;
+import static land.face.strife.util.UberConfig.PHYSICAL_BLOCK_CHANCE_MULT;
+import static land.face.strife.util.UberConfig.PHYSICAL_BLOCK_FATIGUE_MULT;
+import static land.face.strife.util.UberConfig.PROJECTILE_FATIGUE;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -47,37 +58,8 @@ public class BlockManager {
 
   private final Map<UUID, BlockTimer> blockTimers = new HashMap<>();
 
-  private static final double MAX_BLOCK_CHANCE = 0.55;
-  public static final int BLOCK_TICK = 4;
-  private static final float BLOCK_TICK_MULT = (float) BLOCK_TICK / 20;
-
-  private final float FLAT_BLOCK_S;
-  private final float PERCENT_BLOCK_S;
-  private final float PERCENT_MAX_BLOCK_MIN;
-  private final float MELEE_FATIGUE;
-  private final float PROJECTILE_FATIGUE;
-  private final float PHYSICAL_BLOCK_FATIGUE_MULT;
-  private final float PHYSICAL_BLOCK_CHANCE_MULT;
-  private final float GUARD_BREAK_POWER;
-
   public BlockManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    FLAT_BLOCK_S = (float) plugin.getSettings()
-        .getDouble("config.mechanics.block.flat-block-recovery", 10);
-    PERCENT_BLOCK_S = (float) plugin.getSettings()
-        .getDouble("config.mechanics.block.percent-block-recovery", 0.01f);
-    PERCENT_MAX_BLOCK_MIN = (float) plugin.getSettings()
-        .getDouble("config.mechanics.block.negative-block-percent", 0.25);
-    MELEE_FATIGUE = (float) plugin.getSettings()
-        .getDouble("config.mechanics.block.melee-fatigue", 70);
-    PROJECTILE_FATIGUE = (float) plugin.getSettings()
-        .getDouble("config.mechanics.block.projectile-fatigue", 45);
-    PHYSICAL_BLOCK_FATIGUE_MULT = (float) plugin.getSettings()
-        .getDouble("config.mechanics.block.physical-block-fatigue-mult", 0.75);
-    PHYSICAL_BLOCK_CHANCE_MULT = (float) plugin.getSettings()
-        .getDouble("config.mechanics.block.physical-block-chance-mult", 4.0);
-    GUARD_BREAK_POWER = (float) plugin.getSettings()
-        .getDouble("config.mechanics.block.guard-break-multiplier", 1.5f);
   }
 
   public boolean attemptBlock(StrifeMob attacker, StrifeMob defender, float attackMult,

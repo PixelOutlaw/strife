@@ -46,11 +46,11 @@ public class MobModManager {
   private double MOB_MOD_UP_CHANCE;
   public static int MOB_MOD_MAX_MODS;
 
-  public MobModManager(StrifePlugin plugin, MasterConfiguration settings, EntityEquipmentManager equipmentManager) {
+  public MobModManager(StrifePlugin plugin, EntityEquipmentManager equipmentManager) {
     this.plugin = plugin;
     this.equipmentManager = equipmentManager;
-    MOB_MOD_UP_CHANCE = settings.getDouble("config.leveled-monsters.add-mod-chance", 0.1);
-    MOB_MOD_MAX_MODS = settings.getInt("config.leveled-monsters.max-mob-mods", 4);
+    MOB_MOD_UP_CHANCE = plugin.getConfigYAML().getDouble("leveled-monsters.add-mod-chance", 0.1);
+    MOB_MOD_MAX_MODS = plugin.getConfigYAML().getInt("leveled-monsters.max-mob-mods", 4);
   }
 
   public void doModApplication(StrifeMob mob, int max) {

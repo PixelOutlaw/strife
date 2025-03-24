@@ -1,5 +1,10 @@
 package land.face.strife.tasks;
 
+import static land.face.strife.util.UberConfig.RUN_COST;
+import static land.face.strife.util.UberConfig.RUN_COST_PERCENT;
+import static land.face.strife.util.UberConfig.WALK_COST;
+import static land.face.strife.util.UberConfig.WALK_COST_PERCENT;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -80,15 +85,15 @@ public class EnergyTask extends BukkitRunnable {
           player.setSprinting(false);
           player.setFoodLevel(4);
         } else {
-          energyChange *= StrifePlugin.RUN_COST_PERCENT;
+          energyChange *= RUN_COST_PERCENT;
           if (!mob.hasTrait(StrifeTrait.RUNNER)) {
-            energyChange -= StrifePlugin.RUN_COST * getAgilityMult(mob);
+            energyChange -= RUN_COST * getAgilityMult(mob);
           }
         }
       } else if (MoveUtil.hasMoved(player)) {
-        energyChange *= StrifePlugin.WALK_COST_PERCENT;
+        energyChange *= WALK_COST_PERCENT;
         if (!mob.hasTrait(StrifeTrait.RUNNER)) {
-          energyChange -= StrifePlugin.WALK_COST * getAgilityMult(mob);
+          energyChange -= WALK_COST * getAgilityMult(mob);
         }
         player.setFoodLevel(19);
       }

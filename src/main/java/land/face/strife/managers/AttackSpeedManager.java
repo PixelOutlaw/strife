@@ -16,6 +16,9 @@
  */
 package land.face.strife.managers;
 
+import static land.face.strife.util.UberConfig.BASIC_ATTACK_COST;
+import static land.face.strife.util.UberConfig.ATTACK_SPEED_WARNING_MAX_LEVEL;
+
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
@@ -29,7 +32,6 @@ import land.face.strife.data.AttackTracker;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.StatUtil;
-import lombok.Getter;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -40,15 +42,11 @@ public class AttackSpeedManager {
   private final StrifePlugin plugin;
 
   private final Map<UUID, AttackTracker> lastAttackMap;
-  private final float attackCost;
-  private final int warnLevel;
   private final String attackFastMsg;
 
   public AttackSpeedManager(StrifePlugin plugin) {
     this.plugin = plugin;
     this.lastAttackMap = new HashMap<>();
-    attackCost = (float) plugin.getSettings().getDouble("config.mechanics.energy.attack-cost", 5);
-    warnLevel = plugin.getSettings().getInt("config.mechanics.energy.warn-level", 10) + 1;
     attackFastMsg = plugin.getSettings().getString("language.generic.attack-too-fast");
   }
 
@@ -112,10 +110,10 @@ public class AttackSpeedManager {
       return attackMult;
     }
 
-    float energyCost = (0.4f + 0.6f * attackMult) * attackCost;
+    float energyCost = (0.4f + 0.6f * attackMult) * BASIC_ATTACK_COST;
     float energyMult = Math.min(1, attacker.getEnergy() / energyCost);
 
-    if (resetRatio != -1 && energyMult < 0.9 && ((Player) attacker.getEntity()).getLevel() < warnLevel) {
+    if (resetRatio != -1 && energyMult < 0.9 && ((Player) attacker.getEntity()).getLevel() < ATTACK_SPEED_WARNING_MAX_LEVEL) {
       TitleUtils.sendTitle((Player) attacker.getEntity(), "  ", FaceColor.ORANGE + "Low Energy!", 10, 0, 8);
       PaletteUtil.sendMessage(attacker.getEntity(), attackFastMsg);
     }

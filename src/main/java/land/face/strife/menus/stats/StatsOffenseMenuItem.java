@@ -60,18 +60,12 @@ public class StatsOffenseMenuItem extends MenuItem {
   private final StatsMenu statsMenu;
 
   private final Map<Player, ItemStack> cachedIcon = new WeakHashMap<>();
-  private final float POISON_FLAT_DAMAGE;
-  private final float POISON_LEVEL_DAMAGE;
 
 
   StatsOffenseMenuItem(StatsMenu statsMenu) {
     super(FaceColor.ORANGE.s() + FaceColor.BOLD.s() + "Damage Stats", new ItemStack(Material.BARRIER));
     this.statsMenu = statsMenu;
     ItemStackExtensionsKt.setCustomModelData(getIcon(), 50);
-    POISON_FLAT_DAMAGE = (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.mechanics.poison-flat-damage");
-    POISON_LEVEL_DAMAGE = (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.mechanics.poison-level-damage");
   }
 
   @Override
@@ -185,9 +179,9 @@ public class StatsOffenseMenuItem extends MenuItem {
         || mob.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
       loreSection.add(breakLine);
       loreSection.add(addStat("Maximum Rage: ", mob.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
-      loreSection.add(addStat("Rage On Hit: ", mob.getStat(StrifeStat.RAGE_ON_HIT), INT_FORMAT));
-      loreSection.add(addStat("Rage On Kill: ", mob.getStat(StrifeStat.RAGE_ON_KILL), INT_FORMAT));
-      loreSection.add(addStat("Rage When Hit: ", mob.getStat(StrifeStat.RAGE_WHEN_HIT), INT_FORMAT));
+      loreSection.add(addStat("Rage On Hit: ", mob.getStat(StrifeStat.RAGE_ON_HIT), "%", INT_FORMAT));
+      loreSection.add(addStat("Rage On Kill: ", mob.getStat(StrifeStat.RAGE_ON_KILL), "%", INT_FORMAT));
+      loreSection.add(addStat("Rage When Hit: ", mob.getStat(StrifeStat.RAGE_WHEN_HIT), "%", INT_FORMAT));
     }
     if (loreSection.size() > 1) {
       lore.addAll(loreSection);

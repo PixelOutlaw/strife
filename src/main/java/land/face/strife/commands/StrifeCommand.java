@@ -64,6 +64,7 @@ import land.face.strife.util.EloUtil;
 import land.face.strife.util.HitDetectionUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
+import land.face.strife.util.UberConfig;
 import net.kyori.adventure.text.TextComponent;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -289,6 +290,22 @@ public class StrifeCommand extends BaseCommand {
       }
       sendMessage(sender, plugin.getSettings().getString("language.command.reload", "&aStrife reloaded!"));
     }, 5L);
+  }
+
+  @Subcommand("reload config")
+  @CommandPermission("strife.admin")
+  public void reloadConfigCommand(CommandSender sender) {
+    plugin.loadConfigFile();
+    UberConfig.reload(plugin);
+    sendMessage(sender, "[Strife] Reloaded config");
+  }
+
+  @Subcommand("reload mobs")
+  @CommandPermission("strife.admin")
+  public void reloadMobCommand(CommandSender sender) {
+    plugin.loadMobFiles();
+    plugin.reloadUniques();
+    sendMessage(sender, "[Strife] Reloaded mobs, check console for additional details");
   }
 
   @Subcommand("reload vfx")

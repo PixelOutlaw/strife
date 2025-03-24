@@ -143,7 +143,7 @@ public class PotionListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onEffectGainz(EntityPotionEffectEvent event) {
-    if (event.isCancelled()) {
+    if (event.isCancelled() || !event.getEntity().isValid()) {
       return;
     }
     if (event.getAction() != Action.ADDED && event.getAction() != Action.CHANGED) {

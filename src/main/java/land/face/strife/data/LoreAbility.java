@@ -15,17 +15,19 @@ public class LoreAbility {
   private final TriggerType triggerType;
   private final String triggerText;
   private final List<String> description;
+  private final List<String> rawDescription;
   private final Ability ability;
   private final List<Effect> effects;
   private final boolean cancelIfDead;
   private final boolean hide;
 
   public LoreAbility(String id, TriggerType triggerType, String triggerText, Ability ability,
-      List<String> description, boolean hide, boolean cancelIfDead) {
+      List<String> description, List<String> rawDescription, boolean hide, boolean cancelIfDead) {
     this.id = id;
     this.triggerType = triggerType;
     this.triggerText = triggerText;
     this.description = description;
+    this.rawDescription = rawDescription;
     this.ability = ability;
     this.effects = new ArrayList<>();
     this.hide = hide;

@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
@@ -97,11 +98,23 @@ public class Push extends Effect {
       caster.getEntity().setVelocity(newVelocity);
       if (caster.isPlayer()) {
         MoveUtil.setVelocity((Player) caster.getEntity(), newVelocity);
+      } else {
+        var lookLoc = caster.getEntity().getEyeLocation().clone();
+        lookLoc.add(newVelocity.clone().normalize().multiply(5));
+        lookLoc.setDirection(newVelocity.clone().normalize());
+        ((Mob) caster.getEntity()).lookAt(lookLoc);
+        ((Mob) caster.getEntity()).getPathfinder().stopPathfinding();
       }
     } else {
       target.getEntity().setVelocity(newVelocity);
       if (target.isPlayer()) {
         MoveUtil.setVelocity((Player) target.getEntity(), newVelocity);
+      } else {
+        var lookLoc = target.getEntity().getEyeLocation().clone();
+        lookLoc.add(newVelocity.clone().normalize().multiply(5));
+        lookLoc.setDirection(newVelocity.clone().normalize());
+        ((Mob) target.getEntity()).lookAt(lookLoc);
+        ((Mob) target.getEntity()).getPathfinder().stopPathfinding();
       }
     }
   }

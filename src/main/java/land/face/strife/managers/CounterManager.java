@@ -16,6 +16,10 @@
  */
 package land.face.strife.managers;
 
+import static land.face.strife.util.UberConfig.COUNTER_MESSAGE;
+import static land.face.strife.util.UberConfig.COUNTER_PITCH;
+import static land.face.strife.util.UberConfig.COUNTER_SOUND;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,25 +33,16 @@ import land.face.strife.data.CounterData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
-import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
 public class CounterManager {
 
   private final Map<LivingEntity, Set<CounterData>> counterMap = new WeakHashMap<>();
-  private StrifePlugin plugin;
-  private Sound counterSound;
-  private String COUNTER_MESSAGE;
-  private float pitch;
+  private final StrifePlugin plugin;
 
   public CounterManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    counterSound = Sound.valueOf(plugin.getSettings()
-        .getString("config.mechanics.counter.sound", "ENCHANT_THORNS_HIT"));
-    pitch = (float) plugin.getSettings().getDouble("config.mechanics.counter.pitch", 1);
-    COUNTER_MESSAGE = PaletteUtil.color(
-        plugin.getSettings().getString("language.status.counter-message", "形"));
   }
 
   public void clearCounters(LivingEntity livingEntity) {
@@ -75,7 +70,7 @@ public class CounterManager {
         continue;
       }
       isCountered = true;
-      defender.getWorld().playSound(defender.getLocation(), counterSound, 1.0f, pitch);
+      defender.getWorld().playSound(defender.getLocation(), COUNTER_SOUND, 1.0f, COUNTER_PITCH);
       if (attacker instanceof Player) {
         StrifePlugin.getInstance().getIndicatorManager().addIndicator(
             plugin.getStrifeMobManager().getStatMob(attacker), defender, IndicatorStyle.BOUNCE,

@@ -41,7 +41,7 @@ public class Spawner extends BukkitRunnable {
 
   @Getter private final String id;
   @Getter private final String uniqueId;
-  @Getter private final UniqueEntity uniqueEntity;
+  @Getter @Setter private UniqueEntity uniqueEntity;
 
   @Getter @Setter private int amount;
   @Getter @Setter private int level = -1;
