@@ -31,7 +31,7 @@ public class AttackTracker {
       if (allowOverdraw) {
         long msIntoRecharge = attackDuration - timeDiff;
         float percent = ((float) msIntoRecharge + 500) / (attackDuration + 500);
-        return Math.min(1.35f, 1 + (percent - 1) / 3);
+        return Math.min(1.4f, 1 + (percent - 1) / 3);
       } else {
         // This occurs only when the attack is fully recharged
         return 1f;

@@ -144,6 +144,9 @@ public class StatsOffenseMenuItem extends MenuItem {
     float attackSpeed = mob.getStat(StrifeStat.ATTACK_SPEED);
     String bonus = FaceColor.GRAY + " (" + (attackSpeed >= 0 ? "+" : "") + INT_FORMAT.format(attackSpeed) + "%)";
     lore.add(as + bonus);
+    if (mob.getStat(StrifeStat.BASIC_ATTACK_DAMAGE) > 0) {
+      lore.add(addStat("Basic Attack Damage: ", 100 + mob.getStat(StrifeStat.BASIC_ATTACK_DAMAGE), "%", INT_FORMAT));
+    }
     lore.add(addStat("Ability Damage: ", 100 + mob.getStat(StrifeStat.ABILITY_DAMAGE), "%", INT_FORMAT));
     List<String> loreSection = new ArrayList<>();
     loreSection.add(breakLine);

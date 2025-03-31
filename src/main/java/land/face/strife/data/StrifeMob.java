@@ -47,7 +47,6 @@ import land.face.strife.tasks.MinionTask;
 import land.face.strife.tasks.RageTask;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -360,6 +359,12 @@ public class StrifeMob {
 
   public boolean isEnraged() {
     return rageTask != null && rageTask.isEnraged();
+  }
+
+  public void refreshEnrage() {
+    if (isEnraged()) {
+      rageTask.refreshEnrage(this);
+    }
   }
 
   public boolean isOnRageCooldown() {

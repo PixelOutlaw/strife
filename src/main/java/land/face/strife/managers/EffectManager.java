@@ -158,7 +158,11 @@ public class EffectManager {
         }
         if (effect instanceof LocationEffect e) {
           if (e.isPreferEntityLocation()) {
-            e.apply(caster, targetMob);
+            if (e.isForceTargetCaster()) {
+              e.apply(caster, caster);
+            } else {
+              e.apply(caster, targetMob);
+            }
           } else if (response.getLocation() != null) {
             e.applyAtLocation(caster, response.getLocation());
           } else {
@@ -283,6 +287,7 @@ public class EffectManager {
         effect = new ChangeRage();
         ((ChangeRage) effect).setAmount((float) cs.getDouble("amount", 1));
         ((ChangeRage) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((ChangeRage) effect).setRefreshEnrage(cs.getBoolean("refresh-enrage", false));
       }
       case DAMAGE -> {
         effect = new Damage();

@@ -82,8 +82,6 @@ public class ShootListener implements Listener {
     event.setCancelled(true);
 
     float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(mob, 1);
-    attackMultiplier = (float) Math.pow(attackMultiplier, 1.5f);
-
 
     if (plugin.isInHome(player)) {
       event.setCancelled(true);
@@ -256,7 +254,6 @@ public class ShootListener implements Listener {
     StrifeMob pStats = plugin.getStrifeMobManager().getStatMob(player);
 
     float attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(pStats, 1.2f);
-    attackMultiplier = (float) Math.pow(attackMultiplier, 1.2);
 
     int throwCooldownTicks = (int) (40 * StatUtil.getAttackTime(pStats));
 

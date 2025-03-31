@@ -97,10 +97,14 @@ public class AttackSpeedManager {
     if (!lastAttackMap.containsKey(attacker.getEntity().getUniqueId())) {
       attackTracker = new AttackTracker(finalAttackTime, 0L);
       lastAttackMap.put(attacker.getEntity().getUniqueId(), attackTracker);
-      attackMult = attacker.hasTrait(StrifeTrait.OVERDRAW) ? 1.5f : 1.0f;
+      attackMult = attacker.hasTrait(StrifeTrait.OVERDRAW) ? 1.4f : 1.0f;
     } else {
       attackTracker = lastAttackMap.get(attacker.getEntity().getUniqueId());
       attackMult = attackTracker.getRechargePercent(attacker.hasTrait(StrifeTrait.OVERDRAW));
+    }
+
+    if (attackMult < 1) {
+      attackMult = (float) Math.pow(attackMult, 1.35);
     }
 
     attackTracker.reset(finalAttackTime, 0L, false);
@@ -110,7 +114,7 @@ public class AttackSpeedManager {
       return attackMult;
     }
 
-    float energyCost = (0.4f + 0.6f * attackMult) * BASIC_ATTACK_COST;
+    float energyCost = (0.3f + 0.7f * attackMult) * BASIC_ATTACK_COST;
     float energyMult = Math.min(1, attacker.getEnergy() / energyCost);
 
     if (resetRatio != -1 && energyMult < 0.9 && ((Player) attacker.getEntity()).getLevel() < ATTACK_SPEED_WARNING_MAX_LEVEL) {

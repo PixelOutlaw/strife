@@ -284,6 +284,8 @@ public class DamageUtil {
       }
       if (mods.isFromAbility()) {
         rawDamage *= 1 + atkMob.getStat(StrifeStat.ABILITY_DAMAGE) / 100;
+      } else {
+        rawDamage *= 1 + atkMob.getStat(StrifeStat.BASIC_ATTACK_DAMAGE) / 100;
       }
       if (atkMob.hasTrait(StrifeTrait.VENGEANCE)) {
         rawDamage *= 2f - (float) (atkMob.getEntity().getHealth() / atkMob.getMaxLife());

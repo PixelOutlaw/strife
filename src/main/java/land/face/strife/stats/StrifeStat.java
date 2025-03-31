@@ -57,6 +57,7 @@ public enum StrifeStat {
   RANGED_PHYSICAL_MULT("Ranged Physical Damage"),
 
   ABILITY_DAMAGE("Ability Damage"),
+  BASIC_ATTACK_DAMAGE("Basic Attack Damage"),
 
   ARMOR("Armor"),
   EVASION("Evasion"),
