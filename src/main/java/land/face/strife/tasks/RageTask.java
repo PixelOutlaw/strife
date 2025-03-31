@@ -88,10 +88,11 @@ public class RageTask extends BukkitRunnable {
       new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岇")), 49, 0, Alignment.CENTER),
       new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岉")), 49, 0, Alignment.CENTER));
 
-  private static final int rageLen = RAGE_METER.size() - 1;
-  private static final int enrageLen = ENRAGE_METER.size() - 1;
   public static final GUIComponent EMPTY_ATTACK2 = new GUIComponent("attack-bar2",
       GuiManager.EMPTY, 0, 0, Alignment.CENTER);
+
+  private static final int rageLen = RAGE_METER.size() - 1;
+  private static final int enrageLen = ENRAGE_METER.size() - 1;
 
   private static org.bukkit.Color RAGE_PARTICLE_1 = org.bukkit.Color.fromRGB(138, 21, 87);
   private static org.bukkit.Color RAGE_PARTICLE_2 = org.bukkit.Color.fromRGB(186, 30, 30);
@@ -109,42 +110,28 @@ public class RageTask extends BukkitRunnable {
       cancel();
       return;
     }
-    if (!mob.isInCombat()) {
-      spawnRageParticles(mob.getEntity(), rage);
-      decayFromOutOfCombat(mob);
-      return;
-    }
     if (isEnraged()) {
       spawnEnrageParticles(mob.getEntity(), rage);
-      decayFromEnrage(mob);
+      decayFromEnrage();
+      return;
+    }
+    if (!mob.isInCombat()) {
+      spawnRageParticles(mob.getEntity(), rage);
+      decayFromOutOfCombat();
       return;
     }
     spawnRageParticles(mob.getEntity(), rage);
   }
 
-  private void decayFromOutOfCombat(StrifeMob mob) {
+  private void decayFromOutOfCombat() {
     float lostTicks = RAGE_INACTIVE_FLAT + rage * RAGE_INACTIVE_PERCENT;
     reduceRage(lostTicks);
-    if (rage <= 0) {
-      LogUtil.printDebug("Rage complete, removing");
-      mob.endRageTask();
-    }
   }
 
-  private void decayFromEnrage(StrifeMob mob) {
+  private void decayFromEnrage() {
     decay = (float) Math.pow(decay, RAGE_DECAY_EXPONENT);
     decay += decayIncrease;
     reduceRage(decay);
-    if (rage <= 0) {
-      LogUtil.printDebug("Rage complete, removing");
-      float cdTime = 10f * 1000f;
-      cdTime /= 1 - mob.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100;
-      mob.setRageRestart(System.currentTimeMillis() + (int) cdTime);
-      mob.endRageTask();
-      mob.setCacheNeeded(true);
-      mob.cacheStats();
-      StrifePlugin.getInstance().getStatUpdateManager().updateAllAttributes(mob);
-    }
   }
 
   public boolean isEnraged() {
@@ -166,18 +153,37 @@ public class RageTask extends BukkitRunnable {
   }
 
   public void reduceRage(float amount) {
-    rage = Math.max(rage - amount, 0);
-    sendRageGui();
+    rage -= amount;
+    StrifeMob mob = parentMob.get();
+    if (mob == null) {
+      cancel();
+      return;
+    }
+    if (rage > 0) {
+      sendRageGui();
+      return;
+    }
+    rage = 0;
+    if (!isEnraged()) {
+      LogUtil.printDebug("Rage complete, removing");
+      mob.endRageTask();
+    } else {
+      LogUtil.printDebug("Rage complete, removing");
+      float cdTime = 10f * 1000f;
+      cdTime /= 1 - mob.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100;
+      mob.setRageRestart(System.currentTimeMillis() + (int) cdTime);
+      mob.endRageTask();
+      mob.setCacheNeeded(true);
+      mob.cacheStats();
+      StrifePlugin.getInstance().getStatUpdateManager().updateAllAttributes(mob);
+    }
   }
 
   private void triggerEnrage(@NotNull StrifeMob mob) {
     if (mob.isEnraged() || mob.hasTrait(StrifeTrait.LEVEL_HEADED)) {
       return;
     }
-    float bonusDuration = mob.getStat(StrifeStat.EFFECT_DURATION) + mob.getStat(StrifeStat.ENRAGE_DURATION);
-    float timeMultiplier = (float) Math.pow(1 + bonusDuration / 100f, 2);
-    decay = 1f + INITIAL_ENRAGE_DECAY / timeMultiplier;
-    decayIncrease = ENRAGE_DECAY / timeMultiplier;
+    setDecay(mob);
     mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_WARDEN_LISTENING_ANGRY, 2, 1);
     mob.setCacheNeeded(true);
     mob.cacheStats();
@@ -188,6 +194,20 @@ public class RageTask extends BukkitRunnable {
     }
     EnrageEvent event = new EnrageEvent(mob);
     Bukkit.getPluginManager().callEvent(event);
+  }
+
+  public void refreshEnrage(@NotNull StrifeMob mob) {
+    if (!mob.isEnraged()) {
+      return;
+    }
+    setDecay(mob);
+  }
+
+  private void setDecay(@NotNull StrifeMob mob) {
+    float bonusDuration = mob.getStat(StrifeStat.EFFECT_DURATION) + mob.getStat(StrifeStat.ENRAGE_DURATION);
+    float timeMultiplier = (float) Math.pow(1 + bonusDuration / 100f, 2);
+    decay = 1f + INITIAL_ENRAGE_DECAY / timeMultiplier;
+    decayIncrease = ENRAGE_DECAY / timeMultiplier;
   }
 
   private void sendRageGui() {
@@ -217,6 +237,7 @@ public class RageTask extends BukkitRunnable {
         0.4, 0.4, 0.4
     );
   }
+
   private static void spawnEnrageParticles(LivingEntity entity, float rageStacks) {
     var loc = entity.getLocation().clone();
     var amount = (int) (Math.max(0, rageStacks) / 30);
