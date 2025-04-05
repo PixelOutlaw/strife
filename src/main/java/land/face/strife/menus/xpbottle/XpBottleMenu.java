@@ -25,7 +25,7 @@ import ninja.amp.ampmenus.menus.ItemMenu;
 
 public class XpBottleMenu extends ItemMenu {
 
-  public static String BASE_NAME = StringExtensionsKt.chatColorize("&f拹");
+  public static String BASE_NAME = StringExtensionsKt.chatColorize("&f宺");
 
   public XpBottleMenu(StrifePlugin plugin, String title, int bowlId, int amount) {
     super(BASE_NAME + title, Size.FOUR_LINE, plugin);
@@ -40,6 +40,8 @@ public class XpBottleMenu extends ItemMenu {
     setItem(20, new SkillButton(plugin, LifeSkillType.TRADING, bowlId, 437, amount));
     setItem(21, new SkillButton(plugin, LifeSkillType.AGILITY, bowlId, 438, amount));
     setItem(28, new SkillButton(plugin, LifeSkillType.SNEAK, bowlId, 400, amount));
+    setItem(29, new SkillButton(plugin, LifeSkillType.PRAYER, bowlId, 439, amount));
+    setItem(30, new SkillButton(plugin, LifeSkillType.LOREMASTER, bowlId, 469, amount));
 
     setItem(5, new SkillButton(plugin, LifeSkillType.SWORDSMANSHIP, bowlId, 406, amount));
     setItem(6, new SkillButton(plugin, LifeSkillType.AXE_MASTERY, bowlId, 426, amount));

@@ -160,6 +160,7 @@ public class CombatListener implements Listener {
     DamageUtil.applyAttackTypeMods(attacker, mods.getAttackType(), damage);
     DamageUtil.applyElementalEffects(attacker, defender, damage, mods);
     DamageUtil.reduceDamage(attacker, defender, damage, mods);
+
     float finalDamage = DamageUtil.calculateFinalDamage(attacker, defender, AttackType.PROJECTILE, damage, mods);
 
     StrifeDamageEvent strifeDamageEvent = new StrifeDamageEvent(attacker, defender, mods);
@@ -175,10 +176,6 @@ public class CombatListener implements Listener {
 
     StrifePlugin.getInstance().getDamageManager().dealDamage(attacker, defender,
         (float) strifeDamageEvent.getFinalDamage(), mods);
-
-    if (damage.containsKey(DamageType.PHYSICAL) && mods.isApplyOnHitEffects()) {
-      DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL), mods, true,false);
-    }
 
     if (mods.isApplyOnHitEffects()) {
       DamageUtil.attemptPoison(attacker, defender, mods);
@@ -292,12 +289,8 @@ public class CombatListener implements Listener {
 
     AttackType attackType = DamageUtil.getAttackType(event);
     if (attackType == AttackType.MELEE) {
-      ItemStack item = attackEntity.getEquipment() == null ? null : attackEntity.getEquipment().getItemInMainHand();
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
       onHitChance = attackMultiplier;
-      if (item != null && (item.getType() == Material.BOW || item.getType() == Material.WOODEN_SWORD)) {
-        attackMultiplier *= 0.4f;
-      }
       //double angle = attackEntity.getEyeLocation().getDirection()
       //    .angle(defendEntity.getEyeLocation().getDirection());
       //backAttack = angle < 1;
@@ -430,7 +423,7 @@ public class CombatListener implements Listener {
       StatUtil.changeEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));
     }
     if (killer.getStat(StrifeStat.RAGE_ON_KILL) > 0.1) {
-      killer.changeRage(killer.getStat(StrifeStat.RAGE_ON_KILL));
+      killer.changeRage(0.01f * killer.getMaxRage() * killer.getStat(StrifeStat.RAGE_ON_KILL));
     }
   }
 

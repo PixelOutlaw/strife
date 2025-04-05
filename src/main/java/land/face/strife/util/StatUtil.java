@@ -1,7 +1,15 @@
 package land.face.strife.util;
 
+import static land.face.strife.util.UberConfig.ARMOR_DENOMINATOR;
+import static land.face.strife.util.UberConfig.BASE_ATTACK_SECONDS;
+import static land.face.strife.util.UberConfig.FLAT_BARRIER_PER_SECOND;
+import static land.face.strife.util.UberConfig.PERCENT_BARRIER_PER_SECOND;
+import static land.face.strife.util.UberConfig.RAGE_ATTACK_SPEED_BONUS_MELEE;
+import static land.face.strife.util.UberConfig.RAGE_ATTACK_SPEED_BONUS_RANGED;
 import static org.bukkit.potion.PotionEffectType.HERO_OF_THE_VILLAGE;
 import static org.bukkit.potion.PotionEffectType.REGENERATION;
+import static org.bukkit.potion.PotionEffectType.UNLUCK;
+import static org.bukkit.potion.PotionEffectType.WEAKNESS;
 import static org.bukkit.potion.PotionEffectType.WITHER;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
@@ -37,8 +45,6 @@ public class StatUtil {
   public static String COMBAT_ENTER_TOAST;
   public static String COMBAT_EXIT_TOAST;
 
-  public static float ARMOR_DENOMINATOR;
-
   private static final float POTION_REGEN_FLAT_PER_LEVEL = 2f;
   private static final float POTION_REGEN_PERCENT_PER_LEVEL = 0.005f;
 
@@ -46,8 +52,6 @@ public class StatUtil {
     plugin = strifePlugin;
     COMBAT_ENTER_TOAST = UnicodeUtil.unicodePlacehold("<toast_enter_combat>");
     COMBAT_EXIT_TOAST = UnicodeUtil.unicodePlacehold("<toast_exit_combat>");
-
-    ARMOR_DENOMINATOR = (float) plugin.getSettings().getDouble("config.mechanics.defense.armor-denominator", 110);
   }
 
   public static float getLifeRegen(StrifeMob mob) {
@@ -116,6 +120,7 @@ public class StatUtil {
       }
       case MAXIMUM_RAGE -> {
         float amount = stats.getOrDefault(StrifeStat.MAXIMUM_RAGE, 0f);
+        amount *= 1 + stats.getOrDefault(StrifeStat.MAXIMUM_RAGE_MULT, 0f) / 100;
         mob.setMaxRage(amount);
         return amount;
       }
@@ -221,6 +226,52 @@ public class StatUtil {
         }
         return amount;
       }
+      case MOVEMENT_SPEED -> {
+        float amount = stats.getOrDefault(StrifeStat.MOVEMENT_SPEED, 0f);
+        if (mob.isEnraged()) {
+          amount += 15;
+        }
+        return amount;
+      }
+      case INCREASED_GRAVITY -> {
+        float amount = stats.getOrDefault(StrifeStat.INCREASED_GRAVITY, 0f);
+        if (mob.isEnraged()) {
+          amount += 8;
+        }
+        return amount;
+      }
+      case JUMP_HEIGHT -> {
+        float amount = stats.getOrDefault(StrifeStat.JUMP_HEIGHT, 0f);
+        if (mob.isEnraged()) {
+          amount += 10;
+        }
+        return amount;
+      }
+      case TENACITY -> {
+        float amount = stats.getOrDefault(StrifeStat.TENACITY, 0f);
+        if (mob.isEnraged()) {
+          amount += 12.5f;
+        }
+        return amount;
+      }
+      case LIFE_STEAL -> {
+        float amount = stats.getOrDefault(StrifeStat.LIFE_STEAL, 0f);
+        if (mob.isEnraged()) {
+          amount += 5f;
+        }
+        return amount;
+      }
+      case DAMAGE_REFLECT -> {
+        var amount = stats.getOrDefault(StrifeStat.DAMAGE_REFLECT, 0f);
+        if (amount > 0.1 && mob.hasTrait(StrifeTrait.REBUKE)) {
+          if (mob.isPlayer()) {
+            amount *= 1f + (mob.getChampion().getSaveData().getSkillLevel(LifeSkillType.SHIELD_MASTERY) / 100f);
+          } else {
+            amount *= 1f + (mob.getLevel() / 100f);
+          }
+        }
+        return amount;
+      }
       case AIR_JUMPS -> {
         if (mob.getChampion() == null) {
           return 0;
@@ -248,28 +299,34 @@ public class StatUtil {
   }
 
   public static float getBarrierPerSecond(StrifeMob ae) {
-    float baseRestoreSpeed = DamageUtil.FLAT_BARRIER_PER_SECOND +
-        (ae.getMaxBarrier() * DamageUtil.PERCENT_BARRIER_PER_SECOND);
+    float baseRestoreSpeed = FLAT_BARRIER_PER_SECOND + (ae.getMaxBarrier() * PERCENT_BARRIER_PER_SECOND);
     return baseRestoreSpeed * (1 + (ae.getStatRaw(StrifeStat.BARRIER_SPEED) / 100));
   }
 
-  public static float getCriticalChance(StrifeMob attacker, float attackMult, float bonusCrit) {
-    float totalCrit = attackMult * (attacker.getStat(StrifeStat.CRITICAL_RATE) + bonusCrit);
-    return totalCrit / 100;
+  public static float getCriticalChance(StrifeMob attacker, StrifeMob defender, float attackMult, float bonusCrit) {
+    var total = attacker.getStat(StrifeStat.CRITICAL_RATE) + bonusCrit;
+    if (defender.getEntity().hasPotionEffect(UNLUCK)) {
+      total += 20;
+    }
+    if (attacker.getEntity().hasPotionEffect(WEAKNESS)) {
+      total /= 2;
+    }
+    total *= attackMult;
+    return total / 100;
   }
 
   public static float getAttackTime(StrifeMob ae) {
 
-    float attackTime = DamageUtil.BASE_ATTACK_SECONDS;
+    float attackTime = BASE_ATTACK_SECONDS;
 
     attackTime *= (1f + ae.getFrost() / 10000f);
 
     float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
 
     if (ItemUtil.isMeleeWeapon(ae.getEntity().getEquipment().getItemInMainHand().getType())) {
-      attackBonus += ae.getRage() * 0.5f;
+      attackBonus += ae.getRageForAttackSpeed() * RAGE_ATTACK_SPEED_BONUS_MELEE;
     } else {
-      attackBonus += ae.getRage() * 0.2f;
+      attackBonus += ae.getRageForAttackSpeed() * RAGE_ATTACK_SPEED_BONUS_RANGED;
     }
 
     if (attackBonus > 0) {

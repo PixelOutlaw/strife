@@ -7,9 +7,11 @@ import org.bukkit.entity.Player;
 public class MovingCondition extends Condition {
 
   private final boolean state;
+  private final int millis;
 
-  public MovingCondition(boolean state) {
+  public MovingCondition(boolean state, int millis) {
     this.state = state;
+    this.millis = millis;
   }
 
   public boolean isMet(StrifeMob caster, StrifeMob target) {
@@ -18,13 +20,13 @@ public class MovingCondition extends Condition {
         //throw new IllegalArgumentException("Move condition can only be used on players");
         return true;
       }
-      return MoveUtil.hasMoved((Player) caster.getEntity()) == state;
+      return MoveUtil.hasMoved((Player) caster.getEntity(), millis) == state;
     } else {
       if (!(target.getEntity() instanceof Player)) {
         //throw new IllegalArgumentException("Move condition can only be used on players");
         return true;
       }
-      return MoveUtil.hasMoved((Player) target.getEntity()) == state;
+      return MoveUtil.hasMoved((Player) target.getEntity(), millis) == state;
     }
   }
 }

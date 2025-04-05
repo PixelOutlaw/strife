@@ -61,17 +61,11 @@ public class StatsOffenseMenuItem extends MenuItem {
   private final StatsMenu statsMenu;
 
   private final Map<Player, ItemStack> cachedIcon = new WeakHashMap<>();
-  private final float POISON_FLAT_DAMAGE;
-  private final float POISON_LEVEL_DAMAGE;
 
 
   StatsOffenseMenuItem(StatsMenu statsMenu) {
     super(FaceColor.ORANGE.s() + FaceColor.BOLD.s() + "Damage Stats", ItemUtils.BLANK.clone());
     this.statsMenu = statsMenu;
-    POISON_FLAT_DAMAGE = (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.mechanics.poison-flat-damage");
-    POISON_LEVEL_DAMAGE = (float) StrifePlugin.getInstance().getSettings()
-        .getDouble("config.mechanics.poison-level-damage");
   }
 
   @Override
@@ -113,6 +107,9 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (type == AttackType.PROJECTILE) {
       totalMultiplier *= 1f + mob.getStat(StrifeStat.PROJECTILE_DAMAGE) / 100;
     }
+    if (type == AttackType.MELEE) {
+      totalMultiplier *= 1f + mob.getStat(StrifeStat.MELEE_DAMAGE) / 100;
+    }
     float physical = totalMultiplier * damageMap.getOrDefault(DamageType.PHYSICAL, 0f);
     float fire = totalMultiplier * damageMap.getOrDefault(DamageType.FIRE, 0f);
     float ice = totalMultiplier * damageMap.getOrDefault(DamageType.ICE, 0f);
@@ -150,6 +147,9 @@ public class StatsOffenseMenuItem extends MenuItem {
     float attackSpeed = mob.getStat(StrifeStat.ATTACK_SPEED);
     String bonus = FaceColor.GRAY + " (" + (attackSpeed >= 0 ? "+" : "") + INT_FORMAT.format(attackSpeed) + "%)";
     lore.add(as + bonus);
+    if (mob.getStat(StrifeStat.BASIC_ATTACK_DAMAGE) > 0) {
+      lore.add(addStat("Basic Attack Damage: ", 100 + mob.getStat(StrifeStat.BASIC_ATTACK_DAMAGE), "%", INT_FORMAT));
+    }
     lore.add(addStat("Ability Damage: ", 100 + mob.getStat(StrifeStat.ABILITY_DAMAGE), "%", INT_FORMAT));
     List<String> loreSection = new ArrayList<>();
     loreSection.add(breakLine);
@@ -185,9 +185,9 @@ public class StatsOffenseMenuItem extends MenuItem {
         || mob.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
       loreSection.add(breakLine);
       loreSection.add(addStat("Maximum Rage: ", mob.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
-      loreSection.add(addStat("Rage On Hit: ", mob.getStat(StrifeStat.RAGE_ON_HIT), INT_FORMAT));
-      loreSection.add(addStat("Rage On Kill: ", mob.getStat(StrifeStat.RAGE_ON_KILL), INT_FORMAT));
-      loreSection.add(addStat("Rage When Hit: ", mob.getStat(StrifeStat.RAGE_WHEN_HIT), INT_FORMAT));
+      loreSection.add(addStat("Rage On Hit: ", mob.getStat(StrifeStat.RAGE_ON_HIT), "%", INT_FORMAT));
+      loreSection.add(addStat("Rage On Kill: ", mob.getStat(StrifeStat.RAGE_ON_KILL), "%", INT_FORMAT));
+      loreSection.add(addStat("Rage When Hit: ", mob.getStat(StrifeStat.RAGE_WHEN_HIT), "%", INT_FORMAT));
     }
     if (loreSection.size() > 1) {
       lore.addAll(loreSection);
@@ -209,7 +209,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (earth > 0) {
       lore.add(addStat("Maximum Earth Runes: ", mob.getStat(StrifeStat.MAX_EARTH_RUNES), INT_FORMAT));
     }
-    lore.add(addStat("Elemental Status Chance: ", mob.getStat(StrifeStat.ELEMENTAL_STATUS), "%", INT_FORMAT));
+    lore.add(addStat("Status Chance: ", mob.getStat(StrifeStat.ELEMENTAL_STATUS), "%", INT_FORMAT));
     lore.add(breakLine);
     lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help &8&ofor more info!"));
     itemMeta.setLore(lore);

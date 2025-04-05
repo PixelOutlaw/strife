@@ -1,5 +1,8 @@
 package land.face.strife.data;
 
+import static land.face.strife.util.UberConfig.ENRAGE_MULTIPLIER_ATTACK_SPEED;
+import static land.face.strife.util.UberConfig.ENRAGE_MULTIPLIER_EFFECTS;
+
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
@@ -103,6 +106,7 @@ public class StrifeMob {
   private boolean cacheNeeded = false;
   private long lastEquipmentUpdate = 100L;
   private long lastChampionUpdate = 100L;
+  private long rageRestart = 0L;
 
   private long globalCooldownStamp = 1L;
 
@@ -309,16 +313,21 @@ public class StrifeMob {
   }
 
   public float getRage() {
-    if (rageTask == null) {
-      return 0;
-    }
-    return rageTask.getRage();
+    return rageTask == null ? 0 : rageTask.getRage();
+  }
+
+  public float getRageForAttackSpeed() {
+    return rageTask == null ? 0 : rageTask.isEnraged() ? maxRage * ENRAGE_MULTIPLIER_ATTACK_SPEED : rageTask.getRage();
+  }
+
+  public float getRageForEffectScaling() {
+    return rageTask == null ? 0 : rageTask.isEnraged() ? maxRage * ENRAGE_MULTIPLIER_EFFECTS : rageTask.getRage();
   }
 
   public void endRageTask() {
     if (isPlayer()) {
       StrifePlugin.getInstance().getGuiManager().getGui((Player) getEntity()).update(
-          new GUIComponent("rage-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
+          new GUIComponent("attack-bar2", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
     }
     if (rageTask != null) {
       if (!rageTask.isCancelled()) {
@@ -329,6 +338,9 @@ public class StrifeMob {
   }
 
   public void changeRage(float amount) {
+    if (rageRestart != 0 && System.currentTimeMillis() < rageRestart) {
+      return;
+    }
     if (amount > 0) {
       if (rageTask == null) {
         rageTask = new RageTask(this);
@@ -343,6 +355,20 @@ public class StrifeMob {
       }
       rageTask.reduceRage(-amount);
     }
+  }
+
+  public boolean isEnraged() {
+    return rageTask != null && rageTask.isEnraged();
+  }
+
+  public void refreshEnrage() {
+    if (isEnraged()) {
+      rageTask.refreshEnrage(this);
+    }
+  }
+
+  public boolean isOnRageCooldown() {
+    return rageRestart > 0 && System.currentTimeMillis() < rageRestart;
   }
 
   public boolean isBleeding() {
@@ -535,8 +561,7 @@ public class StrifeMob {
       return StatUpdateManager.combineMaps(getChampion().getCombinedCache(),
           getBuffStats(), equipmentCache.getCombinedStats());
     }
-    return StatUpdateManager.combineMaps(baseStats, getBuffStats(),
-        equipmentCache.getCombinedStats());
+    return StatUpdateManager.combineMaps(baseStats, getBuffStats(), equipmentCache.getCombinedStats());
   }
 
   public void setStats(Map<StrifeStat, Float> stats) {

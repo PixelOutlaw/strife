@@ -1,6 +1,18 @@
 package land.face.strife.listeners;
 
 import static land.face.strife.data.champion.LifeSkillType.AGILITY;
+import static land.face.strife.util.UberConfig.AIR_JUMP_COST_FLAT;
+import static land.face.strife.util.UberConfig.AIR_JUMP_COST_PERCENT;
+import static land.face.strife.util.UberConfig.ROLL_COST_FLAT;
+import static land.face.strife.util.UberConfig.ROLL_COST_PERCENT;
+import static land.face.strife.util.UberConfig.AIR_DASH_ASCENT;
+import static land.face.strife.util.UberConfig.AIR_DASH_POWER;
+import static land.face.strife.util.UberConfig.LONG_JUMP_PARTICLE_SPEED;
+import static land.face.strife.util.UberConfig.AGILITY_PARTICLE;
+import static land.face.strife.util.UberConfig.AGILITY_PARTICLE_SPEED;
+import static land.face.strife.util.UberConfig.ROLL_ASCENT;
+import static land.face.strife.util.UberConfig.ROLL_LEVI_TICKS;
+import static land.face.strife.util.UberConfig.ROLL_POWER;
 
 import com.tealcube.minecraft.bukkit.facecore.event.LandEvent;
 import com.tealcube.minecraft.bukkit.facecore.event.ToggleJumpEvent;
@@ -20,7 +32,6 @@ import land.face.strife.util.JumpUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -37,25 +48,6 @@ public class AgilityListener implements Listener {
   private final StrifePlugin plugin;
   private final Map<Integer, Vector> cachedJumpAnimation = new HashMap<>();
 
-  public static float ROLL_COST_FLAT;
-  public static float ROLL_COST_PERCENT;
-  public static float AIR_JUMP_COST_FLAT;
-  public static float AIR_JUMP_COST_PERCENT;
-  public static float LONG_JUMP_COST_FLAT;
-  public static float LONG_JUMP_COST_PERCENT;
-
-  private final float rollPower;
-  private final float rollAscent;
-
-  private final int rollLeviTicks;
-
-  private final float airDashAscent;
-  private final float airDashPower;
-
-  private final float particleSpeed;
-  private final float longParticleSpeed;
-  private final Particle particle;
-
   public AgilityListener(StrifePlugin plugin) {
     this.plugin = plugin;
     for (int step = 0; step < 21; step++) {
@@ -63,39 +55,6 @@ public class AgilityListener implements Listener {
       Vector vector = new Vector(Math.cos(radian), 0, Math.sin(radian));
       cachedJumpAnimation.put(step, vector);
     }
-    ROLL_COST_FLAT = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.base-roll-cost", 6f);
-    ROLL_COST_PERCENT = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.percent-roll-cost", 0.12f);
-
-    AIR_JUMP_COST_FLAT = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.air-jump-cost", 6f);
-    AIR_JUMP_COST_PERCENT = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.air-jump-percent-cost", 0.12f);
-
-    LONG_JUMP_COST_FLAT = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.long-jump-cost", 6f);
-    LONG_JUMP_COST_PERCENT = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.long-jump-percent-cost", 0.12f);
-
-    rollPower = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.roll-power", 1f);
-    rollAscent = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.roll-ascent", 0.12f);
-    rollLeviTicks = plugin.getSettings()
-        .getInt("config.mechanics.agility.roll-levitation-ticks", 2);
-
-    airDashAscent = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.air-dash-ascent", 0.275);
-    airDashPower = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.air-dash-power", 0.825);
-
-    particleSpeed = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.air-jump-particle-speed", 0.11);
-    longParticleSpeed = (float) plugin.getSettings()
-        .getDouble("config.mechanics.agility.long-jump-particle-speed", 0.11);
-    particle = Particle.valueOf(plugin.getSettings()
-        .getString("config.mechanics.agility.air-jump-particle", "SPIT"));
   }
 
   @EventHandler
@@ -218,17 +177,17 @@ public class AgilityListener implements Listener {
 
     PotionListener.ignoreFx = true;
     player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 18, 1, true, false));
-    player.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, rollLeviTicks, 1, true, false));
-    player.addPotionEffect(new PotionEffect(PotionEffectType.WIND_CHARGED, rollLeviTicks, 2, true, false));
+    player.addPotionEffect(new PotionEffect(PotionEffectType.LEVITATION, ROLL_LEVI_TICKS, 1, true, false));
+    player.addPotionEffect(new PotionEffect(PotionEffectType.WIND_CHARGED, ROLL_LEVI_TICKS, 2, true, false));
     PotionListener.ignoreFx = false;
 
-    player.setVelocity(dodgeVector.multiply(rollPower).setY(rollAscent));
+    player.setVelocity(dodgeVector.multiply(ROLL_POWER).setY(ROLL_ASCENT));
 
     if (plugin.isInHome(player)) {
-      player.spawnParticle(particle, player.getLocation(), 10, 0, 0, 0, longParticleSpeed);
+      player.spawnParticle(AGILITY_PARTICLE, player.getLocation(), 10, 0, 0, 0, LONG_JUMP_PARTICLE_SPEED);
       player.playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
     } else {
-      player.getWorld().spawnParticle(particle, player.getLocation(), 10, 0, 0, 0, longParticleSpeed);
+      player.getWorld().spawnParticle(AGILITY_PARTICLE, player.getLocation(), 10, 0, 0, 0, LONG_JUMP_PARTICLE_SPEED);
       player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 1, 2.0F);
     }
   }
@@ -244,9 +203,9 @@ public class AgilityListener implements Listener {
     Vector bonusVelocity = player.getLocation().getDirection();
 
     if (mob.getTraits().contains(StrifeTrait.AIR_DASH)) {
-      bonusVelocity.setY(0.0001);
-      bonusVelocity.normalize().multiply(airDashPower);
-      double bonusY = Math.max(airDashAscent, velocity.getY() + airDashAscent / 3);
+      bonusVelocity.setY(Math.max(0.05, bonusVelocity.getY()));
+      bonusVelocity.normalize().multiply(AIR_DASH_POWER);
+      double bonusY = Math.max(AIR_DASH_ASCENT, velocity.getY() + AIR_DASH_ASCENT / 3);
       bonusVelocity.setY(bonusY);
     } else {
       bonusVelocity.setY(Math.max(2, bonusVelocity.getY()));
@@ -278,15 +237,15 @@ public class AgilityListener implements Listener {
 
   private void flingParticle(Player player) {
     for (Integer step : cachedJumpAnimation.keySet()) {
-      player.getWorld().spawnParticle(particle, player.getLocation(), 0,
-          cachedJumpAnimation.get(step).getX(), 0.1, cachedJumpAnimation.get(step).getZ(), particleSpeed);
+      player.getWorld().spawnParticle(AGILITY_PARTICLE, player.getLocation(), 0,
+          cachedJumpAnimation.get(step).getX(), 0.1, cachedJumpAnimation.get(step).getZ(), AGILITY_PARTICLE_SPEED);
     }
   }
 
   private void flingParticle2(Player player) {
     for (Integer step : cachedJumpAnimation.keySet()) {
-      player.spawnParticle(particle, player.getLocation(), 0,
-          cachedJumpAnimation.get(step).getX(), 0.1, cachedJumpAnimation.get(step).getZ(), particleSpeed);
+      player.spawnParticle(AGILITY_PARTICLE, player.getLocation(), 0,
+          cachedJumpAnimation.get(step).getX(), 0.1, cachedJumpAnimation.get(step).getZ(), AGILITY_PARTICLE_SPEED);
     }
   }
 }

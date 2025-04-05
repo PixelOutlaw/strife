@@ -195,11 +195,10 @@ public class ProjectileUtil {
       if (((Player) mob.getEntity()).getCooldown(Material.BOW) > 0) {
         return;
       }
-      ((Player) mob.getEntity()).setCooldown(Material.BOW,
-          (int) (StatUtil.getAttackTime(mob) * 20));
+      ((Player) mob.getEntity()).setCooldown(Material.BOW, (int) (StatUtil.getAttackTime(mob) * 20));
     }
     float speedMult = 1 + mob.getStat(StrifeStat.PROJECTILE_SPEED) / 100;
-    float projectileSpeed = 2.0f + 2.25f * speedMult;
+    float projectileSpeed = 1.25f + 3.00f * speedMult;
     int projectiles = ProjectileUtil.getTotalProjectiles(
         1, mob.getStat(StrifeStat.MULTISHOT) * attackMult, mob.getStat(StrifeStat.EXTRA_PROJECTILES));
     float pierceChance = mob.getStat(StrifeStat.PIERCE_CHANCE) / 100;
@@ -211,7 +210,7 @@ public class ProjectileUtil {
       ProjectileUtil.createBullet(mob.getEntity(), attackMult, projectileSpeed, speedMult, pierceChance,
           randomBulletOffset(projectiles));
     }
-    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 1f, 0.6f);
+    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_FIREWORK_ROCKET_BLAST, 2.5f, 0.6f);
     shotId++;
   }
 
@@ -312,7 +311,7 @@ public class ProjectileUtil {
       if (arrow.isValid()) {
         arrow.remove();
       }
-    }, 4 + (int) (3f * speedMult));
+    }, 7);
 
     setAttackMult(arrow, (float) attackMult);
     setPierce(arrow, pierce);

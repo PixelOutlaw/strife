@@ -182,14 +182,14 @@ public class VagabondManager {
     mob.setStats(totalStats);
 
     EntityAbilitySet entityAbilitySet = new EntityAbilitySet();
-    Set<Ability> newAbilities = new HashSet<>();
+    List<Ability> newAbilities = new ArrayList<>();
     newAbilities.add(plugin.getAbilityManager().getAbility(
         PlayerDataUtil.getRandomFromCollection(mobClass.getPossibleAbilitiesA())));
     newAbilities.add(plugin.getAbilityManager().getAbility(
         PlayerDataUtil.getRandomFromCollection(mobClass.getPossibleAbilitiesB())));
     newAbilities.add(plugin.getAbilityManager().getAbility(
         PlayerDataUtil.getRandomFromCollection(mobClass.getPossibleAbilitiesC())));
-    Map<Phase, Set<Ability>> abilities = entityAbilitySet.getAbilities(TriggerAbilityType.TIMER);
+    Map<Phase, List<Ability>> abilities = entityAbilitySet.getAbilities(TriggerAbilityType.TIMER);
     for (Phase phase : EntityAbilitySet.PHASES) {
       abilities.put(phase, newAbilities);
     }

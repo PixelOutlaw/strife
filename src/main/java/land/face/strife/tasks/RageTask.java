@@ -1,22 +1,28 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
  * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
  * <p>
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
  * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.tasks;
+
+import static land.face.strife.util.UberConfig.ENRAGE_ABILITY_COOLDOWN;
+import static land.face.strife.util.UberConfig.ENRAGE_DECAY;
+import static land.face.strife.util.UberConfig.ENRAGE_RAGE_GAIN_MULT;
+import static land.face.strife.util.UberConfig.RAGE_DECAY_EXPONENT;
+import static land.face.strife.util.UberConfig.RAGE_INACTIVE_FLAT;
+import static land.face.strife.util.UberConfig.RAGE_INACTIVE_PERCENT;
+import static land.face.strife.util.UberConfig.INITIAL_ENRAGE_DECAY;
 
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
@@ -24,42 +30,76 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.events.EnrageEvent;
 import land.face.strife.managers.GuiManager;
+import land.face.strife.stats.StrifeStat;
+import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.LogUtil;
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
+@Getter
+@Setter
+@SuppressWarnings("deprecation")
 public class RageTask extends BukkitRunnable {
 
   private final WeakReference<StrifeMob> parentMob;
-  @Getter
+
   private float rage;
-  private int graceTicks;
+  private float decay = 0;
+  private float decayIncrease = 0;
 
-  @SuppressWarnings("deprecation")
-  private static final List<TextComponent> rageLevels = List.of(
-      GuiManager.adventureIsRetarded("\uD809\uDC15"),
-      GuiManager.adventureIsRetarded("\uD809\uDC16"),
-      GuiManager.adventureIsRetarded("\uD809\uDC17"),
-      GuiManager.adventureIsRetarded("\uD809\uDC18"),
-      GuiManager.adventureIsRetarded("\uD809\uDC19"),
-      GuiManager.adventureIsRetarded("\uD809\uDC1A"),
-      GuiManager.adventureIsRetarded("\uD809\uDC1B"),
-      GuiManager.adventureIsRetarded("\uD809\uDC1C"),
-      GuiManager.adventureIsRetarded("\uD809\uDC1D"),
-      GuiManager.adventureIsRetarded("\uD809\uDC1E")
+  private static final List<GUIComponent> RAGE_METER = List.of(
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屰")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屲")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屴")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屶")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屸")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屺")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屼")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屾")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岀")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岂")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岄")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岆")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岈")), 49, 0, Alignment.CENTER)
   );
+  private static final List<GUIComponent> ENRAGE_METER = List.of(
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("山")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屳")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屵")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屷")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屹")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屻")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屽")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("屿")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岁")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岃")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岅")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岇")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", GuiManager.noShadow(new TextComponent("岉")), 49, 0, Alignment.CENTER));
 
-  private static final int MAX_GRACE_TICKS = 32;
+  public static final GUIComponent EMPTY_ATTACK2 = new GUIComponent("attack-bar2",
+      GuiManager.EMPTY, 0, 0, Alignment.CENTER);
+
+  private static final int rageLen = RAGE_METER.size() - 1;
+  private static final int enrageLen = ENRAGE_METER.size() - 1;
+
+  private static org.bukkit.Color RAGE_PARTICLE_1 = org.bukkit.Color.fromRGB(138, 21, 87);
+  private static org.bukkit.Color RAGE_PARTICLE_2 = org.bukkit.Color.fromRGB(186, 30, 30);
+  private static org.bukkit.Color RAGE_PARTICLE_3 = org.bukkit.Color.fromRGB(242, 120, 10);
 
   public RageTask(StrifeMob mob) {
     this.parentMob = new WeakReference<>(mob);
-    this.graceTicks = MAX_GRACE_TICKS;
     runTaskTimer(StrifePlugin.getInstance(), 1L, 5L);
   }
 
@@ -70,49 +110,122 @@ public class RageTask extends BukkitRunnable {
       cancel();
       return;
     }
-
-    spawnRageParticles(mob.getEntity(), rage);
-
-    graceTicks--;
-    if (graceTicks > 0) {
+    if (isEnraged()) {
+      spawnEnrageParticles(mob.getEntity(), rage);
+      decayFromEnrage();
       return;
     }
-
-    float lostTicks = 1 + rage * 0.08f;
-    reduceRage(lostTicks);
-
-    if (rage <= 0) {
-      LogUtil.printDebug("Rage complete, removing");
-      mob.endRageTask();
+    if (!mob.isInCombat()) {
+      spawnRageParticles(mob.getEntity(), rage);
+      decayFromOutOfCombat();
+      return;
     }
+    spawnRageParticles(mob.getEntity(), rage);
+  }
+
+  private void decayFromOutOfCombat() {
+    float lostTicks = RAGE_INACTIVE_FLAT + rage * RAGE_INACTIVE_PERCENT;
+    reduceRage(lostTicks);
+  }
+
+  private void decayFromEnrage() {
+    decay = (float) Math.pow(decay, RAGE_DECAY_EXPONENT);
+    decay += decayIncrease;
+    reduceRage(decay);
+  }
+
+  public boolean isEnraged() {
+    return decay > 0;
   }
 
   public void bumpRage(float amount) {
     StrifeMob mob = parentMob.get();
     float maxRage = mob.getMaxRage();
+    if (isEnraged()) {
+      amount *= ENRAGE_RAGE_GAIN_MULT;
+    }
     rage += amount;
-    rage = Math.min(rage, maxRage);
+    if (rage >= maxRage) {
+      rage = maxRage;
+      triggerEnrage(mob);
+    }
     sendRageGui();
-    graceTicks = MAX_GRACE_TICKS;
   }
 
   public void reduceRage(float amount) {
-    rage = Math.max(rage - amount, 0);
-    sendRageGui();
+    rage -= amount;
+    StrifeMob mob = parentMob.get();
+    if (mob == null) {
+      cancel();
+      return;
+    }
+    if (rage > 0) {
+      sendRageGui();
+      return;
+    }
+    rage = 0;
+    if (!isEnraged()) {
+      LogUtil.printDebug("Rage complete, removing");
+      mob.endRageTask();
+    } else {
+      LogUtil.printDebug("Rage complete, removing");
+      float cdTime = 10f * 1000f;
+      cdTime /= 1 - mob.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100;
+      mob.setRageRestart(System.currentTimeMillis() + (int) cdTime);
+      mob.endRageTask();
+      mob.setCacheNeeded(true);
+      mob.cacheStats();
+      StrifePlugin.getInstance().getStatUpdateManager().updateAllAttributes(mob);
+    }
+  }
+
+  private void triggerEnrage(@NotNull StrifeMob mob) {
+    if (mob.isEnraged() || mob.hasTrait(StrifeTrait.LEVEL_HEADED)) {
+      return;
+    }
+    setDecay(mob);
+    mob.getEntity().getWorld().playSound(mob.getEntity().getLocation(), Sound.ENTITY_WARDEN_LISTENING_ANGRY, 2, 1);
+    mob.setCacheNeeded(true);
+    mob.cacheStats();
+    StrifePlugin.getInstance().getStatUpdateManager().updateAllAttributes(mob);
+    for (var entry : ENRAGE_ABILITY_COOLDOWN.entrySet()) {
+      StrifePlugin.getInstance().getAbilityManager()
+          .reduceCooldownPercent(mob.getEntity(), entry.getKey(), entry.getValue());
+    }
+    EnrageEvent event = new EnrageEvent(mob);
+    Bukkit.getPluginManager().callEvent(event);
+  }
+
+  public void refreshEnrage(@NotNull StrifeMob mob) {
+    if (!mob.isEnraged()) {
+      return;
+    }
+    setDecay(mob);
+  }
+
+  private void setDecay(@NotNull StrifeMob mob) {
+    float bonusDuration = mob.getStat(StrifeStat.ENRAGE_DURATION) + mob.getStat(StrifeStat.EFFECT_DURATION) / 1.5f ;
+    float timeMultiplier = (float) Math.pow(1 + bonusDuration / 100f, 1.75);
+    decay = 1f + INITIAL_ENRAGE_DECAY / timeMultiplier;
+    decayIncrease = ENRAGE_DECAY / timeMultiplier;
   }
 
   private void sendRageGui() {
     StrifeMob mob = parentMob.get();
-    if (mob.getEntity().getType() == EntityType.PLAYER) {
-      if (rage <= 0) {
-        StrifePlugin.getInstance().getGuiManager().getGui((Player) mob.getEntity()).update(
-            new GUIComponent("rage-bar", GuiManager.EMPTY, 0, 0, Alignment.CENTER));
-        return;
-      }
-      float ratio = rage / mob.getMaxRage();
-      int rageStage = (int) Math.floor(9 * ratio);
-      StrifePlugin.getInstance().getGuiManager().getGui((Player) mob.getEntity()).update(
-          new GUIComponent("rage-bar", rageLevels.get(rageStage), 47, -67, Alignment.CENTER));
+    if (mob.getEntity().getType() != EntityType.PLAYER) {
+      return;
+    }
+    if (rage <= 0) {
+      StrifePlugin.getInstance().getGuiManager().getGui((Player) mob.getEntity()).update(EMPTY_ATTACK2);
+      return;
+    }
+    float ratio = rage / mob.getMaxRage();
+    if (isEnraged()) {
+      int rageStage = Math.round((rageLen * ratio));
+      StrifePlugin.getInstance().getGuiManager().getGui((Player) mob.getEntity()).update(RAGE_METER.get(rageStage));
+    } else {
+      int rageStage = Math.round(enrageLen * ratio);
+      StrifePlugin.getInstance().getGuiManager().getGui((Player) mob.getEntity()).update(ENRAGE_METER.get(rageStage));
     }
   }
 
@@ -120,8 +233,22 @@ public class RageTask extends BukkitRunnable {
     entity.getWorld().spawnParticle(
         Particle.ANGRY_VILLAGER,
         entity.getEyeLocation(),
-        1 + (int) (Math.max(0, rageStacks) / 20),
-        0.6, 0.6, 0.6
+        1 + (int) (Math.max(0, rageStacks) / 30),
+        0.4, 0.4, 0.4
     );
+  }
+
+  private static void spawnEnrageParticles(LivingEntity entity, float rageStacks) {
+    var loc = entity.getLocation().clone();
+    var amount = (int) (Math.max(0, rageStacks) / 30);
+    loc.add(0, 0.15, 0);
+    entity.getWorld().spawnParticle(Particle.ENTITY_EFFECT, loc, 7 + amount,
+        0.16, 0.16, 0.16, 0.05, RAGE_PARTICLE_1);
+    loc.add(0, 0.35, 0);
+    entity.getWorld().spawnParticle(Particle.ENTITY_EFFECT, loc, 4 + amount,
+        0.12, 0.12, 0.12, 0.025, RAGE_PARTICLE_2);
+    loc.add(0, 0.35, 0);
+    entity.getWorld().spawnParticle(Particle.ENTITY_EFFECT, loc, 1 + amount,
+        0.08, 0.08, 0.08, 0.01, RAGE_PARTICLE_3);
   }
 }

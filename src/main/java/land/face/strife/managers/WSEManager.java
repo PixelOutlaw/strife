@@ -1,14 +1,17 @@
 package land.face.strife.managers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.WorldSpaceEffect;
 import land.face.strife.data.effects.CreateWorldSpaceEntity;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 public class WSEManager {
@@ -30,6 +33,9 @@ public class WSEManager {
     var direction = location.getDirection();
     direction.multiply(cse.getVelocity());
 
+    Collections.shuffle(cse.getStartAnimations());
+    Collections.shuffle(cse.getMoveAnimations());
+    Collections.shuffle(cse.getEndAnimations());
     var entity = WorldSpaceEffect.builder()
         .caster(caster)
         .effectSchedule(cse.getCachedEffectSchedule())
@@ -39,6 +45,9 @@ public class WSEManager {
         .nextLocation(location)
         .velocity(direction)
         .originalSpeed((float) direction.length())
+        .startAnimation(cse.getStartAnimations().isEmpty() ? null : cse.getStartAnimations().getFirst())
+        .moveAnimation(cse.getMoveAnimations().isEmpty() ? null : cse.getMoveAnimations().getFirst())
+        .endAnimation(cse.getEndAnimations().isEmpty() ? null : cse.getEndAnimations().getFirst())
         .gravity(cse.getGravity())
         .friction(cse.getFriction())
         .verticalOffset(cse.getVerticalOffset())
@@ -58,15 +67,23 @@ public class WSEManager {
 
   public void tickAllWorldSpaceEffects() {
     List<WorldSpaceEffect> expiredEffects = new ArrayList<>();
-    for (WorldSpaceEffect worldSpaceEffect : worldSpaceEffects) {
-      boolean isAlive = worldSpaceEffect.tick();
-      if (!isAlive) {
-        if (worldSpaceEffect.getStand() != null) {
-          worldSpaceEffect.getStand().remove();
+    worldSpaceEffects.forEach((wse) -> {
+      if (!wse.tick()) {
+        wse.destroyed = true;
+        expiredEffects.add(wse);
+        if (wse.getStand() != null) {
+          if (wse.getEndAnimation() != null) {
+            wse.getModel().getAnimationHandler().forceStopAllAnimations();
+            var len = (int) (20D * wse.getModel().getBlueprint().getAnimations()
+                .get(wse.getEndAnimation()).getLength());
+            wse.getModel().getAnimationHandler().playAnimation(wse.getEndAnimation(), 0, 0, 1, true);
+            Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> wse.getStand().setRemoved(true), len);
+          } else {
+            wse.getStand().setRemoved(true);
+          }
         }
-        expiredEffects.add(worldSpaceEffect);
       }
-    }
+    });
     for (WorldSpaceEffect effect : expiredEffects) {
       LogUtil.printDebug(" - Remove expired worldspace entity from effect manager");
       worldSpaceEffects.remove(effect);

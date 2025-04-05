@@ -41,6 +41,7 @@ public class PopoffUtil {
     //textData.setIn(2);
     textData.setTextShadow(shadow);
     textData.setPersistent(false);
+    textData.getScale().set(startScale);
 
     var manager = FancyHologramsPlugin.get().getHologramManager();
 
@@ -51,9 +52,7 @@ public class PopoffUtil {
 
     DamagePopoff indicator = new DamagePopoff();
 
-    indicator.setStartScale(startScale);
-    indicator.setMidScale(midScale);
-    indicator.setEndScale(endScale);
+    indicator.setSizeArray(createArray(startScale, midScale, endScale, life));
 
     indicator.setViewer(player);
     indicator.setLife(life);
@@ -70,23 +69,13 @@ public class PopoffUtil {
       deletePopoff(indicator);
       return true;
     }
+    float scale = indicator.getSizeArray()[indicator.getMaxLife() - indicator.getLife()];
     indicator.setLife(indicator.getLife() - 1);
     Hologram hologram = indicator.getHologram();
 
     Vector velocity = indicator.getVelocity();
     velocity.setY(Math.max(MAX_GRAVITY, velocity.getY() - indicator.getGravity()));
     indicator.setVelocity(velocity);
-    float percent = (float) indicator.getLife() / indicator.getMaxLife();
-    float scale;
-    if (percent > 0.5) {
-      percent = 2 * (percent - 0.5f);
-      float difference = indicator.getEndScale() - indicator.getMidScale();
-      scale = indicator.getMidScale() + percent * difference;
-    } else {
-      percent = 2 * percent;
-      float difference = indicator.getMidScale() - indicator.getStartScale();
-      scale = indicator.getStartScale() + percent * difference;
-    }
     ((DisplayHologramData) hologram.getData()).getTranslation().add((float) velocity.getX(), (float) velocity.getY(), 0);
     ((DisplayHologramData) hologram.getData()).getScale().set(scale);
     //hologram.forceShowHologram(indicator.getViewer());
@@ -103,5 +92,32 @@ public class PopoffUtil {
         //hologram.forceUpdate();
       });
     }
+  }
+
+  public static float[] createArray(float start, float middle, float end, int size) {
+    // Check for valid size
+    if (size < 3) {
+      throw new IllegalArgumentException("Array size must be at least 3");
+    }
+    // Create the array
+    float[] result = new float[size];
+    // Calculate the position of the middle value (centered if size is odd)
+    int midIndex = (size - 1) / 2;
+    // Set the known values
+    result[0] = start;
+    result[midIndex] = middle;
+    result[size - 1] = end;
+    // Calculate step sizes for left and right halves
+    double leftStep = (middle - start) / midIndex;
+    double rightStep = (end - middle) / (size - 1 - midIndex);
+    // Fill left half
+    for (int i = 1; i < midIndex; i++) {
+      result[i] = (float) (start + (i * leftStep));
+    }
+    // Fill right half
+    for (int i = midIndex + 1; i < size - 1; i++) {
+      result[i] = (float) (middle + ((i - midIndex) * rightStep));
+    }
+    return result;
   }
 }

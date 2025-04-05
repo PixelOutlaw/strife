@@ -28,11 +28,17 @@ public enum StrifeTrait {
   BARRIER_NO_BURN("|orange||ul|Passive Effect - Heat Shield", "|none|丒",
       "|yellow|While you have barrier",
       "|orange||ul|Burning|yellow| deals no damage"),
+  BARRIERMAN("|orange||ul|Passive Effect - Barrierman", "|none|丒",
+      "|yellow|Take |white|0% |yellow|to |white|30% |yellow|less damage from",
+      "|yellow|attacks, based on remaining |white|Barrier"),
   STONE_SKIN("|orange||ul|Passive Effect - Stone Skin", "|none|丒",
-      "|white|-3% Damage Taken |yellow|per |brown|Earth Rune"),
+      "|yellow|Take |white|3% Less Damage |yellow|per",
+      "|yellow|active |brown|Earth Rune"),
   BLOOD_BOIL("|orange||ul|Passive Effect - Blood Boil", "|none|丒",
       "|yellow|When |red|Bleeding|yellow|, red|Rage |yellow|gained",
       "|yellow|is increased by |white|30%"),
+  LEVEL_HEADED("|orange||ul|Passive Effect - Level Headed", "|none|丒",
+      "|yellow|You cannot become |crimson|Enraged"),
   BLOOD_AND_ICE("|orange||ul|Passive Effect - Blood And Ice", "|none|丒",
       "|yellow|Apply 30% more |cyan|Frost",
       "|yellow|to |red|Bleeding |yellow|enemies",
@@ -49,8 +55,9 @@ public enum StrifeTrait {
       "|yellow|overcharged for up to",
       "|white|50% |yellow|more damage"),
   ELEMENTAL_CRITS_2("|orange||ul|Passive Effect - Status Strike", "|none|丒",
-      "|yellow|Critical strikes trigger |teal|elemental status",
-      "|yellow|instead of dealing extra damage"),
+      "|yellow|Critical hits trigger |teal|status",
+      "|teal|hit |yellow|instead of dealing",
+      "|yellow|extra damage"),
   SHARP_EDGE("|orange||ul|Passive Effect - Sharp Edge", "|none|丒",
       "|yellow|True Damage benefits from",
       "|yellow|critical strikes"),
@@ -74,6 +81,9 @@ public enum StrifeTrait {
       "|yellow|You cannot die"),
   MASOCHISM("|orange||ul|Passive Effect - Masochism", "|none|丒",
       "|yellow|Gain |white|20% |yellow|of lost |none|儔 |yellow|as |none|儓"),
+  REBUKE("|orange||ul|Passive Effect - Rubuke", "|none|丒",
+      "|yellow|Increase |lavender|Reflected Damage",
+      "|yellow|by |white|1% |yellow|per |brown|Shield Mastery |yellow|Lv"),
   PERMAFROST("|orange||ul|Passive Effect - Permafrost", "|none|丒",
       "|cyan|Frost |yellow|does not decay"),
 
@@ -187,9 +197,12 @@ public enum StrifeTrait {
   private final String name;
   @Getter
   private final List<String> additionalText = new ArrayList<>();
+  @Getter
+  private final List<String> additionalTextRaw = new ArrayList<>();
 
   StrifeTrait(String trigger, String... additionalText) {
     this.name = PaletteUtil.color(trigger);
+    this.additionalTextRaw.addAll(Arrays.asList(additionalText));
     this.additionalText.addAll(PaletteUtil.color(Arrays.asList(additionalText)));
   }
 

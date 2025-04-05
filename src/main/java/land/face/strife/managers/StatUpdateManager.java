@@ -18,6 +18,8 @@
  */
 package land.face.strife.managers;
 
+import static land.face.strife.util.UberConfig.BASE_AIR_TICKS;
+
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.math.NumberUtils;
@@ -182,7 +184,7 @@ public class StatUpdateManager {
       entity.getAttribute(Attribute.FLYING_SPEED).setBaseValue(0.1 * speed);
     }
     if (entity instanceof Player) {
-      ((Player) entity).setFlySpeed(0.1f * speed);
+      ((Player) entity).setFlySpeed(0.25f);
     }
   }
 
@@ -198,7 +200,7 @@ public class StatUpdateManager {
     updateJump(strifeMob);
     updateLeg(strifeMob);
 
-    float maxAir = plugin.getStrifeMobManager().getBaseAirTicks() * (1 + strifeMob.getStat(StrifeStat.LUNG_CAPACITY) / 100);
+    float maxAir = BASE_AIR_TICKS * (1 + strifeMob.getStat(StrifeStat.LUNG_CAPACITY) / 100);
     strifeMob.getEntity().setRemainingAir(Math.min(strifeMob.getEntity().getRemainingAir(), (int) maxAir));
     strifeMob.getEntity().setMaximumAir((int) maxAir);
     StatUtil.getStat(strifeMob, StrifeStat.BARRIER);

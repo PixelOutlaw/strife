@@ -16,6 +16,14 @@
  */
 package land.face.strife.listeners;
 
+import static land.face.strife.util.UberConfig.AWARENESS_PER_LV_SEEN;
+import static land.face.strife.util.UberConfig.AWARENESS_PER_LV_UNSEEN;
+import static land.face.strife.util.UberConfig.BASE_AWARENESS_SEEN;
+import static land.face.strife.util.UberConfig.BASE_AWARENESS_UNSEEN;
+import static land.face.strife.util.UberConfig.DETECTION_THRESHOLD;
+import static land.face.strife.util.UberConfig.MAX_EXP_RANGE_SQUARED;
+import static land.face.strife.util.UberConfig.SEEN_MAX_ANGLE;
+import static land.face.strife.util.UberConfig.SNEAK_EFFECTIVENESS;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CUSTOM;
 import static org.bukkit.potion.PotionEffectType.BLINDNESS;
@@ -52,39 +60,12 @@ public class TargetingListener implements Listener {
 
   private final StrifePlugin plugin;
 
-  private final float DETECTION_THRESHOLD;
-  private final float BASE_AWARENESS_UNSEEN;
-  private final float BASE_AWARENESS_SEEN;
-  private final float AWARENESS_PER_LV_UNSEEN;
-  private final float AWARENESS_PER_LV_SEEN;
-  private final float SEEN_MAX_ANGLE;
-  private final float MAX_EXP_RANGE_SQUARED;
-  private final int SNEAK_EFFECTIVENESS;
-
   private static final float MAX_DIST_SQUARED = 256;
-
   private static Set<String> SNEAK_KEYS;
 
   public TargetingListener(StrifePlugin plugin) {
     this.plugin = plugin;
     SNEAK_KEYS = new HashSet<>();
-
-    DETECTION_THRESHOLD = (float) plugin.getSettings()
-        .getDouble("config.mechanics.sneak.detection-threshold");
-    BASE_AWARENESS_UNSEEN = (float) plugin.getSettings()
-        .getDouble("config.mechanics.sneak.base-detection-when-unseen");
-    BASE_AWARENESS_SEEN = (float) plugin.getSettings()
-        .getDouble("config.mechanics.sneak.base-detection-when-seen");
-    AWARENESS_PER_LV_UNSEEN = (float) plugin.getSettings()
-        .getDouble("config.mechanics.sneak.per-lvl-detection-when-unseen");
-    AWARENESS_PER_LV_SEEN = (float) plugin.getSettings()
-        .getDouble("config.mechanics.sneak.per-lvl-detection-when-seen");
-    SEEN_MAX_ANGLE = (float) plugin.getSettings()
-        .getDouble("config.mechanics.sneak.maximum-head-angle-for-seen");
-    MAX_EXP_RANGE_SQUARED = (float) plugin.getSettings()
-        .getDouble("config.mechanics.sneak.maximum-sneak-exp-range-squared");
-    SNEAK_EFFECTIVENESS = plugin.getSettings()
-        .getInt("config.mechanics.sneak.sneak-skill-effectiveness");
   }
 
   @EventHandler(priority = EventPriority.LOWEST)

@@ -1,6 +1,8 @@
 package land.face.strife.managers;
 
 import static com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils.sendMessage;
+import static land.face.strife.util.UberConfig.DUAL_WIELD_STAT_RATIO;
+import static land.face.strife.util.UberConfig.DUAL_WIELD_BONUS_STATS;
 import static org.bukkit.inventory.EquipmentSlot.HAND;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
@@ -24,7 +26,6 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.StatUtil;
-import lombok.Getter;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -38,22 +39,12 @@ public class StrifeMobManager {
 
   private final Map<LivingEntity, StrifeMob> trackedEntities = new HashMap<>();
   private final String levelReqGeneric;
-  private final Map<StrifeStat, Float> dualWieldStats;
-  private final float dualWieldRatio;
   private final Map<String, String> levelReqMap = new HashMap<>();
-
-  @Getter
-  private final float baseAirTicks;
 
   public StrifeMobManager(StrifePlugin plugin) {
     this.plugin = plugin;
     var settings = plugin.getSettings();
-
-    dualWieldStats = StatUtil.getStatMapFromSection(plugin.getConfig().getConfigurationSection("mechanics.dual-wield.bonus-stats"));
-    dualWieldStats.replaceAll((a, v) -> dualWieldStats.get(a) * 0.5f);
-    dualWieldRatio = (float) settings.getDouble("config.mechanics.dual-wield.stat-mult", 0.625);
     levelReqGeneric = PaletteUtil.color(settings.getString("language.level-req.generic", ""));
-    baseAirTicks = settings.getInt("config.mechanics.base-oxygen-ticks", 300);
     for (EquipmentSlot slot : EquipmentCache.EQUIPMENT_SLOTS) {
       levelReqMap.put(slot.toString(), PaletteUtil.color(settings.getString("language.level-req." + slot, "")));
     }
@@ -358,8 +349,8 @@ public class StrifeMobManager {
 
   private void applyDualWieldStatChanges(EquipmentCache cache, String slot) {
     var stats = cache.getSlotStats(slot);
-    stats.replaceAll((a, v) -> stats.get(a) * dualWieldRatio);
-    for (var statEntry : dualWieldStats.entrySet()) {
+    stats.replaceAll((a, v) -> stats.get(a) * DUAL_WIELD_STAT_RATIO);
+    for (var statEntry : DUAL_WIELD_BONUS_STATS.entrySet()) {
       stats.put(statEntry.getKey(), stats.getOrDefault(statEntry.getKey(), 0f) + statEntry.getValue());
     }
   }

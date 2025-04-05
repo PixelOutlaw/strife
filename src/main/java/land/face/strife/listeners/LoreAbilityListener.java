@@ -12,6 +12,7 @@ import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_CAST;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_COMBAT_END;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_COMBAT_START;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_CRIT;
+import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_ENRAGE;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_EVADE;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_FALL;
 import static land.face.strife.managers.LoreAbilityManager.TriggerType.ON_HIT;
@@ -36,6 +37,7 @@ import land.face.strife.events.BlockEvent;
 import land.face.strife.events.CombatChangeEvent;
 import land.face.strife.events.CombatChangeEvent.NewCombatState;
 import land.face.strife.events.CriticalEvent;
+import land.face.strife.events.EnrageEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.events.StrifeDamageEvent;
@@ -73,6 +75,12 @@ public class LoreAbilityListener implements Listener {
   public void onAirJump(AirJumpEvent event) {
     executeBoundEffects(event.getJumper(), event.getJumper(), event.getJumper().getLoreAbilities(ON_AIR_JUMP));
     executeFiniteEffects(event.getJumper(), event.getJumper(), new HashSet<>(List.of(ON_AIR_JUMP)));
+  }
+
+  @EventHandler(priority = EventPriority.MONITOR)
+  public void onEnrage(EnrageEvent event) {
+    executeBoundEffects(event.getMob(), event.getMob(), event.getMob().getLoreAbilities(ON_ENRAGE));
+    executeFiniteEffects(event.getMob(), event.getMob(), new HashSet<>(List.of(ON_ENRAGE)));
   }
 
   @EventHandler(priority = EventPriority.MONITOR)

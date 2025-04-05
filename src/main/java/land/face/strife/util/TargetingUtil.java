@@ -29,7 +29,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.ArmorStand;
@@ -222,8 +221,12 @@ public class TargetingUtil {
     }
     Location detectionLocation = loc.toCenterLocation().clone();
     for (int i = 0; i < verticalRange; i++) {
-      if (detectionLocation.getBlock().getRelative(BlockFace.DOWN, i).getType().isSolid()) {
-        detectionLocation.add(0, -i + 0.7, 0);
+      var block = detectionLocation.getBlock().getRelative(BlockFace.DOWN, i);
+      if (block.getType().isSolid()) {
+        detectionLocation.setY(block.getY() + block.getBoundingBox().getHeight() + 0.25);
+        return detectionLocation;
+      } else if (block.getType() == Material.LILY_PAD) {
+        detectionLocation.setY(block.getY() + block.getBoundingBox().getHeight() + 0.25);
         return detectionLocation;
       }
     }

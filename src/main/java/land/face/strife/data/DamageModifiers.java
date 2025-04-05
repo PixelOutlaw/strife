@@ -6,17 +6,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import land.face.strife.StrifePlugin;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.entity.Projectile;
-import org.bukkit.util.Vector;
 
-@Getter @Setter
+@Getter
+@Setter
 public class DamageModifiers {
 
   private static final Map<DamageType, Float> baseDamageMults = buildBaseDamageMults();
@@ -39,10 +37,10 @@ public class DamageModifiers {
   private boolean scaleChancesWithAttack = false;
   private boolean showPopoffs = true;
   private boolean useBasicDamageMult = true;
-  private boolean applyMinionDamageMult = false;
   private boolean bypassBarrier = false;
   private boolean guardBreak = false;
   private boolean fromAbility = false;
+  private boolean lethalStrike = false;
 
   private static Map<DamageType, Float> buildBaseDamageMults() {
     Map<DamageType, Float> base = new HashMap<>();
@@ -52,13 +50,18 @@ public class DamageModifiers {
     return base;
   }
 
+  public float valueOf(AbilityMod mod) {
+    return abilityMods.getOrDefault(mod, 0f);
+  }
+
   public enum ElementalStatus {
     IGNITE,
     FREEZE,
     SHOCK,
     CORRUPT,
     CRUNCH,
-    BANISH
+    BANISH,
+    BASH
   }
 
 }

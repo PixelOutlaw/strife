@@ -27,6 +27,7 @@ public class CreateWorldSpaceEntity extends LocationEffect {
 
   private OriginLocation originLocation;
   private int lifespan, maxTicks, maxFallTicks, quantity;
+  private List<String> startAnimations, moveAnimations, endAnimations;
   private float gravity, friction, velocity, maxDisplacement, modelSize, verticalOffset, initialAngle, separationAngle;
   private boolean strictDuration, zeroVerticalAxis, destroyOnContact, restoreSpeedOnGroundContact, destroyOnSharpAngle,
       reachScaling;

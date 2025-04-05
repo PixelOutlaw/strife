@@ -29,7 +29,6 @@ import info.faceland.loot.utils.PersistHelper;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import land.face.dinvy.DeluxeInvyPlugin;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LoadedMount;

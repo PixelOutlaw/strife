@@ -1,6 +1,7 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
@@ -95,10 +96,12 @@ public class LoreAbilityManager {
       LogUtil.printError("Failed to load lore-ability " + key + ". No valid ability/effects!");
       return;
     }
-    List<String> description = PaletteUtil.color(cs.getStringList("description"));
+    List<String> rawDescription = UnicodeUtil.unicodePlaceholdUncolored(cs.getStringList("description"));
+    List<String> description = PaletteUtil.color(rawDescription);
     boolean hide = cs.getBoolean("hide", false);
     boolean cancelIfDead = cs.getBoolean("hide", false);
-    LoreAbility loreAbility = new LoreAbility(key, triggerType, triggerText, ability, description, hide, cancelIfDead);
+    LoreAbility loreAbility = new LoreAbility(key,
+        triggerType, triggerText, ability, description, rawDescription, hide, cancelIfDead);
     for (Effect e : effectList) {
       loreAbility.addEffect(e);
     }
@@ -154,6 +157,7 @@ public class LoreAbilityManager {
     ON_COMBAT_START,
     ON_COMBAT_END,
     ON_AIR_JUMP,
+    ON_ENRAGE,
     ON_BARRIER_BREAK,
     TIMER,
     NONE

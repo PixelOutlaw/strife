@@ -1,5 +1,7 @@
 package land.face.strife.listeners;
 
+import static land.face.strife.util.UberConfig.FALL_LEEWAY_MS;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
@@ -28,12 +30,9 @@ import org.bukkit.util.Vector;
 public class FallListener implements Listener {
 
   private final StrifePlugin plugin;
-  private final int fallMs;
-  private final static String ROLL_TEXT = StringExtensionsKt.chatColorize("&3&l- Roll -");
 
   public FallListener(StrifePlugin plugin) {
     this.plugin = plugin;
-    fallMs = plugin.getSettings().getInt("config.mechanics.agility.fall-damage-crouch-reduction-ms");
   }
 
   @EventHandler(priority = EventPriority.LOW)
@@ -50,7 +49,7 @@ public class FallListener implements Listener {
     }
 
     int msSinceLastSneak = MoveUtil.getLastSneak(player);
-    boolean rollBonus = msSinceLastSneak != -1 && msSinceLastSneak <= fallMs;
+    boolean rollBonus = msSinceLastSneak != -1 && msSinceLastSneak <= FALL_LEEWAY_MS;
 
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
 

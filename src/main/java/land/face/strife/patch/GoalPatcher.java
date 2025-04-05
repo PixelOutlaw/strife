@@ -17,7 +17,7 @@ public class GoalPatcher {
       switch (mob.getType()) {
         case BAT -> addGoal(mob, goal, 1.75f);
         case TROPICAL_FISH, PUFFERFISH, COD, SALMON -> FishPatcher.patchFish((Fish) mob);
-        default -> addGoal(mob, goal, 2.25f);
+        default -> addGoal(mob, goal, uniqueEntity.getCustomAttackRange());
       }
     }
   }

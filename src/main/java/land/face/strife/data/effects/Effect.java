@@ -107,6 +107,7 @@ public abstract class Effect {
     INVINCIBLE,
     SILENCE,
     BLEED,
+    CHANGE_AIR,
     TELEPORT,
     TELEPORT_BEHIND,
     THRALL,

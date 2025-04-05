@@ -64,8 +64,7 @@ public class ReviveConfirmItem extends MenuItem {
     for (String s : baseLore) {
       newLore.add(s.replace("{name}", reviverName).replace("{xp}", String.valueOf(restoreXP)));
     }
-    String name = StrifePlugin.getInstance().getSettings()
-        .getString("language.revive.confirm-name", "dew it");
+    String name = StrifePlugin.getInstance().getSettings().getString("language.revive.confirm-name", "dew it");
     ItemStackExtensionsKt.setDisplayName(stack, PaletteUtil.color(name));
     TextUtils.setLore(stack, PaletteUtil.color(newLore), false);
     stack.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);

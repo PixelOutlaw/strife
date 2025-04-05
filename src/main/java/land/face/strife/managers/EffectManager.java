@@ -158,7 +158,11 @@ public class EffectManager {
         }
         if (effect instanceof LocationEffect e) {
           if (e.isPreferEntityLocation()) {
-            e.apply(caster, targetMob);
+            if (e.isForceTargetCaster()) {
+              e.apply(caster, caster);
+            } else {
+              e.apply(caster, targetMob);
+            }
           } else if (response.getLocation() != null) {
             e.applyAtLocation(caster, response.getLocation());
           } else {
@@ -283,6 +287,7 @@ public class EffectManager {
         effect = new ChangeRage();
         ((ChangeRage) effect).setAmount((float) cs.getDouble("amount", 1));
         ((ChangeRage) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
+        ((ChangeRage) effect).setRefreshEnrage(cs.getBoolean("refresh-enrage", false));
       }
       case DAMAGE -> {
         effect = new Damage();
@@ -303,7 +308,6 @@ public class EffectManager {
         ((Damage) effect).setCanCrit(cs.getBoolean("can-crit", defaultOnHit));
         ((Damage) effect).setShowPopoffs(cs.getBoolean("show-popoffs", !selfInflict));
         ((Damage) effect).setUseBasicDamageMult(cs.getBoolean("use-basic-damage-mult", !selfInflict));
-        ((Damage) effect).setUseMinionDamage(cs.getBoolean("use-minion-damage-mult", false));
         ((Damage) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
         ((Damage) effect).setGuardBreak(cs.getBoolean("guard-break", false));
         ((Damage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", defaultOnHit));
@@ -368,6 +372,10 @@ public class EffectManager {
 
         ((CreateWorldSpaceEntity) effect).setModelEffect(cs.getString("model-effect", null));
         ((CreateWorldSpaceEntity) effect).setModelSize((float) cs.getDouble("model-size", 1));
+        ((CreateWorldSpaceEntity) effect).setStartAnimations(cs.getStringList("start-animations"));
+        ((CreateWorldSpaceEntity) effect).setMoveAnimations(cs.getStringList("move-animations"));
+        ((CreateWorldSpaceEntity) effect).setEndAnimations(cs.getStringList("end-animations"));
+
         ((CreateWorldSpaceEntity) effect).setVerticalOffset((float) cs.getDouble("vertical-offset", 0));
         if (cs.getString("model-color") != null) {
           java.awt.Color c = java.awt.Color.decode(cs.getString("model-color"));
@@ -389,6 +397,7 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setVelocity((float) cs.getDouble("speed", 0));
         ((CreateWorldSpaceEntity) effect).setFriction((float) cs.getDouble("friction", 1));
         ((CreateWorldSpaceEntity) effect).setGravity((float) cs.getDouble("gravity", 0));
+
         ((CreateWorldSpaceEntity) effect).setZeroVerticalAxis(cs.getBoolean("zero-y-axis", false));
         ((CreateWorldSpaceEntity) effect).setDestroyOnContact(cs.getBoolean("destroy-on-contact", false));
         ((CreateWorldSpaceEntity) effect).setDestroyOnSharpAngle(cs.getBoolean("destroy-on-sharp-angle", false));
@@ -708,6 +717,11 @@ public class EffectManager {
         ((Bleed) effect).setIgnoreResist(cs.getBoolean("ignore-resist", false));
         ((Bleed) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
         ((Bleed) effect).setApplyBleedMods(cs.getBoolean("apply-bleed-mods", true));
+      }
+      case CHANGE_AIR -> {
+        effect = new ChangeAir();
+        ((ChangeAir) effect).setAmount((float) cs.getDouble("amount", 10));
+        ((ChangeAir) effect).setDamageScale(DamageScale.valueOf(cs.getString("scale", "FLAT")));
       }
       case CORRUPT -> {
         effect = new Corrupt();
@@ -1292,7 +1306,7 @@ public class EffectManager {
         condition = new WeaponsCondition(equipmentItemData, strict);
         break;
       case MOVING:
-        condition = new MovingCondition(cs.getBoolean("state", true));
+        condition = new MovingCondition(cs.getBoolean("state", true), cs.getInt("ms-leeway"));
         break;
       case MINION:
         condition = new MinionCondition(cs.getBoolean("is-owner", false));
@@ -1387,6 +1401,10 @@ public class EffectManager {
         break;
       case FLYING:
         condition = new FlyingCondition();
+        break;
+      case ENRAGED:
+        condition = new EnrageCondition();
+        ((EnrageCondition) condition).setOnRageCooldown(cs.getBoolean("on-rage-cooldown", false));
         break;
       case VELOCITY:
         VelocityType velocityType = VelocityType.valueOf(cs.getString("type", "TOTAL"));

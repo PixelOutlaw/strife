@@ -109,6 +109,7 @@ public abstract class Condition {
     UNIQUE_ID,
     FACTION_MEMBER,
     FLYING,
+    ENRAGED,
     VELOCITY,
     GROUNDED,
     WATER,

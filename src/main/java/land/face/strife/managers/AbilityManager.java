@@ -100,7 +100,7 @@ public class AbilityManager {
         doOnCooldownPrompt(caster, ability);
         return false;
       }
-      if (!hasEnoughResource(caster, ability)) {
+      if (!hasEnoughResource(caster, target, ability)) {
         doNoEnergyPrompt(caster, ability);
         return false;
       }
@@ -120,7 +120,7 @@ public class AbilityManager {
         return true;
       }
     } else {
-      coolDownAbility(caster, ability, slot);
+      coolDownAbility(caster, target, ability, slot);
     }
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       if (MoveUtil.hasMoved((Player) caster.getEntity(), 30000)) {
@@ -131,9 +131,9 @@ public class AbilityManager {
     if (caster.getEntity() instanceof Player) {
       if (((Player) caster.getEntity()).getGameMode() != GameMode.CREATIVE) {
         if (ability.isHealthCost()) {
-          DamageUtil.dealRawDamage(caster, ability.calcRealCost(caster), true);
+          DamageUtil.dealRawDamage(caster, ability.calcRealCost(caster, target), true);
         } else {
-          caster.setEnergy(caster.getEnergy() - ability.calcRealCost(caster));
+          caster.setEnergy(caster.getEnergy() - ability.calcRealCost(caster, target));
         }
       }
     }
@@ -204,7 +204,7 @@ public class AbilityManager {
     }
     tracker.setToggleState(false);
     Ability ability = tracker.getAbility();
-    coolDownAbility(mob, ability, slot);
+    coolDownAbility(mob, mob, ability, slot);
 
     Set<LivingEntity> targets = new HashSet<>();
     targets.add(mob.getEntity());
@@ -259,13 +259,13 @@ public class AbilityManager {
     savedCooldowns.remove(player.getUniqueId());
   }
 
-  private boolean hasEnoughResource(StrifeMob caster, Ability ability) {
+  private boolean hasEnoughResource(StrifeMob caster, StrifeMob target, Ability ability) {
     if (caster.getEntity() instanceof Player) {
       if (((Player) caster.getEntity()).getGameMode() == GameMode.CREATIVE) {
         return true;
       }
       float resource = ability.isHealthCost() ? (float) caster.getEntity().getHealth() : caster.getEnergy();
-      return resource >= ability.calcRealCost(caster);
+      return resource >= ability.calcRealCost(caster, target);
     }
     return true;
   }
@@ -339,7 +339,7 @@ public class AbilityManager {
       return false;
     }
     determinePhase(caster);
-    Set<Ability> abilities = EntityAbilitySet.getAbilities(abilitySet, type);
+    List<Ability> abilities = EntityAbilitySet.getAbilities(abilitySet, type);
     if (abilities == null || abilities.isEmpty()) {
       return false;
     }
@@ -382,7 +382,7 @@ public class AbilityManager {
     player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player.getCooldown(Material.DIAMOND_CHESTPLATE), ticks));
   }
 
-  private void coolDownAbility(StrifeMob caster, Ability ability, AbilitySlot slot) {
+  private void coolDownAbility(StrifeMob caster, StrifeMob target, Ability ability, AbilitySlot slot) {
     if (ability.getGlobalCooldownTicks() > 0) {
       caster.bumpGlobalCooldown(ability.getGlobalCooldownTicks() * 50);
     }
@@ -392,8 +392,14 @@ public class AbilityManager {
     }
     cdMap.putIfAbsent(caster.getEntity(), new HashSet<>());
     CooldownTracker tracker = getCooldownTracker(caster.getEntity(), ability.getId());
+    float cooldownMult = 1f;
+    for (var entry : ability.getCooldownModifiers().entrySet()) {
+      if (entry.getKey().isMet(caster, target)) {
+        cooldownMult *= entry.getValue();
+      }
+    }
     if (tracker == null) {
-      tracker = new CooldownTracker(caster, ability, slot);
+      tracker = new CooldownTracker(caster, ability, slot, cooldownMult);
       cdMap.get(caster.getEntity()).add(tracker);
       if (ability.getTargetType() == TargetType.TOGGLE) {
         tracker.setToggleState(true);
@@ -401,7 +407,7 @@ public class AbilityManager {
     }
     tracker.setChargesLeft(tracker.getChargesLeft() - 1);
     if (ability.isFullRecharge()) {
-      tracker.setStart();
+      tracker.setStart(cooldownMult);
     }
   }
 
@@ -415,15 +421,21 @@ public class AbilityManager {
     }
     cdMap.putIfAbsent(caster.getEntity(), new HashSet<>());
     CooldownTracker tracker = getCooldownTracker(caster.getEntity(), ability.getId());
+    float cooldownMult = 1f;
+    for (var entry : ability.getCooldownModifiers().entrySet()) {
+      if (entry.getKey().isMet(caster, caster)) {
+        cooldownMult *= entry.getValue();
+      }
+    }
     if (tracker == null) {
-      tracker = new CooldownTracker(caster, ability, slot);
+      tracker = new CooldownTracker(caster, ability, slot, cooldownMult);
       tracker.setToggleState(true);
       cdMap.get(caster.getEntity()).add(tracker);
       return true;
     }
     if (tracker.isToggleState()) {
       tracker.setToggleState(false);
-      coolDownAbility(caster, ability, slot);
+      coolDownAbility(caster, caster, ability, slot);
 
       Set<LivingEntity> entities = new HashSet<>();
       entities.add(caster.getEntity());
@@ -714,6 +726,23 @@ public class AbilityManager {
         cs.getConfigurationSection("passive-toggle-stats")));
     ability.setTargetingPriority(TargetingPriority.valueOf(
         cs.getString("target-priority", "RANDOM")));
+
+    var section1 = cs.getStringList("cooldown-modifiers");
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      for (String s : section1) {
+        var strs = s.split("\\|");
+        ability.getCooldownModifiers().put(
+            plugin.getEffectManager().getConditions().get(strs[0]), Float.valueOf(strs[1]));
+      }
+    }, 5L);
+    var section2 = cs.getStringList("cost-modifiers");
+    Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+      for (String s : section2) {
+        var strs = s.split("\\|");
+        ability.getCostModifiers().put(
+            plugin.getEffectManager().getConditions().get(strs[0]), Float.valueOf(strs[1]));
+      }
+    }, 5L);
 
     List<String> filterConditions = cs.getStringList("filter-conditions");
     Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {

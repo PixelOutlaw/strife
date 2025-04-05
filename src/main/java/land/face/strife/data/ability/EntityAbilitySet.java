@@ -1,24 +1,24 @@
 package land.face.strife.data.ability;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import land.face.strife.StrifePlugin;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.EqualsAndHashCode;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.LivingEntity;
 
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class EntityAbilitySet {
 
   public static final TriggerAbilityType[] TYPES = TriggerAbilityType.values();
   public static final Phase[] PHASES = Phase.values();
-
-  private final Map<TriggerAbilityType, Map<Phase, Set<Ability>>> abilityMegaMap;
-  @Setter
-  @Getter
+  @EqualsAndHashCode.Include
+  private final Map<TriggerAbilityType, Map<Phase, List<Ability>>> abilityMegaMap;
+  @Setter @Getter
   private Phase phase = Phase.PHASE_ONE;
 
   public EntityAbilitySet() {
@@ -36,12 +36,12 @@ public class EntityAbilitySet {
     abilityMegaMap = buildAbilityMap(configurationSection);
   }
 
-  public Map<Phase, Set<Ability>> getAbilities(TriggerAbilityType type) {
+  public Map<Phase, List<Ability>> getAbilities(TriggerAbilityType type) {
     return abilityMegaMap.get(type);
   }
 
-  public static Set<Ability> getAbilities(EntityAbilitySet abilitySet, TriggerAbilityType type) {
-    Map<Phase, Set<Ability>> abilitySection = abilitySet.getAbilities(type);
+  public static List<Ability> getAbilities(EntityAbilitySet abilitySet, TriggerAbilityType type) {
+    Map<Phase, List<Ability>> abilitySection = abilitySet.getAbilities(type);
     if (abilitySection == null || !abilitySection.containsKey(abilitySet.getPhase())) {
       return null;
     }
@@ -70,9 +70,9 @@ public class EntityAbilitySet {
     }
   }
 
-  public static Map<TriggerAbilityType, Map<Phase, Set<Ability>>> buildAbilityMap(
+  public static Map<TriggerAbilityType, Map<Phase, List<Ability>>> buildAbilityMap(
       ConfigurationSection cs) {
-    Map<TriggerAbilityType, Map<Phase, Set<Ability>>> abilitySet = new HashMap<>();
+    Map<TriggerAbilityType, Map<Phase, List<Ability>>> abilitySet = new HashMap<>();
     if (cs == null) {
       return abilitySet;
     }
@@ -86,13 +86,13 @@ public class EntityAbilitySet {
     return abilitySet;
   }
 
-  private static Map<Phase, Set<Ability>> buildPhaseList(ConfigurationSection cs) {
-    Map<Phase, Set<Ability>> abilityPhaseMap = new HashMap<>();
+  private static Map<Phase, List<Ability>> buildPhaseList(ConfigurationSection cs) {
+    Map<Phase, List<Ability>> abilityPhaseMap = new HashMap<>();
     if (cs == null) {
       return abilityPhaseMap;
     }
     for (Phase phase : PHASES) {
-      Set<Ability> abilities = new HashSet<>();
+      List<Ability> abilities = new ArrayList<>();
       List<String> abilityStrings = cs.getStringList(phase.toString());
       for (String s : abilityStrings) {
         abilities.add(StrifePlugin.getInstance().getAbilityManager().getAbility(s));

@@ -39,6 +39,8 @@ public class Ability {
   private final Set<Condition> filterConditions = new HashSet<>();
   private final Map<StrifeStat, Float> passiveStats = new HashMap<>();
   private final Map<StrifeStat, Float> togglePassiveStats = new HashMap<>();
+  private final Map<Condition, Float> cooldownModifiers = new HashMap<>();
+  private final Map<Condition, Float> costModifiers = new HashMap<>();
   private TargetingPriority targetingPriority;
 
   private final AbilityIconData abilityIconData;
@@ -48,21 +50,26 @@ public class Ability {
     return id;
   }
 
-  public float calcRealCost(StrifeMob mob) {
-    float cost = mob.getEntity().isSneaking() ? sneakCost : this.cost;
+  public float calcRealCost(StrifeMob caster, StrifeMob target) {
+    float cost = caster.getEntity().isSneaking() ? sneakCost : this.cost;
     if (cost >= 0) {
       // nothin
     } else {
       cost *= -1; // changes it to positive, because negative denotes percent
       float percentCost = cost % 1; // decimal remainder, for percent
       float flatCost = cost - percentCost;
-      float resource = healthCost ? mob.getMaxLife() : mob.getMaxEnergy();
+      float resource = healthCost ? caster.getMaxLife() : caster.getMaxEnergy();
       cost = resource * percentCost + flatCost;
     }
     if (weightScaling != 0) {
-      float weightRatio = mob.getStat(StrifeStat.WEIGHT) / 100;
+      float weightRatio = caster.getStat(StrifeStat.WEIGHT) / 100;
       float difference = cost - (cost * weightRatio);
       cost += difference * weightScaling;
+    }
+    for (var entry : costModifiers.entrySet()) {
+      if (entry.getKey().isMet(caster, target)) {
+        cost *= entry.getValue();
+      }
     }
     return cost;
   }

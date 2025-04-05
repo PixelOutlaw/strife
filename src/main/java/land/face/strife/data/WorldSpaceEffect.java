@@ -1,7 +1,7 @@
 package land.face.strife.data;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.ticxo.modelengine.api.ModelEngineAPI;
+import com.ticxo.modelengine.api.entity.Dummy;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import java.util.HashSet;
@@ -21,7 +21,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.util.Vector;
 
 @Builder
@@ -35,25 +34,30 @@ public class WorldSpaceEffect {
 
   private StrifeMob caster;
   private ModeledEntity modeledEntity;
-  private ArmorStand stand;
+  private Dummy<?> stand;
+  private ActiveModel model;
   private Location nextLocation;
   private Vector velocity;
+  private String startAnimation, moveAnimation, endAnimation;
   private float maxDisplacement, gravity, friction, verticalOffset, originalSpeed;
   private int maxTicks, lifespan, currentTick, currentFallTicks, maxFallTicks;
-  private boolean destroyOnContact, restoreSpeedOnGroundContact, destroyOnSharpAngle;
+  private final boolean destroyOnContact, restoreSpeedOnGroundContact, destroyOnSharpAngle;
+
+  public boolean destroyed;
 
   public void setupModel(String modelEffect, Color modelColor, double modelSize) {
     if (modelEffect != null) {
-      ActiveModel model = ModelEngineAPI.createActiveModel(modelEffect);
+      model = ModelEngineAPI.createActiveModel(modelEffect);
       if (model == null) {
         Bukkit.getLogger().warning("[Strife] (WSE) No valid model for " + modelEffect);
       } else {
-        stand = nextLocation.getWorld().spawn(nextLocation, ArmorStand.class);
-        stand.setGravity(false);
-        stand.setAI(false);
-        stand.setInvulnerable(true);
-        stand.setMarker(true);
-        ChunkUtil.setDespawnOnUnload(stand);
+        stand = new Dummy<>();
+        stand.setLocation(nextLocation);
+        stand.getBodyRotationController().setRotationDuration(0);
+        stand.getBodyRotationController().setRotationDelay(0);
+        stand.setYBodyRot(nextLocation.getYaw());
+        stand.setXHeadRot(nextLocation.getPitch());
+        stand.setYHeadRot(nextLocation.getYaw());
         modeledEntity = ModelEngineAPI.createModeledEntity(stand);
         if (modeledEntity != null) {
           if (modelColor != null) {
@@ -64,6 +68,21 @@ public class WorldSpaceEffect {
           modeledEntity.addModel(model, true);
           //modeledEntity.detectPlayers();
           modeledEntity.setBaseEntityVisible(false);
+
+          if (moveAnimation != null) {
+            var expectedTime = (double) lifespan / 20D;
+            var length = model.getBlueprint().getAnimations().get(moveAnimation).getLength();
+            var timeRatio = length / expectedTime;
+            model.getAnimationHandler().playAnimation(moveAnimation, 0, 0, timeRatio, true);
+            Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+              if (!destroyed) {
+                model.getAnimationHandler().stopAnimation(moveAnimation);
+              }
+            }, lifespan);
+          }
+          if (startAnimation != null) {
+            model.getAnimationHandler().playAnimation(startAnimation, 0, 0, 1, false);
+          }
         }
       }
     }
@@ -144,8 +163,10 @@ public class WorldSpaceEffect {
 
     nextLocation = newLocation;
     if (modeledEntity != null) {
-      stand.teleport(nextLocation.clone().add(0, verticalOffset, 0));
-      stand.setVelocity(velocity);
+      stand.setLocation(nextLocation.clone().add(0, verticalOffset, 0));
+      stand.setYBodyRot(nextLocation.getYaw());
+      stand.setXHeadRot(nextLocation.getPitch());
+      stand.setYHeadRot(nextLocation.getYaw());
     }
 
     lifespan -= 1;
