@@ -48,5 +48,6 @@ public class UniqueEntity {
   private List<String> addGoals;
   private final List<String> bonusKnowledge = new ArrayList<>();
   private String modelId;
+  private List<Double> modelSizes;
 
 }

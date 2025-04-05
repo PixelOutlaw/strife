@@ -34,19 +34,8 @@ public class Damage extends Effect {
   private final List<BonusDamage> bonusDamages = new ArrayList<>();
   private final Map<AbilityMod, Float> abilityMods = new HashMap<>();
   private AttackType attackType;
-  private boolean canBeEvaded;
-  private boolean canBeBlocked;
-  private boolean canSneakAttack;
-  private boolean isBlocking;
-  private boolean applyOnHitEffects;
-  private boolean canCrit;
-  private boolean useBasicDamageMult;
-  private boolean useMinionDamage;
-  private boolean showPopoffs;
-  private boolean bypassBarrier;
-  private boolean guardBreak;
-  private boolean fromAbility;
-  private boolean selfInflict;
+  private boolean canBeEvaded, canBeBlocked, canSneakAttack, isBlocking, applyOnHitEffects, canCrit, useBasicDamageMult,
+      showPopoffs, bypassBarrier, guardBreak, fromAbility, selfInflict;
   private final List<Effect> hitEffects = new ArrayList<>();
   private final List<Effect> killEffects = new ArrayList<>();
   public int currentProjectileId = -1;
@@ -77,7 +66,6 @@ public class Damage extends Effect {
     mods.setCanCrit(canCrit);
     mods.setShowPopoffs(showPopoffs);
     mods.setUseBasicDamageMult(useBasicDamageMult);
-    mods.setApplyMinionDamageMult(useMinionDamage);
     mods.setBypassBarrier(bypassBarrier);
     mods.setGuardBreak(guardBreak);
     mods.setFromAbility(fromAbility);
@@ -141,10 +129,6 @@ public class Damage extends Effect {
     getPlugin().getEffectManager().executeEffectList(caster, response, hitEffects);
     if (target.getEntity().isDead()) {
       getPlugin().getEffectManager().executeEffectList(caster, response, killEffects);
-    }
-
-    if (damage.containsKey(DamageType.PHYSICAL) && mods.isApplyOnHitEffects()) {
-      DamageUtil.attemptBleed(caster, target, damage.get(DamageType.PHYSICAL), mods, true,false);
     }
 
     StrifeMob finalTarget = target;

@@ -6,15 +6,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import land.face.strife.StrifePlugin;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.DamageUtil.AbilityMod;
 import land.face.strife.util.DamageUtil.AttackType;
 import land.face.strife.util.DamageUtil.DamageType;
 import lombok.Getter;
 import lombok.Setter;
-import org.bukkit.entity.Projectile;
-import org.bukkit.util.Vector;
 
 @Getter
 @Setter
@@ -40,7 +37,6 @@ public class DamageModifiers {
   private boolean scaleChancesWithAttack = false;
   private boolean showPopoffs = true;
   private boolean useBasicDamageMult = true;
-  private boolean applyMinionDamageMult = false;
   private boolean bypassBarrier = false;
   private boolean guardBreak = false;
   private boolean fromAbility = false;
@@ -64,7 +60,8 @@ public class DamageModifiers {
     SHOCK,
     CORRUPT,
     CRUNCH,
-    BANISH
+    BANISH,
+    BASH
   }
 
 }

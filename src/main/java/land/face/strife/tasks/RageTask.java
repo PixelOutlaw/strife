@@ -204,8 +204,8 @@ public class RageTask extends BukkitRunnable {
   }
 
   private void setDecay(@NotNull StrifeMob mob) {
-    float bonusDuration = mob.getStat(StrifeStat.EFFECT_DURATION) + mob.getStat(StrifeStat.ENRAGE_DURATION);
-    float timeMultiplier = (float) Math.pow(1 + bonusDuration / 100f, 2);
+    float bonusDuration = mob.getStat(StrifeStat.ENRAGE_DURATION) + mob.getStat(StrifeStat.EFFECT_DURATION) / 1.5f ;
+    float timeMultiplier = (float) Math.pow(1 + bonusDuration / 100f, 1.75);
     decay = 1f + INITIAL_ENRAGE_DECAY / timeMultiplier;
     decayIncrease = ENRAGE_DECAY / timeMultiplier;
   }

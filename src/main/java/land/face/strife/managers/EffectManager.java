@@ -308,7 +308,6 @@ public class EffectManager {
         ((Damage) effect).setCanCrit(cs.getBoolean("can-crit", defaultOnHit));
         ((Damage) effect).setShowPopoffs(cs.getBoolean("show-popoffs", !selfInflict));
         ((Damage) effect).setUseBasicDamageMult(cs.getBoolean("use-basic-damage-mult", !selfInflict));
-        ((Damage) effect).setUseMinionDamage(cs.getBoolean("use-minion-damage-mult", false));
         ((Damage) effect).setBypassBarrier(cs.getBoolean("bypass-barrier", false));
         ((Damage) effect).setGuardBreak(cs.getBoolean("guard-break", false));
         ((Damage) effect).setCanBeBlocked(cs.getBoolean("can-be-blocked", defaultOnHit));
@@ -373,6 +372,10 @@ public class EffectManager {
 
         ((CreateWorldSpaceEntity) effect).setModelEffect(cs.getString("model-effect", null));
         ((CreateWorldSpaceEntity) effect).setModelSize((float) cs.getDouble("model-size", 1));
+        ((CreateWorldSpaceEntity) effect).setStartAnimations(cs.getStringList("start-animations"));
+        ((CreateWorldSpaceEntity) effect).setMoveAnimations(cs.getStringList("move-animations"));
+        ((CreateWorldSpaceEntity) effect).setEndAnimations(cs.getStringList("end-animations"));
+
         ((CreateWorldSpaceEntity) effect).setVerticalOffset((float) cs.getDouble("vertical-offset", 0));
         if (cs.getString("model-color") != null) {
           java.awt.Color c = java.awt.Color.decode(cs.getString("model-color"));
@@ -394,6 +397,7 @@ public class EffectManager {
         ((CreateWorldSpaceEntity) effect).setVelocity((float) cs.getDouble("speed", 0));
         ((CreateWorldSpaceEntity) effect).setFriction((float) cs.getDouble("friction", 1));
         ((CreateWorldSpaceEntity) effect).setGravity((float) cs.getDouble("gravity", 0));
+
         ((CreateWorldSpaceEntity) effect).setZeroVerticalAxis(cs.getBoolean("zero-y-axis", false));
         ((CreateWorldSpaceEntity) effect).setDestroyOnContact(cs.getBoolean("destroy-on-contact", false));
         ((CreateWorldSpaceEntity) effect).setDestroyOnSharpAngle(cs.getBoolean("destroy-on-sharp-angle", false));

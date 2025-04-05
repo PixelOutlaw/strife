@@ -22,8 +22,6 @@ import com.soujah.poggersguilds.GuildPlugin;
 import com.soujah.poggersguilds.data.Guild;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
-import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,13 +48,11 @@ import land.face.strife.events.CriticalEvent;
 import land.face.strife.events.EvadeEvent;
 import land.face.strife.events.SneakAttackEvent;
 import land.face.strife.events.StrifeEarlyDamageEvent;
-import land.face.strife.managers.BossBarManager;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
-import net.kyori.adventure.text.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -65,7 +61,6 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -249,8 +244,9 @@ public class DamageUtil {
         generalDamageMultiplier *= atkMob.getStat(StrifeStat.PVP_ATTACK) / defMob.getStat(StrifeStat.PVP_DEFENCE);
       }
     }
-    if (mods.isApplyMinionDamageMult()) {
-      generalDamageMultiplier *= 1 + atkMob.getStat(StrifeStat.MINION_DAMAGE) / 100;
+    if (mods.getAbilityMods().containsKey(AbilityMod.MINION_DAMAGE)) {
+      var minionMult = atkMob.getStat(StrifeStat.MINION_DAMAGE) / 100;
+      generalDamageMultiplier *= 1 + mods.getAbilityMods().get(AbilityMod.MINION_DAMAGE) * minionMult;
     }
     float minionDamageMultiplier = DamageUtil.getMinionMult(atkMob);
 
@@ -267,6 +263,8 @@ public class DamageUtil {
 
     if (mods.getAttackType() == AttackType.PROJECTILE) {
       rawDamage *= DamageUtil.getProjectileMultiplier(atkMob, defMob);
+    } else if (mods.getAttackType() == AttackType.MELEE) {
+      rawDamage *= 1 + atkMob.getStat(StrifeStat.MELEE_DAMAGE) / 100;
     }
 
     rawDamage *= DamageUtil.getTenacityMult(defMob, false);
@@ -656,7 +654,7 @@ public class DamageUtil {
     float totalElementalDamage = 0;
     Map<DamageType, Float> elementalDamages = new HashMap<>();
     for (DamageType type : damageMap.keySet()) {
-      if (type != DamageType.PHYSICAL && type != DamageType.TRUE_DAMAGE) {
+      if (type != DamageType.TRUE_DAMAGE) {
         float amount = damageMap.get(type);
         totalElementalDamage += amount;
         elementalDamages.put(type, amount);
@@ -678,8 +676,13 @@ public class DamageUtil {
     if (finalElementType == null) {
       return;
     }
-    float bonus;
     switch (finalElementType) {
+      case PHYSICAL -> {
+        mods.getElementalStatuses().add(ElementalStatus.BASH);
+        //doBash(attacker, defender);
+        //damageMap.put(DamageType.PHYSICAL, damageMap.get(DamageType.PHYSICAL) * 1.1f + attacker.getLevel() / 20);
+        damageMap.put(DamageType.PHYSICAL, damageMap.get(DamageType.PHYSICAL) * 1.1f);
+      }
       case FIRE -> {
         mods.getElementalStatuses().add(ElementalStatus.IGNITE);
         doIgnite(attacker, defender, damageMap.get(DamageType.FIRE));
@@ -866,6 +869,12 @@ public class DamageUtil {
     );
     float duration = (50 + damage / 2) * (1 + attacker.getStat(StrifeStat.EFFECT_DURATION) / 100);
     Ignite.setFlames(defender, Math.max((int) duration, defender.getEntity().getFireTicks()));
+  }
+
+  private static void doBash(StrifeMob attacker, StrifeMob defender) {
+    LivingEntity defendEntity = defender.getEntity();
+    var loc = TargetingUtil.getOriginLocation(defendEntity, OriginLocation.CENTER);
+    loc.getWorld().playSound(loc, Sound.ENTITY_GOAT_RAM_IMPACT, 1f, 0.65f);
   }
 
   public static void attemptShock(StrifeMob attacker, StrifeMob defender) {
@@ -1498,7 +1507,8 @@ public class DamageUtil {
     STATUS_CHANCE,
     BACK_ATTACK,
     MAX_DAMAGE,
-    CAPPED_RESIST
+    CAPPED_RESIST,
+    MINION_DAMAGE
   }
 
   public enum AttackType {

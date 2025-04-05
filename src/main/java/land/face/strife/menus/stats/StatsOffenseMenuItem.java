@@ -107,6 +107,9 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (type == AttackType.PROJECTILE) {
       totalMultiplier *= 1f + mob.getStat(StrifeStat.PROJECTILE_DAMAGE) / 100;
     }
+    if (type == AttackType.MELEE) {
+      totalMultiplier *= 1f + mob.getStat(StrifeStat.MELEE_DAMAGE) / 100;
+    }
     float physical = totalMultiplier * damageMap.getOrDefault(DamageType.PHYSICAL, 0f);
     float fire = totalMultiplier * damageMap.getOrDefault(DamageType.FIRE, 0f);
     float ice = totalMultiplier * damageMap.getOrDefault(DamageType.ICE, 0f);
@@ -206,7 +209,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (earth > 0) {
       lore.add(addStat("Maximum Earth Runes: ", mob.getStat(StrifeStat.MAX_EARTH_RUNES), INT_FORMAT));
     }
-    lore.add(addStat("Elemental Status Chance: ", mob.getStat(StrifeStat.ELEMENTAL_STATUS), "%", INT_FORMAT));
+    lore.add(addStat("Status Chance: ", mob.getStat(StrifeStat.ELEMENTAL_STATUS), "%", INT_FORMAT));
     lore.add(breakLine);
     lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help &8&ofor more info!"));
     itemMeta.setLore(lore);

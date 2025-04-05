@@ -90,6 +90,8 @@ public enum StrifeStat {
   PROJECTILE_DAMAGE("Projectile Damage"),
   PROJECTILE_REDUCTION("Projectile Protection"),
 
+  MELEE_DAMAGE("Melee Damage"),
+
   LUNG_CAPACITY("Lung Capacity"),
 
   ATTACK_SPEED("Attack Speed"),
@@ -113,7 +115,7 @@ public enum StrifeStat {
   LIGHT_MULT("More Light Damage", "Less Light Damage"),
   DARK_MULT("More Shadow Damage", "Less Shadow Damage"),
 
-  ELEMENTAL_STATUS("Elemental Status Chance"),
+  ELEMENTAL_STATUS("Status Chance"),
   MAX_EARTH_RUNES("Max Earth Runes"),
 
   MAXIMUM_RAGE("Maximum Rage"),

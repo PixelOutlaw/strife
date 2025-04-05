@@ -141,12 +141,15 @@ public class UniqueEntityManager {
           Bukkit.getLogger().warning("Failed to create modelled entity");
         } else {
           modeledEntity.addModel(model, true);
+          modeledEntity.getBase().setRenderRadius(80);
           //modeledEntity.detectPlayers();
           modeledEntity.setBaseEntityVisible(false);
           StrifeMob mob = plugin.getStrifeMobManager().getStatMob((LivingEntity) entity);
           mob.setModelEntity(modeledEntity);
           float scale = mob.getStat(StrifeStat.CHARACTER_SIZE) / 100f;
-          model.setScale(scale);
+          var size = uniqueEntity.getModelSizes().isEmpty() ? 1D :
+              uniqueEntity.getModelSizes().get(StrifePlugin.RNG.nextInt(uniqueEntity.getModelSizes().size()));
+          model.setScale(scale * size);
           model.setHitboxScale(scale);
           if (StringUtils.isNotBlank(entity.getCustomName())) {
             TextComponent tc = LegacyComponentSerializer.legacySection().deserialize(entity.getCustomName());
@@ -433,6 +436,7 @@ public class UniqueEntityManager {
         }
         uniqueEntity.setArmsRaised(cs.getBoolean("arms-raised", true));
         uniqueEntity.setModelId(cs.getString("model-id", null));
+        uniqueEntity.setModelSizes(cs.getDoubleList("model-sizes"));
         uniqueEntity.setAttackDisabledOnGlobalCooldown(cs.getBoolean("disable-attacks-on-global-cooldown", false));
         uniqueEntity.setAlwaysRunTimer(cs.getBoolean("always-run-timer", false));
         uniqueEntity.setGravity(cs.getBoolean("gravity", true));

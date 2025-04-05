@@ -177,10 +177,6 @@ public class CombatListener implements Listener {
     StrifePlugin.getInstance().getDamageManager().dealDamage(attacker, defender,
         (float) strifeDamageEvent.getFinalDamage(), mods);
 
-    if (damage.containsKey(DamageType.PHYSICAL) && mods.isApplyOnHitEffects()) {
-      DamageUtil.attemptBleed(attacker, defender, damage.get(DamageType.PHYSICAL), mods, true, false);
-    }
-
     if (mods.isApplyOnHitEffects()) {
       DamageUtil.attemptPoison(attacker, defender, mods);
       Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
@@ -293,12 +289,8 @@ public class CombatListener implements Listener {
 
     AttackType attackType = DamageUtil.getAttackType(event);
     if (attackType == AttackType.MELEE) {
-      ItemStack item = attackEntity.getEquipment() == null ? null : attackEntity.getEquipment().getItemInMainHand();
       attackMultiplier = plugin.getAttackSpeedManager().getAttackMultiplier(attacker, 1);
       onHitChance = attackMultiplier;
-      if (item != null && (item.getType() == Material.BOW || item.getType() == Material.WOODEN_SWORD)) {
-        attackMultiplier *= 0.4f;
-      }
       //double angle = attackEntity.getEyeLocation().getDirection()
       //    .angle(defendEntity.getEyeLocation().getDirection());
       //backAttack = angle < 1;
