@@ -16,17 +16,16 @@
  */
 package land.face.strife.managers;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import eu.decentsoftware.holograms.api.utils.PAPI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
-import land.face.strife.data.Boost;
 import land.face.strife.data.TopBarData;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
@@ -34,19 +33,21 @@ public class TopBarManager {
 
   private final StrifePlugin plugin;
   private final Map<Player, TopBarData> dataMap = new WeakHashMap<>();
-  private final Map<Integer, String> compassIcons = new HashMap<>();
+  private final Map<Integer, TextComponent> compassIcons = new HashMap<>();
+  
+  private final TextComponent clockIcon = GuiManager.noShadow(Component.text("冦 "));
 
   public TopBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    compassIcons.put(0, FaceColor.NO_SHADOW + "冧 ");
-    compassIcons.put(1, FaceColor.NO_SHADOW + "冨 ");
-    compassIcons.put(2, FaceColor.NO_SHADOW + "冩 ");
-    compassIcons.put(3, FaceColor.NO_SHADOW + "冪 ");
-    compassIcons.put(4, FaceColor.NO_SHADOW + "冫 ");
-    compassIcons.put(5, FaceColor.NO_SHADOW + "冬 ");
-    compassIcons.put(6, FaceColor.NO_SHADOW + "冭 ");
-    compassIcons.put(7, FaceColor.NO_SHADOW + "冮 ");
-    compassIcons.put(8, FaceColor.NO_SHADOW + "冧 ");
+    compassIcons.put(0, GuiManager.noShadow(Component.text("冧 ")));
+    compassIcons.put(1, GuiManager.noShadow(Component.text("冨 ")));
+    compassIcons.put(2, GuiManager.noShadow(Component.text("冩 ")));
+    compassIcons.put(3, GuiManager.noShadow(Component.text("冪 ")));
+    compassIcons.put(4, GuiManager.noShadow(Component.text("冫 ")));
+    compassIcons.put(5, GuiManager.noShadow(Component.text("冬 ")));
+    compassIcons.put(6, GuiManager.noShadow(Component.text("冭 ")));
+    compassIcons.put(7, GuiManager.noShadow(Component.text("冮 ")));
+    compassIcons.put(8, GuiManager.noShadow(Component.text("冧 ")));
 
     // LocationTask
     Bukkit.getScheduler().runTaskTimer(plugin, () -> {
@@ -59,7 +60,7 @@ public class TopBarManager {
 
     // event Task
     Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-      String eventString = plugin.getBoostManager().getBoostString();
+      var eventString = plugin.getBoostManager().getBoostString();
       for (Player p : dataMap.keySet()) {
         if (p.isOnline()) {
           updateEvent(p, eventString);
@@ -80,15 +81,15 @@ public class TopBarManager {
       } else if (time == 0) {
         time = 12;
       }
-      String clockString = FaceColor.NO_SHADOW + "冦 " + FaceColor.WHITE + time + affix;
+      var component = clockIcon.append(Component.text(time + affix).color(TextColor.color(255, 255, 255)));
       // HALLOWEEN ONLY
       // String clockString = FaceColor.NO_SHADOW + "冦 " + FaceColor.ORANGE + "Witching Hour  ";
       dataMap.keySet().removeIf(p -> !p.isOnline());
       for (Player p : dataMap.keySet()) {
         try {
-          updateTime(p, clockString);
+          updateTime(p, component);
           int direction = Math.round((p.getLocation().getYaw() + 180) / 45f);
-          String str = compassIcons.get(direction);
+          var str = compassIcons.get(direction);
           updateCompass(p, str);
         } catch (Exception e) {
           Bukkit.getLogger().warning("[Strife] Failed to set compass/clock for " + p.getName());
@@ -104,13 +105,13 @@ public class TopBarManager {
     sendUpdate(player);
   }
 
-  public void updateCompass(Player player, String str) {
+  public void updateCompass(Player player, TextComponent str) {
     if (player.isOnline() && dataMap.containsKey(player) && dataMap.get(player).setCompass(str)) {
       sendUpdate(player);
     }
   }
 
-  public void updateEvent(Player player, String str) {
+  public void updateEvent(Player player, TextComponent str) {
     if (player.isOnline() && dataMap.containsKey(player) && dataMap.get(player).setEvent(str)) {
       sendUpdate(player);
     }
@@ -123,13 +124,13 @@ public class TopBarManager {
     }
   }
 
-  public void updateTime(Player player, String str) {
+  public void updateTime(Player player, TextComponent str) {
     if (player.isOnline() && dataMap.containsKey(player) && dataMap.get(player).setClock(str)) {
       sendUpdate(player);
     }
   }
 
-  public void updateSkills(Player player, String str) {
+  public void updateSkills(Player player, TextComponent str) {
     if (player.isOnline() && dataMap.containsKey(player) && dataMap.get(player).setSkills(str)) {
       sendUpdate(player);
     }

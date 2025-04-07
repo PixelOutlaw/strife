@@ -28,6 +28,7 @@ import static info.faceland.loot.utils.ItemStyleUtil.doSmallNameThing;
 
 import com.sentropic.guiapi.gui.GUI;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import info.faceland.loot.utils.ItemRenderer;
@@ -74,7 +75,7 @@ public class PathItem extends MenuItem {
     ItemStack stack = plugin.getPathManager().getIcon(path,
         champion.getSaveData().getPathMap().get(path)).clone();
     stack.setType(Material.PAPER);
-    ItemStackExtensionsKt.setCustomModelData(stack, 202);
+    ItemUtils.setCustomData(stack, List.of("path-icon", "chosen"));
     return stack;
   }
 
@@ -108,12 +109,12 @@ public class PathItem extends MenuItem {
 
     lockedIcon = new ItemStack(Material.PAPER);
     ItemStackExtensionsKt.setDisplayName(lockedIcon, StringExtensionsKt.chatColorize("&8&l[ Locked ]"));
-    ItemStackExtensionsKt.setCustomModelData(lockedIcon, 200);
+    ItemUtils.setCustomData(lockedIcon, List.of("path-icon", "locked"));
     lockedIcon.editMeta(m -> m.setLore(lore));
 
     unlockedIcon = new ItemStack(Material.PAPER);
     ItemStackExtensionsKt.setDisplayName(unlockedIcon, TextUtils.color("&f&l&nClick to choose your path!"));
-    ItemStackExtensionsKt.setCustomModelData(unlockedIcon, 201);
+    ItemUtils.setCustomData(lockedIcon, List.of("path-icon", "open"));
 
     unlockedIcon.editMeta(m -> m.setLore(lore));
 /*

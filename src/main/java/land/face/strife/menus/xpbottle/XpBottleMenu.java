@@ -30,31 +30,31 @@ public class XpBottleMenu extends ItemMenu {
   public XpBottleMenu(StrifePlugin plugin, String title, int bowlId, int amount) {
     super(BASE_NAME + title, Size.FOUR_LINE, plugin);
 
-    setItem(1, new SkillButton(plugin, LifeSkillType.CRAFTING, bowlId, 415, amount));
-    setItem(2, new SkillButton(plugin, LifeSkillType.FISHING, bowlId, 436, amount));
-    setItem(3, new SkillButton(plugin, LifeSkillType.ENCHANTING, bowlId, 410, amount));
-    setItem(10, new SkillButton(plugin, LifeSkillType.MINING, bowlId, 421, amount));
-    setItem(11, new SkillButton(plugin, LifeSkillType.FARMING, bowlId, 413, amount));
-    setItem(12, new SkillButton(plugin, LifeSkillType.COOKING, bowlId, 419, amount));
-    setItem(19, new SkillButton(plugin, LifeSkillType.ALCHEMY, bowlId, 461, amount));
-    setItem(20, new SkillButton(plugin, LifeSkillType.TRADING, bowlId, 437, amount));
-    setItem(21, new SkillButton(plugin, LifeSkillType.AGILITY, bowlId, 438, amount));
-    setItem(28, new SkillButton(plugin, LifeSkillType.SNEAK, bowlId, 400, amount));
-    setItem(29, new SkillButton(plugin, LifeSkillType.PRAYER, bowlId, 439, amount));
-    setItem(30, new SkillButton(plugin, LifeSkillType.LOREMASTER, bowlId, 469, amount));
+    setItem(1, new SkillButton(plugin, LifeSkillType.CRAFTING, bowlId, "faceland:icons/skill/skill_icon_15", amount));
+    setItem(2, new SkillButton(plugin, LifeSkillType.FISHING, bowlId, "faceland:icons/skill/skill_icon_36", amount));
+    setItem(3, new SkillButton(plugin, LifeSkillType.ENCHANTING, bowlId, "faceland:icons/skill/skill_icon_10", amount));
+    setItem(10, new SkillButton(plugin, LifeSkillType.MINING, bowlId, "faceland:icons/skill/skill_icon_21", amount));
+    setItem(11, new SkillButton(plugin, LifeSkillType.FARMING, bowlId, "faceland:icons/skill/skill_icon_13", amount));
+    setItem(12, new SkillButton(plugin, LifeSkillType.COOKING, bowlId, "faceland:icons/skill/skill_icon_19", amount));
+    setItem(19, new SkillButton(plugin, LifeSkillType.ALCHEMY, bowlId, "faceland:icons/skill/skill_icon_61", amount));
+    setItem(20, new SkillButton(plugin, LifeSkillType.TRADING, bowlId, "faceland:icons/skill/skill_icon_37", amount));
+    setItem(21, new SkillButton(plugin, LifeSkillType.AGILITY, bowlId, "faceland:icons/skill/skill_icon_38", amount));
+    setItem(28, new SkillButton(plugin, LifeSkillType.SNEAK, bowlId, "faceland:icons/skill/icon_blank", amount));
+    setItem(29, new SkillButton(plugin, LifeSkillType.PRAYER, bowlId, "faceland:icons/skill/skill_icon_prayer", amount));
+    setItem(30, new SkillButton(plugin, LifeSkillType.LOREMASTER, bowlId, "faceland:icons/skill/skill_icon_69", amount));
 
-    setItem(5, new SkillButton(plugin, LifeSkillType.SWORDSMANSHIP, bowlId, 406, amount));
-    setItem(6, new SkillButton(plugin, LifeSkillType.AXE_MASTERY, bowlId, 426, amount));
-    setItem(7, new SkillButton(plugin, LifeSkillType.BLUNT_WEAPONS, bowlId, 441, amount));
-    setItem(14, new SkillButton(plugin, LifeSkillType.ARCHERY, bowlId, 431, amount));
-    setItem(15, new SkillButton(plugin, LifeSkillType.MARKSMANSHIP, bowlId, 435, amount));
-    setItem(16, new SkillButton(plugin, LifeSkillType.SHIELD_MASTERY, bowlId, 416, amount));
-    setItem(23, new SkillButton(plugin, LifeSkillType.DAGGER_MASTERY, bowlId, 471, amount));
-    setItem(24, new SkillButton(plugin, LifeSkillType.DUAL_WIELDING, bowlId, 408, amount));
-    setItem(25, new SkillButton(plugin, LifeSkillType.ARCANE_MAGICS, bowlId, 465, amount));
-    setItem(32, new SkillButton(plugin, LifeSkillType.NATURAL_MAGICS, bowlId, 470, amount));
-    setItem(33, new SkillButton(plugin, LifeSkillType.CELESTIAL_MAGICS, bowlId, 420, amount));
-    setItem(34, new SkillButton(plugin, LifeSkillType.BLACK_MAGICS, bowlId, 456, amount));
+    setItem(5, new SkillButton(plugin, LifeSkillType.SWORDSMANSHIP, bowlId, "faceland:icons/skill/skill_icon_6", amount));
+    setItem(6, new SkillButton(plugin, LifeSkillType.AXE_MASTERY, bowlId, "faceland:icons/skill/skill_icon_26", amount));
+    setItem(7, new SkillButton(plugin, LifeSkillType.BLUNT_WEAPONS, bowlId, "faceland:icons/skill/skill_icon_41", amount));
+    setItem(14, new SkillButton(plugin, LifeSkillType.ARCHERY, bowlId, "faceland:icons/skill/skill_icon_31", amount));
+    setItem(15, new SkillButton(plugin, LifeSkillType.MARKSMANSHIP, bowlId, "faceland:icons/skill/skill_icon_35", amount));
+    setItem(16, new SkillButton(plugin, LifeSkillType.SHIELD_MASTERY, bowlId, "faceland:icons/skill/skill_icon_16", amount));
+    setItem(23, new SkillButton(plugin, LifeSkillType.DAGGER_MASTERY, bowlId, "faceland:icons/skill/skill_icon_dagger", amount));
+    setItem(24, new SkillButton(plugin, LifeSkillType.DUAL_WIELDING, bowlId, "faceland:icons/skill/skill_icon_8", amount));
+    setItem(25, new SkillButton(plugin, LifeSkillType.ARCANE_MAGICS, bowlId, "faceland:icons/skill/skill_icon_65", amount));
+    setItem(32, new SkillButton(plugin, LifeSkillType.NATURAL_MAGICS, bowlId, "faceland:icons/skill/skill_icon_70", amount));
+    setItem(33, new SkillButton(plugin, LifeSkillType.CELESTIAL_MAGICS, bowlId, "faceland:icons/skill/skill_icon_20", amount));
+    setItem(34, new SkillButton(plugin, LifeSkillType.BLACK_MAGICS, bowlId, "faceland:icons/skill/skill_icon_56", amount));
   }
 
 }

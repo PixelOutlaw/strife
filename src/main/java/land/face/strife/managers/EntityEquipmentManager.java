@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
+import lombok.Setter;
 import me.arcaniax.hdb.api.HeadDatabaseAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -23,6 +24,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 public class EntityEquipmentManager {
 
   private static final EquipmentSlot[] SLOTS = EquipmentSlot.values();
+  @Setter
   private HeadDatabaseAPI headDatabaseAPI = new HeadDatabaseAPI();
   private final Map<String, ItemStack> itemMap;
 
@@ -114,16 +116,12 @@ public class EntityEquipmentManager {
     for (String line : cs.getStringList("lore")) {
       lore.add(StringExtensionsKt.chatColorize(line));
     }
-    int data = cs.getInt("custom-model-data", -1);
-    if (data != -1) {
-      ItemStackExtensionsKt.setCustomModelData(stack, data);
+    var data = cs.getString("model", null);
+    if (!StringUtils.isBlank(data)) {
+      ItemUtils.setItemModel(stack, data);
     }
     TextUtils.setLore(stack, lore);
     ItemStackExtensionsKt.setUnbreakable(stack, true);
     itemMap.put(key, stack);
-  }
-
-  public void setHeadDatabaseAPI(HeadDatabaseAPI api) {
-    headDatabaseAPI = api;
   }
 }

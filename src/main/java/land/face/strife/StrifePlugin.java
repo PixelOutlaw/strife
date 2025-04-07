@@ -627,10 +627,9 @@ public class StrifePlugin extends FacePlugin {
 
       String name = abilityMenus.getString(menuId + ".name", "CONFIGURE ME");
       List<String> lore = abilityMenus.getStringList(menuId + ".lore");
-      Material material = Material.valueOf(abilityMenus.getString(menuId + ".material", "BARRIER"));
       int slot = abilityMenus.getInt(menuId + ".slot", 0);
-      int modelData = abilityMenus.getInt(menuId + ".model-data", 0);
-      SubmenuSelectButton subMenuIcon = new SubmenuSelectButton(menu, material, modelData, name, lore, slot);
+      String model = abilityMenus.getString(menuId + ".model", "minecraft:items/paper");
+      SubmenuSelectButton subMenuIcon = new SubmenuSelectButton(menu, model, name, lore, slot);
       pickerItems.add(subMenuIcon);
     }
 

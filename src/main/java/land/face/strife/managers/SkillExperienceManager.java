@@ -39,6 +39,8 @@ import land.face.strife.events.SkillLevelUpEvent;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.PlayerDataUtil;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
@@ -165,25 +167,25 @@ public class SkillExperienceManager {
     }
   }
 
-  private String buildSkillString(Champion champion, LifeSkillType skill) {
+  private TextComponent buildSkillString(Champion champion, LifeSkillType skill) {
     if (skill == null) {
-      return "";
+      return Component.empty();
     }
     plugin.getChampionManager().updateRecentSkills(champion, skill);
     return updateSkillString(champion);
   }
 
-  public String updateSkillString(Champion champion) {
-    StringBuilder newTitle = new StringBuilder();
+  public TextComponent updateSkillString(Champion champion) {
+    var newTitle = Component.empty();
     for (LifeSkillType skillType : champion.getRecentSkills()) {
       int level = PlayerDataUtil.getLifeSkillLevel(champion, skillType);
       if (level < 100) {
         int progress = Math.min(99, (int) (100D * PlayerDataUtil.getSkillProgress(champion, skillType)));
-        newTitle.append(FaceColor.NO_SHADOW).append(skillType.getCharacter()).append(FaceColor.LIME)
-            .append(progress).append("%").append("  ");
+        var text = skillType.getNameComponent().content(progress + "%  ");
+        newTitle = newTitle.append(skillType.getCharacterComponent()).append(text);
       }
     }
-    return newTitle.toString();
+    return newTitle;
   }
 
   public Integer getMaxExp(LifeSkillType type, int level) {

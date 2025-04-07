@@ -222,11 +222,9 @@ public class TargetingUtil {
     Location detectionLocation = loc.toCenterLocation().clone();
     for (int i = 0; i < verticalRange; i++) {
       var block = detectionLocation.getBlock().getRelative(BlockFace.DOWN, i);
-      if (block.getType().isSolid()) {
-        detectionLocation.setY(block.getY() + block.getBoundingBox().getHeight() + 0.25);
-        return detectionLocation;
-      } else if (block.getType() == Material.LILY_PAD) {
-        detectionLocation.setY(block.getY() + block.getBoundingBox().getHeight() + 0.25);
+      if (block.getType().isSolid() || block.getType() == Material.LILY_PAD ||
+          block.getType() == Material.BIG_DRIPLEAF) {
+        detectionLocation.setY(block.getY() + block.getBoundingBox().getMaxY() + 0.25);
         return detectionLocation;
       }
     }

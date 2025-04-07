@@ -3,6 +3,10 @@ package land.face.strife.data.champion;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import java.awt.Color;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.ShadowColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.md_5.bungee.api.ChatColor;
 
 @Getter
@@ -42,6 +46,8 @@ public enum LifeSkillType {
   private final String prettyName;
   private final String dataName;
   private final String character;
+  private final TextComponent characterComponent;
+  private final TextComponent nameComponent;
   private final ChatColor color;
   private final boolean combat;
 
@@ -51,6 +57,9 @@ public enum LifeSkillType {
     this.character = character;
     this.color = color;
     this.combat = combat;
+
+    nameComponent = Component.text(prettyName).color(TextColor.color(FaceColor.LIME.getRawColor().getRGB()));
+    characterComponent = Component.text(character).shadowColor(ShadowColor.none());
   }
 
   LifeSkillType(String prettyName, String dataName, String character, ChatColor color) {
@@ -59,6 +68,9 @@ public enum LifeSkillType {
     this.character = character;
     this.color = color;
     this.combat = false;
+
+    nameComponent = Component.text(prettyName).color(TextColor.color(FaceColor.LIME.getRawColor().getRGB()));
+    characterComponent = Component.text(character).shadowColor(ShadowColor.none());
   }
 }
 

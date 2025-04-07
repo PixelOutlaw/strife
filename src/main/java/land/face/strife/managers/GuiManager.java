@@ -34,13 +34,13 @@ public class GuiManager {
   private static final DecimalFormat XP_FORMAT = new DecimalFormat("0.0");
 
   private final GUIComponent healthBase = new GUIComponent("status-base",
-      noShadow(adventureIsRetarded("➲")), 236, 0, Alignment.CENTER);
+      noShadow(Component.text("➲")), 236, 0, Alignment.CENTER);
   private final GUIComponent bitsBase = new GUIComponent("bits-base",
-      noShadow(adventureIsRetarded("₿")), 14, 199, Alignment.CENTER);
+      noShadow(Component.text("₿")), 14, 199, Alignment.CENTER);
   private final GUIComponent gemsBase = new GUIComponent("gems-base",
-      noShadow(adventureIsRetarded("௹")) , 15, 198, Alignment.CENTER);
+      noShadow(Component.text("௹")) , 15, 198, Alignment.CENTER);
   private final GUIComponent notifsBase = new GUIComponent("notifs-base",
-      noShadow(adventureIsRetarded("偀")) , 67, -181, Alignment.CENTER);
+      noShadow(Component.text("偀")) , 67, -181, Alignment.CENTER);
 
   private final Map<Integer, TextComponent> levelStringNumbers = new HashMap<>();
   private final Map<Integer, TextComponent> moneyStringNumbers = new HashMap<>();

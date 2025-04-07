@@ -31,6 +31,7 @@ import land.face.strife.util.PlayerDataUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryCloseEvent.Reason;
 import org.bukkit.inventory.ItemStack;
@@ -42,24 +43,23 @@ public class SkillButton extends MenuItem {
   private final StrifePlugin plugin;
   private final LifeSkillType lifeSkillType;
   private final int amount;
-  private final int modelData;
+  private final NamespacedKey modelData;
   private final int bowlId;
 
-  public SkillButton(StrifePlugin plugin, LifeSkillType lifeSkillType,
-      int bowlId, int modelData, int amount) {
+  public SkillButton(StrifePlugin plugin, LifeSkillType lifeSkillType, int bowlId, String modelData, int amount) {
     super("", new ItemStack(Material.PLAYER_HEAD));
     this.plugin = plugin;
     this.lifeSkillType = lifeSkillType;
     this.amount = amount;
     this.bowlId = bowlId;
-    this.modelData = modelData;
+    this.modelData = NamespacedKey.fromString(modelData);
   }
 
   @Override
   public ItemStack getFinalIcon(Player player) {
     int lvl =  PlayerDataUtil.getSkillLevels(player, lifeSkillType, false).getLevel();
     ItemStack stack = new ItemStack(Material.PAPER);
-    ItemStackExtensionsKt.setCustomModelData(stack, modelData);
+    ItemUtils.setItemModel(stack, modelData);
     ItemStackExtensionsKt.setDisplayName(stack, FaceColor.GREEN + "Gain " +
         lifeSkillType.getColor() + lifeSkillType.getPrettyName() + FaceColor.GREEN + " XP!");
     TextUtils.setLore(stack, PaletteUtil.color(List.of(

@@ -23,6 +23,7 @@ import java.util.Map;
 import land.face.strife.stats.StrifeStat;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 
 @Getter
@@ -32,7 +33,6 @@ public class StrifeAttribute {
   private final String key;
   private String name;
   private List<String> description;
-  private int customData;
   private Sound clickSound;
   private float clickPitch;
   private Sound levelSound;

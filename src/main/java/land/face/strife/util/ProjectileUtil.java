@@ -1,5 +1,6 @@
 package land.face.strife.util;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.entity.Dummy;
 import com.ticxo.modelengine.api.model.ActiveModel;
@@ -20,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AbstractArrow.PickupStatus;
@@ -371,13 +373,12 @@ public class ProjectileUtil {
 
   private static ItemStack buildWandProjectile() {
     ItemStack stack = new ItemStack(Material.NETHER_STAR);
-    ItemStackExtensionsKt.setCustomModelData(stack, 100);
     return stack;
   }
 
   private static ItemStack buildBulletProjectile() {
     ItemStack stack = new ItemStack(Material.POLISHED_BLACKSTONE_BUTTON);
-    ItemStackExtensionsKt.setCustomModelData(stack, 100);
+    ItemUtils.setItemModel(stack, "faceland:icons/empty");
     return stack;
   }
 

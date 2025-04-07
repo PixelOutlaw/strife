@@ -19,6 +19,7 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.google.gson.Gson;
@@ -47,6 +48,11 @@ import land.face.strife.data.LoadedStatBoost;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.ShadowColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.util.ARGBLike;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -64,6 +70,8 @@ public class BoostManager {
 
   private final Set<UUID> discordBoosters = new HashSet<>();
   private final Set<UUID> contributors = new HashSet<>();
+
+  private final TextComponent icon = Component.text( "冣").shadowColor(ShadowColor.none());
 
   public BoostManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -104,10 +112,10 @@ public class BoostManager {
     return null;
   }
 
-  public String getBoostString() {
-    StringBuilder str = new StringBuilder();
+  public TextComponent getBoostString() {
+    var print = Component.text("");
     if (dailyBoost != null) {
-      str.append(dailyBoost.getTopBarText());
+      print = print.append(Component.text(dailyBoost.getTopBarText()));
     }
     for (Boost b : boosts) {
       LoadedStatBoost load = loadedBoosts.get(b.getBoostId());
@@ -115,18 +123,20 @@ public class BoostManager {
         continue;
       }
       if (b.getSecondsRemaining() > -1) {
-        str.append(load.getTopBarText().replace("{m}", String.valueOf(Math.max(1, b.getSecondsRemaining() / 60))));
+        print = print.append(Component.text(
+            load.getTopBarText().replace("{m}", String.valueOf(Math.max(1, b.getSecondsRemaining() / 60)))));
       } else {
-        str.append(load.getTopBarText());
+        print = print.append(Component.text(load.getTopBarText()));
       }
     }
     long timeDiff = plugin.getMobModManager().getGemStormEndTime() - System.currentTimeMillis();
     if (timeDiff > 0) {
       int minutes = Math.max(1, (int) ((timeDiff / 1000) / 60));
-      str.append(FaceColor.NO_SHADOW + "冣" + FaceColor.PURPLE).append(minutes).append("m  ");
+      var minutesTc = Component.text(minutes + "m  ")
+          .color(TextColor.color(FaceColor.PURPLE.getRawColor().getRGB()));
+      print = print.append(icon).append(minutesTc);
     }
-    String result = str.toString();
-    return result.isEmpty() ? "" : result + " ";
+    return print.content().isEmpty() ? print : print.append(Component.text(" "));
   }
 
   public void updateGlobalBoostStatus(Player player) {

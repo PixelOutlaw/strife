@@ -22,6 +22,7 @@ import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.events.BlockChangeEvent;
 import land.face.strife.managers.GuiManager;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -40,16 +41,16 @@ public class BlockChangeListener implements Listener {
   }
 
   private final List<TextComponent> blockLevels = List.of(
-      GuiManager.noShadow(GuiManager.adventureIsRetarded("௦")),
-      GuiManager.noShadow(GuiManager.adventureIsRetarded("௧")),
-      GuiManager.noShadow(GuiManager.adventureIsRetarded("௨")),
-      GuiManager.noShadow(GuiManager.adventureIsRetarded("௩")),
-      GuiManager.noShadow(GuiManager.adventureIsRetarded("௪")),
-      GuiManager.noShadow(GuiManager.adventureIsRetarded("௫")),
-      GuiManager.noShadow(GuiManager.adventureIsRetarded("௬")),
-      GuiManager.noShadow(GuiManager.adventureIsRetarded("௭")),
-      GuiManager.noShadow(GuiManager.adventureIsRetarded("௮")),
-      GuiManager.noShadow(GuiManager.adventureIsRetarded("௯"))
+      GuiManager.noShadow(Component.text("௦")),
+      GuiManager.noShadow(Component.text("௧")),
+      GuiManager.noShadow(Component.text("௨")),
+      GuiManager.noShadow(Component.text("௩")),
+      GuiManager.noShadow(Component.text("௪")),
+      GuiManager.noShadow(Component.text("௫")),
+      GuiManager.noShadow(Component.text("௬")),
+      GuiManager.noShadow(Component.text("௭")),
+      GuiManager.noShadow(Component.text("௮")),
+      GuiManager.noShadow(Component.text("௯"))
   );
 
   @EventHandler

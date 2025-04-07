@@ -3,6 +3,7 @@ package land.face.strife.managers;
 import static land.face.strife.util.PlayerDataUtil.getName;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
@@ -57,6 +58,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.Sound;
@@ -593,7 +595,10 @@ public class EffectManager {
         if (StringUtils.isNotBlank(thrownStackMaterial)) {
           ItemStack stack = new ItemStack(Material.valueOf(thrownStackMaterial));
           stack.setAmount(cs.getInt("thrown-stack-amount", 1));
-          ItemStackExtensionsKt.setCustomModelData(stack, cs.getInt("thrown-stack-custom-data", 0));
+          var model = cs.getString("thrown-stack-model", null);
+          if (StringUtils.isNotBlank(model)) {
+            ItemUtils.setItemModel(stack, model);
+          }
           ((ShootProjectile) effect).setThrownStack(stack);
         }
         ((ShootProjectile) effect).setTargeted(cs.getBoolean("targeted", false));

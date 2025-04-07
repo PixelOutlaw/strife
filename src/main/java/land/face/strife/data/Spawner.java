@@ -18,6 +18,7 @@ import land.face.strife.util.LogUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import lombok.Getter;
 import lombok.Setter;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.ClickEvent.Action;
@@ -198,9 +199,9 @@ public class Spawner extends BukkitRunnable {
       Vector diff = location.toVector().subtract(p.getLocation().toVector());
       if (diff.lengthSquared() < 6400) {
         p.playSound(location, Sound.BLOCK_BEACON_AMBIENT, 100, 0.8F);
-        var text = GuiManager.adventureIsRetarded(StringExtensionsKt.chatColorize(
+        var text = Component.text(StringExtensionsKt.chatColorize(
             "&7&o&lWoah!! &f" + mob.getEntity().getCustomName() + "&f has spawned nearby!\n "));
-        var waypointButton = GuiManager.adventureIsRetarded("[Click For Waypoint]");
+        var waypointButton = Component.text("[Click For Waypoint]");
         waypointButton.color(TextColor.color(FaceColor.CYAN.getRawColor().getRGB()));
         waypointButton.clickEvent(ClickEvent.clickEvent(Action.RUN_COMMAND,
             "/waypointer point " + location.getX() + " " + (location.getY() + 2) + " " + location.getZ() + " "

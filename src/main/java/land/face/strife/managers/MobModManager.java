@@ -103,7 +103,7 @@ public class MobModManager {
                "|purple|The |pink|POWER |purple|of the |pink|GEMS |purple|cause extra loot for |white|10m|purple|!\n" +
                "\n"
             );
-            String eventString = plugin.getBoostManager().getBoostString();
+            var eventString = plugin.getBoostManager().getBoostString();
             for (Player p : Bukkit.getOnlinePlayers()) {
               p.sendMessage(msg);
               p.playSound(p.getLocation(), Sound.ENTITY_LIGHTNING_BOLT_THUNDER, 0.75f, 1f);

@@ -30,6 +30,7 @@ import land.face.strife.stats.StrifeStat;
 import land.face.strife.timers.RuneTimer;
 import land.face.strife.util.LogUtil;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -79,6 +80,6 @@ public class RuneManager {
       return;
     }
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("rune-display", GuiManager.noShadow(GuiManager.adventureIsRetarded(StringUtils.repeat("㆞", runes))), runes * 5, -88, Alignment.LEFT));
+        new GUIComponent("rune-display", GuiManager.noShadow(Component.text(StringUtils.repeat("㆞", runes))), runes * 5, -88, Alignment.LEFT));
   }
 }

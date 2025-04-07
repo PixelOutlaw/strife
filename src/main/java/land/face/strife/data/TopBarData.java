@@ -1,6 +1,8 @@
 package land.face.strife.data;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import java.util.HashMap;
+import java.util.Map;
 import land.face.strife.events.LocationChangeEvent;
 import land.face.strife.managers.BossBarManager;
 import lombok.Getter;
@@ -11,12 +13,6 @@ import org.bukkit.entity.Player;
 
 @Getter
 public class TopBarData {
-
-  private String cachedEventStr = "";
-  private String cachedCompassStr = "";
-  private String cachedLocationStr = "";
-  private String cachedClockStr = "";
-  private String cachedSkillsStr = "";
 
   private TextComponent event = Component.empty();
   private TextComponent compass = Component.empty();
@@ -30,49 +26,44 @@ public class TopBarData {
     return Component.textOfChildren(event, compass, location, clock, skills, buffer);
   }
 
-  public boolean setEvent(String str) {
-    if (cachedEventStr.equals(str) || str == null) {
+  public boolean setEvent(TextComponent str) {
+    if (str == null || str.content().equals(event.content())) {
       return false;
     }
-    cachedEventStr = str;
-    event = BossBarManager.covertStringToRetardComponent(str);
+    event = str;
     return true;
   }
 
-  public boolean setCompass(String str) {
-    if (cachedCompassStr.equals(str) || str == null) {
+  public boolean setCompass(TextComponent str) {
+    if (str == null || str.content().equals(compass.content())) {
       return false;
     }
-    cachedCompassStr = str;
-    compass = BossBarManager.covertStringToRetardComponent(str);
+    compass = str;
     return true;
   }
 
   public boolean setLocation(Player player, String location) {
-    if (cachedLocationStr.equals(location) || location == null) {
+    if (location == null || location.equals(this.location.content())) {
       return false;
     }
     Bukkit.getPluginManager().callEvent(new LocationChangeEvent(player, location));
-    cachedLocationStr = location;
     this.location = BossBarManager.covertStringToRetardComponent(FaceColor.YELLOW + location);
     return true;
   }
 
-  public boolean setClock(String str) {
-    if (cachedClockStr.equals(str) || str == null) {
+  public boolean setClock(TextComponent str) {
+    if (str == null || str.content().equals(clock.content())) {
       return false;
     }
-    cachedClockStr = str;
-    clock = BossBarManager.covertStringToRetardComponent(str);
+    clock = str;
     return true;
   }
 
-  public boolean setSkills(String str) {
-    if (cachedSkillsStr.equals(str) || str == null) {
+  public boolean setSkills(TextComponent str) {
+    if (str == null || str.content().equals(skills.content())) {
       return false;
     }
-    cachedSkillsStr = str;
-    skills = BossBarManager.covertStringToRetardComponent(str);
+    skills = str;
     return true;
   }
 

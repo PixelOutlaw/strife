@@ -18,14 +18,14 @@
  */
 package land.face.strife.menus.abilities;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
-import land.face.strife.StrifePlugin;
+import lombok.Getter;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -34,13 +34,14 @@ import org.bukkit.inventory.ItemStack;
 public class SubmenuSelectButton extends MenuItem {
 
   private final AbilitySubmenu menu;
+
+  @Getter
   private final int slot;
 
-  public SubmenuSelectButton(AbilitySubmenu menu, Material material, int modelData,
-      String name, List<String> lore, int slot) {
-    super(StringExtensionsKt.chatColorize(name), setNameAndLore(new ItemStack(material),
+  public SubmenuSelectButton(AbilitySubmenu menu, String model, String name, List<String> lore, int slot) {
+    super(StringExtensionsKt.chatColorize(name), setNameAndLore(new ItemStack(Material.PAPER),
         StringExtensionsKt.chatColorize(name), ListExtensionsKt.chatColorize(lore)));
-    ItemStackExtensionsKt.setCustomModelData(getIcon(), modelData);
+    ItemUtils.setItemModel(getIcon(), model);
     this.menu = menu;
     this.slot = slot;
   }
@@ -58,9 +59,5 @@ public class SubmenuSelectButton extends MenuItem {
     super.onItemClick(event);
     event.setWillClose(false);
     menu.open(event.getPlayer());
-  }
-
-  public int getSlot() {
-    return slot;
   }
 }

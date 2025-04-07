@@ -1,6 +1,7 @@
 package land.face.strife.menus.prayer;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class PrayerIcon extends MenuItem {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
     if (plugin.getPrayerManager().getPrayerLevelReq().get(prayer) >
         mob.getChampion().getLifeSkillLevel(LifeSkillType.PRAYER)) {
-      ItemStackExtensionsKt.setCustomModelData(stack, 800);
+      ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase(), "locked"));
       ItemStackExtensionsKt.setDisplayName(stack, plugin.getPrayerManager().getPrayerNames().get(prayer));
       List<String> lore = new ArrayList<>();
       lore.addAll(plugin.getPrayerManager().getPrayerLore().get(prayer));
@@ -51,15 +52,15 @@ public class PrayerIcon extends MenuItem {
     lore.add(FaceColor.WHITE + "Faith: " + (int) mob.getPrayer() + " / " + (int) mob.getMaxPrayer());
     boolean isActive = plugin.getPrayerManager().isPrayerActive(player, prayer);
     if (isActive) {
-      ItemStackExtensionsKt.setCustomModelData(stack, plugin.getPrayerManager().getPrayerModelData().get(prayer));
+      ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase(), "active"));
       lore.add("");
       lore.add(FaceColor.YELLOW + "Click To Deactivate!");
     } else if (plugin.getPrayerManager().getPrayerActivationCost().get(prayer) > mob.getPrayer()) {
-      ItemStackExtensionsKt.setCustomModelData(stack, 801);
+      ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase(), "cost"));
       lore.add("");
       lore.add(FaceColor.RED + "You don't have enough Faith!");
     } else {
-      ItemStackExtensionsKt.setCustomModelData(stack, plugin.getPrayerManager().getPrayerModelData().get(prayer) + 1);
+      ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase(), "inactive"));
       lore.add("");
       lore.add(FaceColor.GREEN + "Click To Activate!");
     }

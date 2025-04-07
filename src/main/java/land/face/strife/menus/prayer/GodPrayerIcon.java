@@ -1,6 +1,7 @@
 package land.face.strife.menus.prayer;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -35,8 +36,8 @@ public class GodPrayerIcon extends MenuItem {
     SelectedGod god = mob.getChampion().getSaveData().getSelectedGod();
     ItemStack stack = new ItemStack(Material.PAPER);
     if (god == null || god == SelectedGod.NONE) {
-      ItemStackExtensionsKt.setCustomModelData(stack, 800);
       ItemStackExtensionsKt.setDisplayName(stack, FaceColor.WHITE + "Unknown Prayer");
+      ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase(), "unknown"));
       TextUtils.setLore(stack, List.of("", FaceColor.GRAY + " ? ? ?", ""), false);
       return stack;
     }
@@ -58,22 +59,22 @@ public class GodPrayerIcon extends MenuItem {
     lore.add("");
     lore.add(FaceColor.WHITE + "Faith: " + (int) mob.getPrayer() + " / " + (int) mob.getMaxPrayer());
     if (mob.getChampion().getSaveData().getGodLevel().getOrDefault(god, 0) < godLevel) {
-      ItemStackExtensionsKt.setCustomModelData(stack, 800);
+      ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase(), "locked"));
       lore.add("");
       lore.add(FaceColor.ORANGE + "[Not Unlocked]");
     } else {
       boolean isActive = plugin.getPrayerManager().isPrayerActive(player, prayer);
       if (isActive) {
-        ItemStackExtensionsKt.setCustomModelData(stack, getActiveModelData(god, godLevel - 1));
+        ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "active"));
         lore.add("");
         lore.add(FaceColor.YELLOW + "Click To Deactivate!");
       } else if (plugin.getPrayerManager().getPrayerActivationCost().get(prayer) > mob.getPrayer()) {
-        ItemStackExtensionsKt.setCustomModelData(stack, 801);
+        ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "cost"));
         lore.add("");
         lore.add(FaceColor.RED + "You don't have enough Faith!");
       } else {
         // Inactive icon resource pack data: 870-872
-        ItemStackExtensionsKt.setCustomModelData(stack, 870 + godLevel - 2);
+        ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "inactive"));
         lore.add("");
         lore.add(FaceColor.GREEN + "Click To Activate!");
       }

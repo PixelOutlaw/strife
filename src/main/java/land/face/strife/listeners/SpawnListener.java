@@ -1,6 +1,7 @@
 package land.face.strife.listeners;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import land.face.strife.StrifePlugin;
@@ -60,7 +61,7 @@ public class SpawnListener implements Listener {
 
   static ItemStack buildSkeletonWand() {
     ItemStack wand = new ItemStack(Material.BOW);
-    ItemStackExtensionsKt.setCustomModelData(wand, 4000);
+    ItemUtils.setItemModel(wand, "faceland:items/equipment/unique/staff/mob_staff");
     return wand;
   }
 }

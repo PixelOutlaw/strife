@@ -6,6 +6,7 @@ import java.lang.ref.WeakReference;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.managers.GuiManager;
+import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -13,9 +14,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class InvincibleTask extends BukkitRunnable {
 
   private final static GUIComponent INVINCIBLE =
-      new GUIComponent("invincible",  GuiManager.noShadow(GuiManager.adventureIsRetarded("㒥")), 181, -1, Alignment.CENTER);
+      new GUIComponent("invincible",  GuiManager.noShadow(Component.text("㒥")), 181, -1, Alignment.CENTER);
   private final static GUIComponent EMPTY =
-      new GUIComponent("invincible", GuiManager.adventureIsRetarded(""), 0, 0, Alignment.CENTER);
+      new GUIComponent("invincible", Component.text(""), 0, 0, Alignment.CENTER);
 
   private final WeakReference<StrifeMob> parentMob;
   private int ticks;

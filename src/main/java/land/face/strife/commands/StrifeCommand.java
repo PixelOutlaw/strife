@@ -696,7 +696,7 @@ public class StrifeCommand extends BaseCommand {
       sendMessage(sender, "&cBoost with that ID doesn't exist, or this boost is running");
       return;
     }
-    String eventString = plugin.getBoostManager().getBoostString();
+    TextComponent eventString = plugin.getBoostManager().getBoostString();
     for (Player p : Bukkit.getOnlinePlayers()) {
       if (p.isOnline()) {
         plugin.getTopBarManager().updateEvent(p, eventString);

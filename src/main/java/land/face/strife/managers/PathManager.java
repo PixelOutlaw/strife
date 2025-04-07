@@ -1,5 +1,6 @@
 package land.face.strife.managers;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -103,7 +104,7 @@ public class PathManager {
     iconLore.add("&8&oone of these paths...");
     iconLore.add("&8&oPick wisely!");
     TextUtils.setLore(stack, iconLore, true);
-    ItemStackExtensionsKt.setCustomModelData(stack, choiceSection.getInt("model-data", 0));
+    ItemUtils.setCustomData(stack, List.of("skill-orb"));
 
     Map<StrifeStat, Float> statMap = StatUtil.getStatMapFromSection(choiceSection.getConfigurationSection("stats"));
 

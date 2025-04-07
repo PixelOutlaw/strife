@@ -29,6 +29,7 @@ import land.face.strife.data.champion.Champion;
 import land.face.strife.data.champion.StrifeAttribute;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.StatUtil;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -153,7 +154,6 @@ public class StrifeAttributeManager {
     StrifeAttribute stat = new StrifeAttribute(key);
     stat.setName(PaletteUtil.color(cs.getString("name")));
     stat.setDescription(PaletteUtil.color(cs.getStringList("description")));
-    stat.setCustomData(cs.getInt("custom-data", -1));
     stat.setClickSound(Sound.valueOf(cs.getString("sounds.click-sound", "ENTITY_CAT_HISS")));
     stat.setClickPitch((float) cs.getDouble("sounds.click-pitch", 1));
     stat.setLevelSound(Sound.valueOf(cs.getString("sounds.level-sound", "ENTITY_CAT_HISS")));

@@ -89,7 +89,7 @@ public class UniqueEntityManager {
     this.loadedUniquesMap = new HashMap<>();
     this.cachedDisguises = new HashMap<>();
     DEV_SADDLE = new ItemStack(Material.SADDLE);
-    ItemStackExtensionsKt.setCustomModelData(DEV_SADDLE, 3000);
+    DEV_SADDLE.editMeta(m -> m.setMaxStackSize(2));
     globalRemoveGoals = plugin.getConfig().getStringList("global-blocked-ai-goals");
   }
 

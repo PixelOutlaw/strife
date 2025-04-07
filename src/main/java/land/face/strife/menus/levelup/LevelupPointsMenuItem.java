@@ -30,6 +30,7 @@ import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -72,7 +73,7 @@ public class LevelupPointsMenuItem extends MenuItem {
       stack = new ItemStack(Material.NETHER_STAR);
       stack.editMeta(m -> m.setMaxStackSize(99));
       stack.setAmount(Math.min(99, stacks));
-      ItemStackExtensionsKt.setCustomModelData(stack, 200);
+      ItemUtils.setCustomData(stack, List.of("skill-orb"));
     }
 
     ItemStackExtensionsKt.setDisplayName(stack, name);

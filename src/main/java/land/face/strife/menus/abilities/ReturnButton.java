@@ -16,6 +16,7 @@
  */
 package land.face.strife.menus.abilities;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class ReturnButton extends MenuItem {
       return new ItemStack(Material.AIR);
     }
     ItemStack stack = getIcon().clone();
-    ItemStackExtensionsKt.setCustomModelData(stack, 997);
+    ItemUtils.setItemModel(stack, "faceland:icons/quest/back_button");
     stack.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
     ItemStackExtensionsKt.setDisplayName(stack, getDisplayName());
     return stack;

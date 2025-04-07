@@ -18,6 +18,7 @@
  */
 package land.face.strife.menus.levelup;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -61,17 +62,16 @@ public class AttributeIcon extends MenuItem {
 
     ItemStack icon = getIcon().clone();
 
-    if (attribute.getCustomData() != -1) {
       if (champion.getAttributeLevel(attribute) == attribute.getMaxCap()) {
-        ItemStackExtensionsKt.setCustomModelData(icon, attribute.getCustomData() + 1);
+        ItemUtils.setCustomData(icon, List.of(attribute.getKey(), "max"));
         icon.setAmount(attribute.getMaxCap());
       } else if (pendingPoints == 0) {
-        ItemStackExtensionsKt.setCustomModelData(icon, 99);
+        ItemUtils.setCustomData(icon, List.of(attribute.getKey(), "none"));
       } else {
-        ItemStackExtensionsKt.setCustomModelData(icon, attribute.getCustomData());
+        ItemUtils.setCustomData(icon, List.of(attribute.getKey(), "normal"));
         icon.setAmount(pendingPoints);
       }
-    }
+
     ItemMeta itemMeta = icon.getItemMeta();
     if (pendingPoints != statCap && champion.getPendingUnusedStatPoints() > 0) {
       itemMeta.addEnchant(Enchantment.UNBREAKING, 1, true);
