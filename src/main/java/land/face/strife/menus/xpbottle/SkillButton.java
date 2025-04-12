@@ -22,6 +22,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
+import info.faceland.loot.utils.InventoryUtil;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.List;
@@ -44,9 +45,9 @@ public class SkillButton extends MenuItem {
   private final LifeSkillType lifeSkillType;
   private final int amount;
   private final NamespacedKey modelData;
-  private final int bowlId;
+  private final String bowlId;
 
-  public SkillButton(StrifePlugin plugin, LifeSkillType lifeSkillType, int bowlId, String modelData, int amount) {
+  public SkillButton(StrifePlugin plugin, LifeSkillType lifeSkillType, String bowlId, String modelData, int amount) {
     super("", new ItemStack(Material.PLAYER_HEAD));
     this.plugin = plugin;
     this.lifeSkillType = lifeSkillType;
@@ -77,24 +78,12 @@ public class SkillButton extends MenuItem {
       event.getPlayer().sendMessage(FaceColor.YELLOW + "You're already max level in this skill!");
       return;
     }
-    boolean success = getAndRemoveMatch(event.getPlayer(), bowlId);
+    boolean success = InventoryUtil.consumeItem(event.getPlayer(), bowlId);
     if (success) {
       plugin.getSkillExperienceManager().addExperience(event.getPlayer(), lifeSkillType, amount, true, true);
     } else {
       event.getPlayer().sendMessage(FaceColor.YELLOW + "You don't have any more of this bottle!");
       event.getPlayer().closeInventory(Reason.PLUGIN);
     }
-  }
-  private static boolean getAndRemoveMatch(Player player, int bowlId) {
-    for (ItemStack item : player.getInventory().getContents()) {
-      if (item == null || item.getType() != Material.BOWL || !item.hasItemMeta() || item.getAmount() < 1) {
-        continue;
-      }
-      if (ItemUtils.getModelData(item) == bowlId) {
-        item.setAmount(item.getAmount() - 1);
-        return true;
-      }
-    }
-    return false;
   }
 }

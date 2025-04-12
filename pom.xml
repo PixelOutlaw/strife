@@ -34,7 +34,7 @@
   </parent>
 
   <artifactId>strife</artifactId>
-  <version>3.14.0</version>
+  <version>1.21.4.0</version>
   <packaging>jar</packaging>
 
   <name>strife</name>
@@ -116,25 +116,25 @@
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>deluxe-invy</artifactId>
-      <version>1.4.2</version>
+      <version>1.21.4.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>loot</artifactId>
-      <version>2.1.1</version>
+      <version>1.21.4.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>LearninBooks</artifactId>
-      <version>1.1.0</version>
+      <version>1.21.4.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>bullion</artifactId>
-      <version>2.4.0</version>
+      <version>1.21.4.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -146,7 +146,7 @@
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>FacePet</artifactId>
-      <version>1.2.1</version>
+      <version>1.21.4.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -165,6 +165,12 @@
       <groupId>soujah.dev</groupId>
       <artifactId>HoneyImHome2</artifactId>
       <version>1.0.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.pixeloutlaw</groupId>
+      <artifactId>poggers-guilds</artifactId>
+      <version>1.21.4.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -196,12 +202,6 @@
       <groupId>com.discordsrv</groupId>
       <artifactId>discordsrv</artifactId>
       <version>1.28.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.pixeloutlaw</groupId>
-      <artifactId>poggers-guilds</artifactId>
-      <version>1.0.6</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

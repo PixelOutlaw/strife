@@ -6,6 +6,8 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import info.faceland.loot.data.pdc.EquipmentData;
+import info.faceland.loot.items.Tier;
+import info.faceland.loot.utils.ModifyEquipmentUtil;
 import info.faceland.loot.utils.PersistHelper;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -44,10 +46,10 @@ public class ItemUtil {
   }
 
   public static boolean isArmor(Material material) {
-    String name = material.name();
-    return material == Material.SHEARS || name.endsWith("HELMET") || name.endsWith("CHESTPLATE") ||
-        name.endsWith("LEGGINGS") || name.endsWith("BOOTS") || name.endsWith("SKULL") ||
-        name.endsWith("HEAD");
+    return switch (material) {
+      case SHEARS, LEATHER_BOOTS, LEATHER_HELMET, LEATHER_CHESTPLATE, LEATHER_LEGGINGS -> true;
+      default -> false;
+    };
   }
 
   public static boolean isAccessory(Material material) {
@@ -66,16 +68,7 @@ public class ItemUtil {
   }
 
   public static boolean isTool(ItemStack stack) {
-    if (stack == null) {
-      return false;
-    }
-    var type = stack.getType();
-    switch (type) {
-      case STONE_AXE, IRON_AXE, STONE_HOE, IRON_HOE, IRON_PICKAXE, STONE_PICKAXE, FISHING_ROD -> {
-        return getCustomData(stack) < 8000;
-      }
-    }
-    return false;
+    return isType(stack, List.of("hoe", "woodcuttingaxe", "fishingrod", "pickaxe"));
   }
 
   public static boolean isDualWield(EntityEquipment equipment) {
@@ -85,8 +78,8 @@ public class ItemUtil {
     if (isMeleeWeapon(equipment.getItemInMainHand().getType())) {
       return isMeleeWeapon(equipment.getItemInOffHand().getType());
     }
-    if (isWand(equipment.getItemInMainHand())) {
-      return isWand(equipment.getItemInOffHand());
+    if (isType(equipment.getItemInMainHand(), List.of("wand", "staff"))) {
+      return isType(equipment.getItemInMainHand(), List.of("wand", "staff"));
     }
     return false;
   }
@@ -134,49 +127,40 @@ public class ItemUtil {
   }
 
   public static boolean isFlintlock(ItemStack stack) {
-    int itemData = getCustomData(stack);
-    if (stack.getType() != Material.BOW) {
-      return false;
-    }
-    return itemData > 10999 && itemData < 13000;
+    return isType(stack, List.of("flintlock", "rifle"));
   }
 
   public static boolean isQuiver(ItemStack stack) {
-    if (stack == null) {
-      return false;
-    }
-    int itemData = getCustomData(stack);
-    return stack.getType() == Material.ARROW && itemData < 10000;
+    return isType(stack, List.of("quiver"));
   }
 
   public static boolean isBullets(ItemStack stack) {
-    if (stack == null) {
-      return false;
-    }
-    int itemData = getCustomData(stack);
-    return stack.getType() == Material.ARROW && itemData > 9999 && itemData < 11000;
+    return isType(stack, List.of("ammo"));
   }
 
   public static boolean isWandOrStaff(ItemStack stack) {
-    if (stack == null) {
-      return false;
-    }
-    if (stack.getType() != Material.WOODEN_SWORD) {
-      return false;
-    }
-    int itemData = getCustomData(stack);
-    return itemData > 8999 && itemData < 11000;
+    return isType(stack, List.of("wand", "staff"));
   }
 
   public static boolean isWand(ItemStack stack) {
+    return isType(stack, List.of("wand"));
+  }
+
+  public static boolean isType(ItemStack stack, List<String> options) {
     if (stack == null) {
       return false;
     }
-    if (stack.getType() != Material.WOODEN_SWORD) {
+    var tier = Tier.get(stack);
+    if (tier == null) {
       return false;
     }
-    int itemData = getCustomData(stack);
-    return itemData > 8999 && itemData < 10000;
+    var id = tier.getId();
+    for (var s : options) {
+      if (s.equals(id)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public static boolean isValidMageOffhand(ItemStack stack) {
@@ -260,11 +244,6 @@ public class ItemUtil {
       }
       entity.getEquipment().setItem(slot, newItem);
     }
-  }
-
-  @Deprecated
-  public static int getCustomData(ItemStack stack) {
-    return ItemUtils.getModelData(stack);
   }
 
   public static boolean doesHashMatch(ItemStack itemStack, EquipmentCache cache, String slotId) {

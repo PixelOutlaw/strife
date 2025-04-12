@@ -19,11 +19,14 @@ package land.face.strife.listeners;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
+import info.faceland.loot.items.Tier;
+import info.faceland.loot.utils.ModifyEquipmentUtil;
 import land.face.dinvy.DeluxeInvyPlugin;
 import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
+import land.face.strife.data.effects.Event;
 import land.face.strife.data.effects.StrifeParticle;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.ItemUtil;
@@ -37,8 +40,10 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Spellcaster.Spell;
 import org.bukkit.entity.Trident;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -176,26 +181,7 @@ public class ShootListener implements Listener {
     }
 
     ItemStack weapon = shooter.getEquipment().getItemInMainHand();
-    int bowData = ItemUtils.getModelData(weapon);
-    if (weapon.getType() == Material.BOW && bowData > 0 && bowData < 9000) {
-      ((LivingEntity) event.getEntity().getShooter()).swingMainHand();
-      ProjectileUtil.shootWand(mob, 1);
-      event.setCancelled(true);
-      return;
-    } else if (ItemUtil.isFlintlock(weapon)) {
-      ProjectileUtil.shootBullet(mob, 1f);
-      flintlockSmoke.apply(mob, mob);
-      flintlockFlare.apply(mob, mob);
-      event.setCancelled(true);
-      return;
-    } else if (event.getEntity() instanceof Arrow) {
-      ProjectileUtil.shootArrow(mob, 1f);
-      event.setCancelled(true);
-      return;
-    }
-
-    ProjectileUtil.setShotId(event.getEntity());
-    ProjectileUtil.bumpShotId();
+    attemptProjectileShot(mob, weapon, event.getEntity(), event);
   }
 
   @EventHandler
@@ -222,20 +208,44 @@ public class ShootListener implements Listener {
     }
 
     ItemStack weapon = entity.getEquipment().getItemInMainHand();
-    int bowData = ItemUtils.getModelData(weapon);
-    if (weapon.getType() == Material.BOW && bowData > 0 && bowData < 9000) {
-      entity.swingMainHand();
-      ProjectileUtil.shootWand(mob, 1);
+    attemptProjectileShot(mob, weapon, null, event);
+  }
+
+  private void attemptProjectileShot(StrifeMob mob, ItemStack weapon, Projectile projectile, Cancellable event) {
+    Tier t = ModifyEquipmentUtil.getTier(weapon);
+    if (t == null) {
+      if (projectile instanceof Arrow) {
+        ProjectileUtil.shootArrow(mob, 1f);
+        ProjectileUtil.setShotId(projectile);
+        ProjectileUtil.bumpShotId();
+      }
       event.setCancelled(true);
-    } else if (ItemUtil.isFlintlock(weapon)) {
-      ProjectileUtil.shootBullet(mob, 1f);
-      flintlockSmoke.apply(mob, mob);
-      flintlockFlare.apply(mob, mob);
-      event.setCancelled(true);
-    } else if (event.getEntity() instanceof Arrow) {
-      ProjectileUtil.shootArrow(mob, 1f);
-      event.setCancelled(true);
+      return;
     }
+    switch (t.getId()) {
+      case "wand", "staff" -> {
+        ((LivingEntity) projectile.getShooter()).swingMainHand();
+        ProjectileUtil.shootWand(mob, 1);
+        event.setCancelled(true);
+        return;
+      }
+      case "flintlock", "rifle" -> {
+        ProjectileUtil.shootBullet(mob, 1f);
+        flintlockSmoke.apply(mob, mob);
+        flintlockFlare.apply(mob, mob);
+        event.setCancelled(true);
+        return;
+      }
+      default -> {
+        if (projectile instanceof Arrow) {
+          ProjectileUtil.shootArrow(mob, 1f);
+          event.setCancelled(true);
+          return;
+        }
+      }
+    }
+    ProjectileUtil.setShotId(projectile);
+    ProjectileUtil.bumpShotId();
   }
 
   @EventHandler(priority = EventPriority.HIGH)

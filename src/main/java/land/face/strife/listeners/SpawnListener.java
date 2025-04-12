@@ -61,7 +61,7 @@ public class SpawnListener implements Listener {
 
   static ItemStack buildSkeletonWand() {
     ItemStack wand = new ItemStack(Material.BOW);
-    ItemUtils.setItemModel(wand, "faceland:items/equipment/unique/staff/mob_staff");
+    ItemUtils.setItemModel(wand, "faceland:equipment/unique/staff/mob_staff");
     return wand;
   }
 }

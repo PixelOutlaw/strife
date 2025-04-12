@@ -11,12 +11,10 @@ import land.face.strife.StrifePlugin;
 import land.face.strife.data.RestoreData;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeTrait;
-import land.face.strife.util.BorderEffectUtil;
 import land.face.strife.util.DOTUtil;
 import land.face.strife.util.DamageUtil;
 import land.face.strife.util.StatUtil;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class LifeTask extends BukkitRunnable {
@@ -27,12 +25,11 @@ public class LifeTask extends BukkitRunnable {
   private final WeakReference<StrifeMob> parentMob;
   private final List<RestoreData> lifeRestore = new ArrayList<>();
 
-  private final float tickMultiplier;
+  private final float TICK_MULT = (1 / (20f / REGEN_TICK_RATE)) * REGEN_PERCENT_PER_SECOND;
 
   public LifeTask(StrifeMob parentMob) {
     this.parentMob = new WeakReference<>(parentMob);
     this.runTaskTimer(StrifePlugin.getInstance(), 40L, REGEN_TICK_RATE);
-    tickMultiplier = (1 / (20f / REGEN_TICK_RATE)) * REGEN_PERCENT_PER_SECOND;
   }
 
   @Override
@@ -67,7 +64,7 @@ public class LifeTask extends BukkitRunnable {
       damage += 5;
     }
 
-    lifeAmount *= tickMultiplier;
+    lifeAmount *= TICK_MULT;
     lifeAmount = lifeAmount - damage;
 
     if (lifeAmount != 0) {

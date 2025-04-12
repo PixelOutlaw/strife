@@ -189,9 +189,8 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void onItemPickupEvent(EntityPickupItemEvent event) {
-    if (event.getItem().getItemStack().getType() == Material.BLAZE_POWDER
-        && event.getEntity() instanceof Player) {
-      if (ItemUtil.getCustomData(event.getItem().getItemStack()) == 42069) {
+    if (event.getItem().getItemStack().getType() == Material.BLAZE_POWDER && event.getEntity() instanceof Player) {
+      //if (ItemUtil.getCustomData(event.getItem().getItemStack()) == 42069) {
         event.setCancelled(true);
         event.getItem().remove();
         if (!faceMessages.contains(event.getEntity().getUniqueId())) {
@@ -210,7 +209,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
           plugin.getAbilityManager().reduceCooldownPercent(event.getEntity(), "Teleport Strike", 1);
           plugin.getAbilityManager().reduceCooldownPercent(event.getEntity(), "Fade Step", 1);
         }
-      }
+      //}
     }
   }
 
@@ -308,7 +307,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
     if (stack == null || stack.getType() != Material.STONE_BUTTON) {
       return;
     }
-    if (ItemUtils.getModelData(stack) == 1975) {
+    if (ItemUtils.checkCustomData(stack, "poop", 0)) {
       event.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.RAID_OMEN, -1, 0, false));
     }
   }

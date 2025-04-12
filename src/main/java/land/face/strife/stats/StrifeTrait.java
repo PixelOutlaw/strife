@@ -2,6 +2,7 @@ package land.face.strife.stats;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import lombok.Getter;
+import net.kyori.adventure.text.TextComponent;
 import net.md_5.bungee.api.ChatColor;
 
 import java.util.*;
@@ -198,12 +199,15 @@ public enum StrifeTrait {
   @Getter
   private final List<String> additionalText = new ArrayList<>();
   @Getter
+  private final List<TextComponent> descAsComponents = new ArrayList<>();
+  @Getter
   private final List<String> additionalTextRaw = new ArrayList<>();
 
   StrifeTrait(String trigger, String... additionalText) {
     this.name = PaletteUtil.color(trigger);
     this.additionalTextRaw.addAll(Arrays.asList(additionalText));
     this.additionalText.addAll(PaletteUtil.color(Arrays.asList(additionalText)));
+    this.additionalText.forEach(at -> descAsComponents.add(PaletteUtil.convert(at)));
   }
 
 }

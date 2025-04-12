@@ -27,7 +27,7 @@ public class XpBottleMenu extends ItemMenu {
 
   public static String BASE_NAME = StringExtensionsKt.chatColorize("&f宺");
 
-  public XpBottleMenu(StrifePlugin plugin, String title, int bowlId, int amount) {
+  public XpBottleMenu(StrifePlugin plugin, String title, String bowlId, int amount) {
     super(BASE_NAME + title, Size.FOUR_LINE, plugin);
 
     setItem(1, new SkillButton(plugin, LifeSkillType.CRAFTING, bowlId, "faceland:icons/skill/skill_icon_15", amount));

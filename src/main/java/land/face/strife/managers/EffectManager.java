@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.BonusDamage;
-import land.face.strife.data.EquipmentItemData;
 import land.face.strife.data.LoadedChaser;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.TargetResponse;
@@ -58,7 +57,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect.Type;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.Sound;
@@ -1293,22 +1291,7 @@ public class EffectManager {
             .setEffect((OrderEntityEffect) plugin.getEffectManager().getEffect(effectId2)), 40L);
         break;
       case WEAPONS:
-        Set<EquipmentItemData> equipmentItemData = new HashSet<>();
-        ConfigurationSection ms = cs.getConfigurationSection("item-info");
-        for (String matKey : ms.getKeys(false)) {
-          EquipmentItemData data = new EquipmentItemData();
-          try {
-            data.setMaterial(Material.valueOf(matKey));
-          } catch (Exception e) {
-            LogUtil.printError("Failed to load " + key + ". Invalid material type (" + ms + ")");
-            return;
-          }
-          data.setMinData(ms.getInt(matKey + ".min-data", -1));
-          data.setMaxData(ms.getInt(matKey + ".max-data", -1));
-          equipmentItemData.add(data);
-        }
-        boolean strict = cs.getBoolean("strict", false);
-        condition = new WeaponsCondition(equipmentItemData, strict);
+        condition = new WeaponsCondition(cs.getStringList("valid-tiers"), cs.getBoolean("strict", false));
         break;
       case MOVING:
         condition = new MovingCondition(cs.getBoolean("state", true), cs.getInt("ms-leeway"));

@@ -634,13 +634,13 @@ public class StrifePlugin extends FacePlugin {
     }
 
     smallBottleMenu = new XpBottleMenu(this,
-        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Small Xp Bottle", 2000, 50);
+        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Small Xp Bottle", "xp-bottle-small", 50);
     mediumBottleMenu = new XpBottleMenu(this,
-        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Medium Xp Bottle", 2001, 200);
+        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Medium Xp Bottle", "xp-bottle-medium", 200);
     bigBottleMenu = new XpBottleMenu(this,
-        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Big Xp Bottle", 2002, 1000);
+        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Big Xp Bottle", "xp-bottle-big", 1000);
     giantBottleMenu = new XpBottleMenu(this,
-        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Huge Xp Bottle", 2003, 10000);
+        FaceColor.RAINBOW.shaded(ShaderStyle.WAVE) + "Huge Xp Bottle", "xp-bottle-huge", 10000);
 
     String pickerName = configYAML.getString("ability-menu-title", "Picker");
     int size = configYAML.getInt("ability-menu-size", 36);

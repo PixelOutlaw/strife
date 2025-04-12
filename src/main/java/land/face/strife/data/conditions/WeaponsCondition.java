@@ -1,18 +1,19 @@
 package land.face.strife.data.conditions;
 
+import java.util.List;
 import java.util.Set;
-import land.face.strife.data.EquipmentItemData;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.util.ItemUtil;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.EntityEquipment;
 
 public class WeaponsCondition extends Condition {
 
-  private final Set<EquipmentItemData> validMaterials;
+  private final List<String> validTiers;
   private final boolean strict;
 
-  public WeaponsCondition(Set<EquipmentItemData> validMaterials, boolean strict) {
-    this.validMaterials = validMaterials;
+  public WeaponsCondition(List<String> validTiers, boolean strict) {
+    this.validTiers = validTiers;
     this.strict = strict;
   }
 
@@ -31,13 +32,13 @@ public class WeaponsCondition extends Condition {
   }
 
   private boolean hasAtLeastOneWeaponInSet(EntityEquipment equipment) {
-    return EquipmentItemData.contains(validMaterials, equipment.getItemInMainHand())
-        || EquipmentItemData.contains(validMaterials, equipment.getItemInOffHand());
+    return ItemUtil.isType(equipment.getItemInMainHand(), validTiers) ||
+        ItemUtil.isType(equipment.getItemInOffHand(), validTiers);
   }
 
   private boolean hasAllWeaponsInSet(EntityEquipment equipment) {
-    return EquipmentItemData.contains(validMaterials, equipment.getItemInMainHand())
-        && EquipmentItemData.contains(validMaterials, equipment.getItemInOffHand());
+    return ItemUtil.isType(equipment.getItemInMainHand(), validTiers) &&
+        ItemUtil.isType(equipment.getItemInOffHand(), validTiers);
   }
 
   public CompareTarget getCompareTarget() {

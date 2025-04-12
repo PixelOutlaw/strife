@@ -18,7 +18,6 @@
  */
 package land.face.strife.listeners;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import land.face.strife.StrifePlugin;
 import land.face.strife.util.ItemUtil;
@@ -46,14 +45,6 @@ public class ConsumeItemListener implements Listener {
       ItemStack stack = event.getPlayer().getEquipment().getItemInMainHand();
       if (stack.getType() == Material.BOWL) {
         event.setCancelled(true);
-        int data = ItemUtils.getModelData(stack);
-        switch (data) {
-          case 2000 -> plugin.getSmallBottleMenu().open(event.getPlayer());
-          case 2001 -> plugin.getMediumBottleMenu().open(event.getPlayer());
-          case 2002 -> plugin.getBigBottleMenu().open(event.getPlayer());
-          case 2003 -> plugin.getGiantBottleMenu().open(event.getPlayer());
-        }
-        return;
       }
       if (stack.getType() == Material.BOW &&
           event.getPlayer().getEquipment().getItemInOffHand().getType() != Material.ARROW) {
