@@ -65,16 +65,19 @@ public class GodPrayerIcon extends MenuItem {
     } else {
       boolean isActive = plugin.getPrayerManager().isPrayerActive(player, prayer);
       if (isActive) {
-        ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "active"));
+        ItemUtils.setCustomData(stack,
+            List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "active"));
         lore.add("");
         lore.add(FaceColor.YELLOW + "Click To Deactivate!");
       } else if (plugin.getPrayerManager().getPrayerActivationCost().get(prayer) > mob.getPrayer()) {
-        ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "cost"));
+        ItemUtils.setCustomData(stack,
+            List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "cost"));
         lore.add("");
         lore.add(FaceColor.RED + "You don't have enough Faith!");
       } else {
         // Inactive icon resource pack data: 870-872
-        ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "inactive"));
+        ItemUtils.setCustomData(stack,
+            List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "inactive"));
         lore.add("");
         lore.add(FaceColor.GREEN + "Click To Activate!");
       }
@@ -85,21 +88,45 @@ public class GodPrayerIcon extends MenuItem {
 
   private int getActiveModelData(SelectedGod selectedGod, int level) {
     switch (selectedGod) {
-      case FACEGUY -> { switch (level) {
-        case 1 -> { return 873; }
-        case 2 -> { return 874; }
-        case 3 -> { return 875; }
-      }}
-      case ZEXIR -> { switch (level) {
-        case 1 -> { return 879; }
-        case 2 -> { return 880; }
-        case 3 -> { return 881; }
-      }}
-      case AURORA -> { switch (level) {
-        case 1 -> { return 876; }
-        case 2 -> { return 877; }
-        case 3 -> { return 878; }
-      }}
+      case FACEGUY -> {
+        switch (level) {
+          case 1 -> {
+            return 873;
+          }
+          case 2 -> {
+            return 874;
+          }
+          case 3 -> {
+            return 875;
+          }
+        }
+      }
+      case ZEXIR -> {
+        switch (level) {
+          case 1 -> {
+            return 879;
+          }
+          case 2 -> {
+            return 880;
+          }
+          case 3 -> {
+            return 881;
+          }
+        }
+      }
+      case AURORA -> {
+        switch (level) {
+          case 1 -> {
+            return 876;
+          }
+          case 2 -> {
+            return 877;
+          }
+          case 3 -> {
+            return 878;
+          }
+        }
+      }
     }
     return 800;
   }
@@ -115,20 +142,20 @@ public class GodPrayerIcon extends MenuItem {
     if (god == SelectedGod.NONE || mob.getChampion().getSaveData().getGodLevel().getOrDefault(god, 0) < godLevel) {
       return;
     }
-    float cost = switch (godLevel) {
-      case 2 -> plugin.getPrayerManager().getGodPassiveOne().get(god).getActivationCost();
-      case 3 -> plugin.getPrayerManager().getGodPassiveTwo().get(god).getActivationCost();
-      case 4 -> plugin.getPrayerManager().getGodPassiveThree().get(god).getActivationCost();
-      default -> 10;
-    };
-    if (cost > mob.getPrayer()) {
-      event.setWillUpdate(true);
-      return;
-    }
     if (plugin.getPrayerManager().isPrayerActive(event.getPlayer(), prayer)) {
       boolean success = plugin.getPrayerManager().disablePrayer(event.getPlayer(), prayer);
       event.setWillUpdate(success);
     } else {
+      float cost = switch (godLevel) {
+        case 2 -> plugin.getPrayerManager().getGodPassiveOne().get(god).getActivationCost();
+        case 3 -> plugin.getPrayerManager().getGodPassiveTwo().get(god).getActivationCost();
+        case 4 -> plugin.getPrayerManager().getGodPassiveThree().get(god).getActivationCost();
+        default -> 10;
+      };
+      if (cost > mob.getPrayer()) {
+        event.setWillUpdate(true);
+        return;
+      }
       boolean success = plugin.getPrayerManager().activatePrayer(event.getPlayer(), prayer);
       event.setWillUpdate(success);
     }
