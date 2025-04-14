@@ -171,7 +171,7 @@ public class RageTask extends BukkitRunnable {
     } else {
       LogUtil.printDebug("Rage complete, removing");
       float cdTime = 10f * 1000f;
-      cdTime /= 1 - mob.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100;
+      cdTime *= 1 - mob.getStat(StrifeStat.COOLDOWN_REDUCTION) / 100;
       mob.setRageRestart(System.currentTimeMillis() + (int) cdTime);
       mob.endRageTask();
       mob.setCacheNeeded(true);
