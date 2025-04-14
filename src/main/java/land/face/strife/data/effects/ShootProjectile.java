@@ -5,6 +5,7 @@ import static land.face.strife.util.ProjectileUtil.HANDLED_PROJECTILE;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -31,7 +32,6 @@ import org.bukkit.entity.ShulkerBullet;
 import org.bukkit.entity.SmallFireball;
 import org.bukkit.entity.ThrowableProjectile;
 import org.bukkit.entity.WitherSkull;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
@@ -43,15 +43,15 @@ public class ShootProjectile extends Effect {
   private OriginLocation originType;
   private Color arrowColor;
   private List<Color> modelColors;
+  private List<ItemStack> itemModels = new ArrayList<>();
   private String modelId;
 
-  private boolean ignoreMultishot, ignite, zeroPitch, blockHitEffects, silent, gravity, throwItem, throwSpin, targeted,
-      seeking, scaleModelWithMultishot;
+  private boolean ignoreMultishot, ignite, zeroPitch, blockHitEffects, silent, gravity, throwItem, targeted, seeking,
+      scaleModelWithMultishot;
   private int quantity, pierceTargets, maxDuration;
   private float attackMultiplier, yield, speed, spread, radialAngle, verticalBonus, minVerticalSpeed, modelScale;
 
   private Disguise disguise = null;
-  private ItemStack thrownStack = null;
 
   private final List<Effect> trailEffects = new ArrayList<>();
   private final List<Effect> hitEffects = new ArrayList<>();
@@ -97,8 +97,9 @@ public class ShootProjectile extends Effect {
         e.getLocation().setDirection(direction);
         e.setGravity(gravity);
         e.setSilent(silent);
-        if (e instanceof ThrowableProjectile tp) {
-          tp.setItem(thrownStack);
+        if (e instanceof ThrowableProjectile tp && itemModels.isEmpty()) {
+          Collections.shuffle(itemModels);
+          tp.setItem(itemModels.getFirst().clone());
         }
         e.getBoundingBox().expand(1);
 

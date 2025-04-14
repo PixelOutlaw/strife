@@ -584,20 +584,15 @@ public class EffectManager {
         ((ShootProjectile) effect).setSilent(cs.getBoolean("silent", false));
         ((ShootProjectile) effect).setGravity(cs.getBoolean("gravity", true));
         ((ShootProjectile) effect).setThrowItem(cs.getBoolean("thrown-item", false));
-        ((ShootProjectile) effect).setThrowSpin(cs.getBoolean("throw-spin", true));
         ((ShootProjectile) effect).setBlockHitEffects(cs.getBoolean("effects-on-block-hit", false));
         ((ShootProjectile) effect).setAttackMultiplier((float) cs.getDouble("attack-multiplier", 0D));
         ((ShootProjectile) effect).setDisguise(DisguiseUtil.parseDisguise(
             cs.getConfigurationSection("disguise"), key, false));
-        String thrownStackMaterial = cs.getString("thrown-stack-material", "SNOWBALL");
-        if (StringUtils.isNotBlank(thrownStackMaterial)) {
-          ItemStack stack = new ItemStack(Material.valueOf(thrownStackMaterial));
-          stack.setAmount(cs.getInt("thrown-stack-amount", 1));
-          var model = cs.getString("thrown-stack-model", null);
-          if (StringUtils.isNotBlank(model)) {
-            ItemUtils.setItemModel(stack, model);
-          }
-          ((ShootProjectile) effect).setThrownStack(stack);
+        var thrownModels = cs.getStringList("thrown-models");
+        for (var s : thrownModels) {
+          var item = new ItemStack(Material.SNOWBALL);
+          ItemUtils.setItemModel(item, s);
+          ((ShootProjectile) effect).getItemModels().add(item);
         }
         ((ShootProjectile) effect).setTargeted(cs.getBoolean("targeted", false));
         ((ShootProjectile) effect).setSeeking(cs.getBoolean("seeking", false));
