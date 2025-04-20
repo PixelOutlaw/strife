@@ -13,6 +13,8 @@ softdepend:
   - FacePet
   - BlueMap
   - HeadDatabase
+  - LibsDisguises
+  - PacketEvents
 
 commands:
   cast:

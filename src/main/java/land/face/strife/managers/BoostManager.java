@@ -1,25 +1,26 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.managers;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.color;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.noShadow;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.reShadow;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
-import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import com.tealcube.minecraft.bukkit.shade.google.gson.Gson;
@@ -34,6 +35,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -50,9 +52,6 @@ import land.face.strife.util.LogUtil;
 import land.face.strife.util.StatUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.ShadowColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.util.ARGBLike;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -71,7 +70,7 @@ public class BoostManager {
   private final Set<UUID> discordBoosters = new HashSet<>();
   private final Set<UUID> contributors = new HashSet<>();
 
-  private final TextComponent icon = Component.text( "冣").shadowColor(ShadowColor.none());
+  private final TextComponent gemStormIcon = noShadow(Component.text("冣"));
 
   public BoostManager(StrifePlugin plugin) {
     this.plugin = plugin;
@@ -113,30 +112,40 @@ public class BoostManager {
   }
 
   public TextComponent getBoostString() {
-    var print = Component.text("");
-    if (dailyBoost != null) {
-      print = print.append(Component.text(dailyBoost.getTopBarText()));
-    }
-    for (Boost b : boosts) {
-      LoadedStatBoost load = loadedBoosts.get(b.getBoostId());
-      if (load.getTopBarText().isEmpty()) {
-        continue;
-      }
-      if (b.getSecondsRemaining() > -1) {
-        print = print.append(Component.text(
-            load.getTopBarText().replace("{m}", String.valueOf(Math.max(1, b.getSecondsRemaining() / 60)))));
-      } else {
-        print = print.append(Component.text(load.getTopBarText()));
-      }
-    }
+    List<TextComponent> components = new ArrayList<>();
     long timeDiff = plugin.getMobModManager().getGemStormEndTime() - System.currentTimeMillis();
     if (timeDiff > 0) {
       int minutes = Math.max(1, (int) ((timeDiff / 1000) / 60));
-      var minutesTc = Component.text(minutes + "m  ")
-          .color(TextColor.color(FaceColor.PURPLE.getRawColor().getRGB()));
-      print = print.append(icon).append(minutesTc);
+      var minutesTc = reShadow(color(Component.text(minutes + "m   "), FaceColor.PURPLE));
+      components.add(gemStormIcon.append(minutesTc));
     }
-    return print.content().isEmpty() ? print : print.append(Component.text(" "));
+    if (dailyBoost != null) {
+      components.add(dailyBoost.getTopBarIcon().append(reShadow(dailyBoost.getTopBarText())));
+    }
+    for (Boost b : boosts) {
+      LoadedStatBoost load = loadedBoosts.get(b.getBoostId());
+      if (load.getTopBarText().content().isEmpty()) {
+        continue;
+      }
+      if (b.getSecondsRemaining() > -1) {
+        var comp = reShadow(load.getTopBarText().content(load.getTopBarText().content().replace(
+            "{m}", String.valueOf(Math.max(1, b.getSecondsRemaining() / 60)))));
+        components.add(load.getTopBarIcon() == null ? comp : load.getTopBarIcon().append(comp));
+      } else {
+        components.add(load.getTopBarIcon() == null ?
+            reShadow(load.getTopBarText()) : load.getTopBarIcon().append(reShadow(load.getTopBarText())));
+      }
+    }
+
+    if (components.isEmpty()) {
+      return Component.empty();
+    }
+
+    var finalSection = components.removeFirst();
+    for (var tc : components) {
+      finalSection = finalSection.append(tc);
+    }
+    return finalSection;
   }
 
   public void updateGlobalBoostStatus(Player player) {
@@ -229,12 +238,13 @@ public class BoostManager {
           boost.getStringList("announcement-running"));
       List<String> announceEnd = PaletteUtil.color(
           boost.getStringList("announcement-end"));
-      String topBarText = PaletteUtil.color(boost.getString("top-bar-text", ""));
+      String topBarIcon = boost.getString("top-bar-icon", "");
+      String topBarText = boost.getString("top-bar-text", "");
 
       ConfigurationSection attrSection = boost.getConfigurationSection("stats");
       Map<StrifeStat, Float> attrMap = StatUtil.getStatMapFromSection(attrSection);
 
-      LoadedStatBoost loadedStatBoost = new LoadedStatBoost(creator, topBarText, announceInterval, duration);
+      var loadedStatBoost = new LoadedStatBoost(creator, topBarIcon, topBarText, announceInterval, duration);
       loadedStatBoost.getAnnounceStart().addAll(announceStart);
       loadedStatBoost.getAnnounceRun().addAll(announceRun);
       loadedStatBoost.getAnnounceEnd().addAll(announceEnd);
@@ -282,7 +292,8 @@ public class BoostManager {
 
   private void announceBoost(LoadedStatBoost lb, List<String> announce, String creator, int secondsRemaining) {
     if (lb.getModernId() != null) {
-      ModernAnnouncerPlugin.sendAnnouncement(new HashSet<>(Bukkit.getOnlinePlayers()), lb.getModernId(), lb.getModernLines());
+      ModernAnnouncerPlugin.sendAnnouncement(new HashSet<>(Bukkit.getOnlinePlayers()), lb.getModernId(),
+          lb.getModernLines());
       return;
     }
     int minutes = secondsRemaining / 60;

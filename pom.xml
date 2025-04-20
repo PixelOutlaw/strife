@@ -152,7 +152,7 @@
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>GUI_API</artifactId>
-      <version>1.4.0</version>
+      <version>1.21.4.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

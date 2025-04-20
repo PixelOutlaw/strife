@@ -1,5 +1,7 @@
 package land.face.strife.tasks;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.noShadow;
+
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import java.lang.ref.WeakReference;
@@ -14,7 +16,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class InvincibleTask extends BukkitRunnable {
 
   private final static GUIComponent INVINCIBLE =
-      new GUIComponent("invincible",  GuiManager.noShadow(Component.text("㒥")), 181, -1, Alignment.CENTER);
+      new GUIComponent("invincible",  noShadow(Component.text("㒥")), 181, -1, Alignment.CENTER);
   private final static GUIComponent EMPTY =
       new GUIComponent("invincible", Component.text(""), 0, 0, Alignment.CENTER);
 

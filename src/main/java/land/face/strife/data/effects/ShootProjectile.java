@@ -97,7 +97,7 @@ public class ShootProjectile extends Effect {
         e.getLocation().setDirection(direction);
         e.setGravity(gravity);
         e.setSilent(silent);
-        if (e instanceof ThrowableProjectile tp && itemModels.isEmpty()) {
+        if (e instanceof ThrowableProjectile tp && !itemModels.isEmpty()) {
           Collections.shuffle(itemModels);
           tp.setItem(itemModels.getFirst().clone());
         }

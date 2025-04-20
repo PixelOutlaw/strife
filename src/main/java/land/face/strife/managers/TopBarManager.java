@@ -16,6 +16,11 @@
  */
 package land.face.strife.managers;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.WHITE;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.color;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.reShadow;
+
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import eu.decentsoftware.holograms.api.utils.PAPI;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,19 +40,19 @@ public class TopBarManager {
   private final Map<Player, TopBarData> dataMap = new WeakHashMap<>();
   private final Map<Integer, TextComponent> compassIcons = new HashMap<>();
   
-  private final TextComponent clockIcon = GuiManager.noShadow(Component.text("冦 "));
+  private final TextComponent clockIcon = FaceColor.noShadow(Component.text("冦 "));
 
   public TopBarManager(StrifePlugin plugin) {
     this.plugin = plugin;
-    compassIcons.put(0, GuiManager.noShadow(Component.text("冧 ")));
-    compassIcons.put(1, GuiManager.noShadow(Component.text("冨 ")));
-    compassIcons.put(2, GuiManager.noShadow(Component.text("冩 ")));
-    compassIcons.put(3, GuiManager.noShadow(Component.text("冪 ")));
-    compassIcons.put(4, GuiManager.noShadow(Component.text("冫 ")));
-    compassIcons.put(5, GuiManager.noShadow(Component.text("冬 ")));
-    compassIcons.put(6, GuiManager.noShadow(Component.text("冭 ")));
-    compassIcons.put(7, GuiManager.noShadow(Component.text("冮 ")));
-    compassIcons.put(8, GuiManager.noShadow(Component.text("冧 ")));
+    compassIcons.put(0, FaceColor.noShadow(Component.text("冧 ")));
+    compassIcons.put(1, FaceColor.noShadow(Component.text("冨 ")));
+    compassIcons.put(2, FaceColor.noShadow(Component.text("冩 ")));
+    compassIcons.put(3, FaceColor.noShadow(Component.text("冪 ")));
+    compassIcons.put(4, FaceColor.noShadow(Component.text("冫 ")));
+    compassIcons.put(5, FaceColor.noShadow(Component.text("冬 ")));
+    compassIcons.put(6, FaceColor.noShadow(Component.text("冭 ")));
+    compassIcons.put(7, FaceColor.noShadow(Component.text("冮 ")));
+    compassIcons.put(8, FaceColor.noShadow(Component.text("冧 ")));
 
     // LocationTask
     Bukkit.getScheduler().runTaskTimer(plugin, () -> {
@@ -81,7 +86,8 @@ public class TopBarManager {
       } else if (time == 0) {
         time = 12;
       }
-      var component = clockIcon.append(Component.text(time + affix).color(TextColor.color(255, 255, 255)));
+      var timeDisplay = reShadow(color(Component.text(time + affix), WHITE));
+      var component = clockIcon.append(timeDisplay);
       // HALLOWEEN ONLY
       // String clockString = FaceColor.NO_SHADOW + "冦 " + FaceColor.ORANGE + "Witching Hour  ";
       dataMap.keySet().removeIf(p -> !p.isOnline());

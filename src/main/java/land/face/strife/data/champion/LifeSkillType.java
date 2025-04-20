@@ -1,12 +1,15 @@
 package land.face.strife.data.champion;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.LIME;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.color;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.noShadow;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.reShadow;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import java.awt.Color;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.ShadowColor;
-import net.kyori.adventure.text.format.TextColor;
 import net.md_5.bungee.api.ChatColor;
 
 @Getter
@@ -27,15 +30,15 @@ public enum LifeSkillType {
   LOREMASTER("Loremaster", "lorem", "拯", ChatColor.of(new Color(157, 107, 246))),
 
   SWORDSMANSHIP("Swordsmanship", "sword", "冰", FaceColor.ORANGE.getColor(), true),
-  DAGGER_MASTERY("Dagger Mastery", "dagger", "凇", FaceColor.LIME.getColor(), true),
+  DAGGER_MASTERY("Dagger Mastery", "dagger", "凇", LIME.getColor(), true),
   AXE_MASTERY("Axe Mastery", "axe", "冱", FaceColor.RED.getColor(), true),
   BLUNT_WEAPONS("Blunt Weapons", "blunt", "冸", FaceColor.YELLOW.getColor(), true),
   SPEAR_MASTERY("Spear Mastery", "spear", "拰", FaceColor.ORANGE.getColor(), true),
   FISTING("Fisticuffs", "fisting", "拦", FaceColor.BROWN.getColor(), true),
-  DUAL_WIELDING("Dual Wielding", "dual", "冴", FaceColor.LIME.getColor(), true),
+  DUAL_WIELDING("Dual Wielding", "dual", "冴", LIME.getColor(), true),
   SHIELD_MASTERY("Shield Mastery", "shield", "准", FaceColor.BROWN.getColor(), true),
   ARCHERY("Archery", "archery", "冲", FaceColor.GREEN.getColor(), true),
-  MARKSMANSHIP("Marksmanship", "marksmanship", "决", FaceColor.LIME.getColor(), true),
+  MARKSMANSHIP("Marksmanship", "marksmanship", "决", LIME.getColor(), true),
   ARCANE_MAGICS("Arcane Magics", "arcane-magic", "冻", FaceColor.BLUE.getColor(), true),
   NATURAL_MAGICS("Natural Magics", "natural-magic", "冺", FaceColor.GREEN.getColor(), true),
   BLACK_MAGICS("Black Magics", "dark-magics", "冹", FaceColor.PURPLE.getColor(), true),
@@ -58,8 +61,8 @@ public enum LifeSkillType {
     this.color = color;
     this.combat = combat;
 
-    nameComponent = Component.text(prettyName).color(TextColor.color(FaceColor.LIME.getRawColor().getRGB()));
-    characterComponent = Component.text(character).shadowColor(ShadowColor.none());
+    nameComponent = reShadow(color(Component.text(prettyName), LIME));
+    characterComponent = noShadow(Component.text(character));
   }
 
   LifeSkillType(String prettyName, String dataName, String character, ChatColor color) {
@@ -69,8 +72,8 @@ public enum LifeSkillType {
     this.color = color;
     this.combat = false;
 
-    nameComponent = Component.text(prettyName).color(TextColor.color(FaceColor.LIME.getRawColor().getRGB()));
-    characterComponent = Component.text(character).shadowColor(ShadowColor.none());
+    nameComponent = reShadow(color(Component.text(prettyName), LIME));
+    characterComponent = noShadow(Component.text(character));
   }
 }
 

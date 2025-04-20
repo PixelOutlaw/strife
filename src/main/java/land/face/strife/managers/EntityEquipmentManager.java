@@ -116,6 +116,10 @@ public class EntityEquipmentManager {
     for (String line : cs.getStringList("lore")) {
       lore.add(StringExtensionsKt.chatColorize(line));
     }
+    var modelData = cs.getStringList("custom-model-data");
+    if (modelData.isEmpty()) {
+      ItemUtils.setCustomData(stack, modelData);
+    }
     var data = cs.getString("model", null);
     if (!StringUtils.isBlank(data)) {
       ItemUtils.setItemModel(stack, data);

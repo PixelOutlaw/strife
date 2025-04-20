@@ -16,6 +16,8 @@
  */
 package land.face.strife.listeners;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.noShadow;
+
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import java.util.List;
@@ -41,16 +43,16 @@ public class BlockChangeListener implements Listener {
   }
 
   private final List<TextComponent> blockLevels = List.of(
-      GuiManager.noShadow(Component.text("௦")),
-      GuiManager.noShadow(Component.text("௧")),
-      GuiManager.noShadow(Component.text("௨")),
-      GuiManager.noShadow(Component.text("௩")),
-      GuiManager.noShadow(Component.text("௪")),
-      GuiManager.noShadow(Component.text("௫")),
-      GuiManager.noShadow(Component.text("௬")),
-      GuiManager.noShadow(Component.text("௭")),
-      GuiManager.noShadow(Component.text("௮")),
-      GuiManager.noShadow(Component.text("௯"))
+      noShadow(Component.text("௦")),
+      noShadow(Component.text("௧")),
+      noShadow(Component.text("௨")),
+      noShadow(Component.text("௩")),
+      noShadow(Component.text("௪")),
+      noShadow(Component.text("௫")),
+      noShadow(Component.text("௬")),
+      noShadow(Component.text("௭")),
+      noShadow(Component.text("௮")),
+      noShadow(Component.text("௯"))
   );
 
   @EventHandler

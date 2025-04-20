@@ -18,6 +18,7 @@
  */
 package land.face.strife.managers;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.noShadow;
 import static land.face.strife.util.UberConfig.BASE_SNEAK_ATTACK_EXP;
 import static land.face.strife.util.UberConfig.BASE_SNEAK_EXP;
 import static land.face.strife.util.UberConfig.BASE_STEALTH_PARTICLES;
@@ -66,18 +67,18 @@ public class StealthManager {
   private final Map<UUID, StealthData> stealthedPlayers = new HashMap<>();
 
   public static final List<GUIComponent> STEALTH_IND = List.of(
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岓")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岔")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岕")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岖")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岗")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岘")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岙")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岚")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岛")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岜")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岝")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("岞")), 45, 0, Alignment.CENTER)
+      new GUIComponent("attack-bar", noShadow(Component.text("岓")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岔")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岕")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岖")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岗")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岘")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岙")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岚")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岛")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岜")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岝")), 45, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岞")), 45, 0, Alignment.CENTER)
   );
   private static final int STEALTH_LEN = STEALTH_IND.size();
 

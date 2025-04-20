@@ -1,5 +1,8 @@
 package land.face.strife.data;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.YELLOW;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.color;
+
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +11,7 @@ import land.face.strife.managers.BossBarManager;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.Style;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -27,7 +31,7 @@ public class TopBarData {
   }
 
   public boolean setEvent(TextComponent str) {
-    if (str == null || str.content().equals(event.content())) {
+    if (str == null/* || str.content().equals(event.content()) */) {
       return false;
     }
     event = str;
@@ -47,7 +51,7 @@ public class TopBarData {
       return false;
     }
     Bukkit.getPluginManager().callEvent(new LocationChangeEvent(player, location));
-    this.location = BossBarManager.covertStringToRetardComponent(FaceColor.YELLOW + location);
+    this.location = color(Component.text(location), YELLOW);
     return true;
   }
 
@@ -60,7 +64,7 @@ public class TopBarData {
   }
 
   public boolean setSkills(TextComponent str) {
-    if (str == null || str.content().equals(skills.content())) {
+    if (str == null/* || str.content().equals(skills.content())*/) {
       return false;
     }
     skills = str;

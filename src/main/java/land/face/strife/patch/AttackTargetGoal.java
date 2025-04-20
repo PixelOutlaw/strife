@@ -10,8 +10,6 @@ import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import lombok.Getter;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Sound;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.jetbrains.annotations.NotNull;
@@ -45,6 +43,9 @@ public class AttackTargetGoal implements Goal<Mob> {
     }
     if (!mob.getTarget().isValid()) {
       mob.setTarget(null);
+      return false;
+    }
+    if (mob.getTarget().getLocation().getWorld() != mob.getLocation().getWorld()) {
       return false;
     }
     if (mob.getTarget().getLocation().distanceSquared(mob.getLocation()) > attackRange) {

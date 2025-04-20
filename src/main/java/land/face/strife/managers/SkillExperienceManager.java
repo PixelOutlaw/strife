@@ -18,6 +18,10 @@
  */
 package land.face.strife.managers;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.LIME;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.color;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.reShadow;
+
 import com.comphenix.xp.lookup.LevelingRate;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
@@ -168,24 +172,27 @@ public class SkillExperienceManager {
   }
 
   private TextComponent buildSkillString(Champion champion, LifeSkillType skill) {
-    if (skill == null) {
-      return Component.empty();
+    if (skill != null) {
+      plugin.getChampionManager().updateRecentSkills(champion, skill);
     }
-    plugin.getChampionManager().updateRecentSkills(champion, skill);
     return updateSkillString(champion);
   }
 
   public TextComponent updateSkillString(Champion champion) {
-    var newTitle = Component.empty();
+    TextComponent component = null;
     for (LifeSkillType skillType : champion.getRecentSkills()) {
       int level = PlayerDataUtil.getLifeSkillLevel(champion, skillType);
       if (level < 100) {
         int progress = Math.min(99, (int) (100D * PlayerDataUtil.getSkillProgress(champion, skillType)));
-        var text = skillType.getNameComponent().content(progress + "%  ");
-        newTitle = newTitle.append(skillType.getCharacterComponent()).append(text);
+        var text = reShadow(color(Component.text(progress + "%   "), LIME));
+        if (component == null) {
+          component = skillType.getCharacterComponent().append(text);
+        } else {
+          component = component.append(skillType.getCharacterComponent().append(text));
+        }
       }
     }
-    return newTitle;
+    return component;
   }
 
   public Integer getMaxExp(LifeSkillType type, int level) {

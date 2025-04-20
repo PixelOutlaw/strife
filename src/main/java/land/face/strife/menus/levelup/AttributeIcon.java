@@ -31,6 +31,7 @@ import land.face.strife.data.champion.StrifeAttribute;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -63,12 +64,13 @@ public class AttributeIcon extends MenuItem {
     ItemStack icon = getIcon().clone();
 
       if (champion.getAttributeLevel(attribute) == attribute.getMaxCap()) {
-        ItemUtils.setCustomData(icon, List.of(attribute.getKey(), "max"));
+        ItemUtils.setItemModel(icon, NamespacedKey.fromString(attribute.getItemModel() + "_max"));
+        ItemUtils.setCustomData(icon, List.of(attribute.getKey() + "_max"));
         icon.setAmount(attribute.getMaxCap());
       } else if (pendingPoints == 0) {
-        ItemUtils.setCustomData(icon, List.of(attribute.getKey(), "none"));
+        ItemUtils.setItemModel(icon, NamespacedKey.fromString("faceland:icons/levelup/no_node"));
       } else {
-        ItemUtils.setCustomData(icon, List.of(attribute.getKey(), "normal"));
+        ItemUtils.setItemModel(icon, NamespacedKey.fromString(attribute.getItemModel()));
         icon.setAmount(pendingPoints);
       }
 

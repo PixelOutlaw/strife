@@ -10,6 +10,8 @@ import com.ticxo.modelengine.api.model.bone.type.Mount;
 import com.ticxo.modelengine.api.mount.controller.MountControllerType;
 import com.ticxo.modelengine.api.mount.controller.impl.AbstractMountController;
 import com.ticxo.modelengine.api.nms.entity.wrapper.MoveController;
+import land.face.strife.StrifePlugin;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
@@ -73,15 +75,19 @@ public class AirMountController extends AbstractMountController {
 
       if (getEntity().getLocation().getPitch() < -60) {
         controller.jump();
-        SimpleProperty anim = new SimpleProperty(
-            model,
-            model.getBlueprint().getAnimations().get("fly_loop"),
+        SimpleProperty anim = new SimpleProperty(model, model.getBlueprint().getAnimations().get("fly_loop"),
             0.25,
             0.25,
             1
         );
+        Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () -> {
+          model.getAnimationHandler().forceStopAnimation("jump");
+          model.getAnimationHandler().forceStopAnimation("walk");
+          model.getAnimationHandler().forceStopAnimation("idle");
+          model.getAnimationHandler().playAnimation(anim, true);
+        },1L);
+
         //anim.setForceLoopMode(LoopMode.LOOP);
-        model.getAnimationHandler().playAnimation(anim, true);
         model.getModeledEntity().getBase().setRenderRadius(34);
         return;
       }

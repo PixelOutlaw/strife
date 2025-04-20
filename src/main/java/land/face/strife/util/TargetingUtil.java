@@ -224,7 +224,17 @@ public class TargetingUtil {
       var block = detectionLocation.getBlock().getRelative(BlockFace.DOWN, i);
       if (block.getType().isSolid() || block.getType() == Material.LILY_PAD ||
           block.getType() == Material.BIG_DRIPLEAF) {
-        detectionLocation.setY(block.getY() + block.getBoundingBox().getMaxY() + 0.25);
+        var shape = block.getCollisionShape();
+        var highestPoint = 0d;
+        // Bukkit.getLogger().info("teleport " + shape.toString());
+        for (var bb : shape.getBoundingBoxes()) {
+          // Bukkit.getLogger().info("looping " + bb.getMaxY());
+          // Bukkit.getLogger().info("looping2 " + bb.getHeight());
+          // Bukkit.getLogger().info("looping3 " + bb.getMinY());
+          highestPoint = Math.max(highestPoint, bb.getMaxY());
+        }
+        // Bukkit.getLogger().info("pointo " + highestPoint);
+        detectionLocation.setY(block.getY() + highestPoint + 0.25);
         return detectionLocation;
       }
     }

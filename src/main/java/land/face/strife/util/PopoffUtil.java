@@ -3,7 +3,6 @@ package land.face.strife.util;
 import de.oliver.fancyholograms.api.FancyHologramsPlugin;
 import de.oliver.fancyholograms.api.HologramManager;
 import de.oliver.fancyholograms.api.data.DisplayHologramData;
-import de.oliver.fancyholograms.api.data.HologramData;
 import de.oliver.fancyholograms.api.data.TextHologramData;
 import de.oliver.fancyholograms.api.hologram.Hologram;
 import info.faceland.loot.LootPlugin;
@@ -17,7 +16,6 @@ import org.bukkit.entity.Display.Billboard;
 import org.bukkit.entity.Display.Brightness;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
-import org.joml.Vector3f;
 
 public class PopoffUtil {
 

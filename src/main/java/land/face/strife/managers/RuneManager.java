@@ -18,6 +18,8 @@
  */
 package land.face.strife.managers;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.noShadow;
+
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
@@ -80,6 +82,6 @@ public class RuneManager {
       return;
     }
     StrifePlugin.getInstance().getGuiManager().updateComponent((Player) mob.getEntity(),
-        new GUIComponent("rune-display", GuiManager.noShadow(Component.text(StringUtils.repeat("㆞", runes))), runes * 5, -88, Alignment.LEFT));
+        new GUIComponent("rune-display", noShadow(Component.text(StringUtils.repeat("㆞", runes))), runes * 5, -88, Alignment.LEFT));
   }
 }

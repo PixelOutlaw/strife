@@ -18,7 +18,9 @@
  */
 package land.face.strife.listeners;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import info.faceland.loot.utils.PersistHelper;
 import land.face.strife.StrifePlugin;
 import land.face.strife.util.ItemUtil;
 import org.bukkit.Material;
@@ -43,9 +45,6 @@ public class ConsumeItemListener implements Listener {
   public void onPlayerClick(PlayerInteractEvent event) {
     if (event.getHand() == EquipmentSlot.HAND) {
       ItemStack stack = event.getPlayer().getEquipment().getItemInMainHand();
-      if (stack.getType() == Material.BOWL) {
-        event.setCancelled(true);
-      }
       if (stack.getType() == Material.BOW &&
           event.getPlayer().getEquipment().getItemInOffHand().getType() != Material.ARROW) {
         if (ItemUtil.isFlintlock(stack)) {
@@ -53,6 +52,26 @@ public class ConsumeItemListener implements Listener {
           return;
         }
         MessageUtils.sendMessage(event.getPlayer(), ShootListener.quiverTip);
+      }
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOW)
+  public void onPlayerRightClick(PlayerInteractEvent event) {
+    if (event.getHand() == EquipmentSlot.HAND) {
+      ItemStack stack = event.getPlayer().getEquipment().getItemInMainHand();
+      if (stack.getType() == Material.BOWL) {
+        event.setCancelled(true);
+        var data = ItemUtils.getCustomData(stack);
+        if (data.isEmpty()) {
+          return;
+        }
+        switch (data.getFirst()) {
+          case "xp-bottle-small" -> plugin.getSmallBottleMenu().open(event.getPlayer());
+          case "xp-bottle-medium" -> plugin.getMediumBottleMenu().open(event.getPlayer());
+          case "xp-bottle-big" -> plugin.getBigBottleMenu().open(event.getPlayer());
+          case "xp-bottle-huge" -> plugin.getGiantBottleMenu().open(event.getPlayer());
+        }
       }
     }
   }

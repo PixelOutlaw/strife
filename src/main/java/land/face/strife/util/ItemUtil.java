@@ -47,7 +47,7 @@ public class ItemUtil {
 
   public static boolean isArmor(Material material) {
     return switch (material) {
-      case SHEARS, LEATHER_BOOTS, LEATHER_HELMET, LEATHER_CHESTPLATE, LEATHER_LEGGINGS -> true;
+      case SHEARS, TURTLE_HELMET, LEATHER_BOOTS, LEATHER_HELMET, LEATHER_CHESTPLATE, LEATHER_LEGGINGS -> true;
       default -> false;
     };
   }
@@ -78,8 +78,8 @@ public class ItemUtil {
     if (isMeleeWeapon(equipment.getItemInMainHand().getType())) {
       return isMeleeWeapon(equipment.getItemInOffHand().getType());
     }
-    if (isType(equipment.getItemInMainHand(), List.of("wand", "staff"))) {
-      return isType(equipment.getItemInMainHand(), List.of("wand", "staff"));
+    if (isType(equipment.getItemInMainHand(), List.of("wand"))) {
+      return isType(equipment.getItemInOffHand(), List.of("wand"));
     }
     return false;
   }
@@ -135,7 +135,7 @@ public class ItemUtil {
   }
 
   public static boolean isBullets(ItemStack stack) {
-    return isType(stack, List.of("ammo"));
+    return isType(stack, List.of("bullets"));
   }
 
   public static boolean isWandOrStaff(ItemStack stack) {

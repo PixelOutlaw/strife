@@ -32,6 +32,7 @@ public class StrifeAttribute {
 
   private final String key;
   private String name;
+  private String itemModel;
   private List<String> description;
   private Sound clickSound;
   private float clickPitch;

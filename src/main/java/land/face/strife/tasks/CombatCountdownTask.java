@@ -1,5 +1,6 @@
 package land.face.strife.tasks;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.noShadow;
 import static land.face.strife.util.UberConfig.DEATH_MSG;
 import static land.face.strife.util.UberConfig.SILLY_DEATH_MSGS;
 
@@ -41,7 +42,7 @@ public class CombatCountdownTask extends BukkitRunnable {
   private int lastBarrierStage = -1;
 
   // 128 8 3
-  private static final String healthBarBase = "ᛤ";
+  private static final TextComponent healthBarBase = Component.text("ᛤ");
 
   private final Player player;
 
@@ -144,12 +145,11 @@ public class CombatCountdownTask extends BukkitRunnable {
       if (hpState != lastHealthStage || barrierState != lastBarrierStage) {
         lastHealthStage = hpState;
         lastBarrierStage = barrierState;
-        String s = healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138 - hpState);
+        TextComponent s = healthBarBase.append(GuiManager.HEALTH_BAR_TARGET.get(138 - hpState));
         if (barrierState > 0) {
-          s += GuiManager.BARRIER_BAR_TARGET.get(barrierState);
+          s = s.append(GuiManager.BARRIER_BAR_TARGET.get(barrierState));
         }
-        TextComponent s2 = BossBarManager.covertStringToRetardComponent(s);
-        manager.updateBar(player, 3, 0, s2, 9999999);
+        manager.updateBar(player, 3, 0, noShadow(s), 9999999);
       }
     } else if (targetWasAlive) {
       targetWasAlive = false;
@@ -160,9 +160,8 @@ public class CombatCountdownTask extends BukkitRunnable {
       } else {
         title = DEATH_MSG;
       }
-      TextComponent s = (TextComponent) MiniMessage.miniMessage()
-          .deserialize(healthBarBase + GuiManager.HEALTH_BAR_TARGET.get(138));
-      manager.updateBar(player, 3, 0, s, 60);
+      TextComponent s = healthBarBase.append(GuiManager.HEALTH_BAR_TARGET.get(138));
+      manager.updateBar(player, 3, 0, noShadow(s), 60);
       manager.updateBar(player, 2, 0, title, 60);
     }
   }

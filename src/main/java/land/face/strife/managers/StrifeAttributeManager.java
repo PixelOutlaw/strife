@@ -154,6 +154,7 @@ public class StrifeAttributeManager {
     StrifeAttribute stat = new StrifeAttribute(key);
     stat.setName(PaletteUtil.color(cs.getString("name")));
     stat.setDescription(PaletteUtil.color(cs.getStringList("description")));
+    stat.setItemModel(cs.getString("item-model"));
     stat.setClickSound(Sound.valueOf(cs.getString("sounds.click-sound", "ENTITY_CAT_HISS")));
     stat.setClickPitch((float) cs.getDouble("sounds.click-pitch", 1));
     stat.setLevelSound(Sound.valueOf(cs.getString("sounds.level-sound", "ENTITY_CAT_HISS")));

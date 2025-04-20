@@ -16,7 +16,7 @@
  */
 package land.face.strife.managers;
 
-import static land.face.strife.managers.GuiManager.noShadow;
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.noShadow;
 
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
@@ -46,6 +46,7 @@ import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.sound.Sound.Source;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.LivingEntity;
@@ -60,6 +61,7 @@ public class PrayerManager {
 
   private final Map<Player, Set<Prayer>> activePrayers = new WeakHashMap<>();
   @Getter private final Map<Prayer, String> prayerNames = new HashMap<>();
+  @Getter private final Map<Prayer, String> rawPrayerNames = new HashMap<>();
   @Getter private final Map<Prayer, List<String>> prayerLore = new HashMap<>();
   @Getter private final Map<Prayer, Float> prayerActivationCost = new HashMap<>();
   @Getter private final Map<Prayer, Sound> prayerSounds = new HashMap<>();
@@ -101,6 +103,7 @@ public class PrayerManager {
       try {
         prayerNames.put(p, PaletteUtil.color(
             plugin.getPrayerYAML().getString("prayer." + p.toString().toLowerCase() + ".name", "Changeme")));
+        rawPrayerNames.put(p, ChatColor.stripColor(prayerNames.get(p)));
         prayerLore.put(p, PaletteUtil.color(
             plugin.getPrayerYAML().getStringList("prayer." + p.toString().toLowerCase() + ".lore")));
         prayerActivationCost.put(p, (float)

@@ -19,14 +19,13 @@
 package land.face.strife.menus.abilities;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
-import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
+import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import lombok.Getter;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -39,9 +38,9 @@ public class SubmenuSelectButton extends MenuItem {
   private final int slot;
 
   public SubmenuSelectButton(AbilitySubmenu menu, String model, String name, List<String> lore, int slot) {
-    super(StringExtensionsKt.chatColorize(name), setNameAndLore(new ItemStack(Material.PAPER),
-        StringExtensionsKt.chatColorize(name), ListExtensionsKt.chatColorize(lore)));
-    ItemUtils.setItemModel(getIcon(), model);
+    super(StringExtensionsKt.chatColorize(name), ItemUtils.BLANK.clone());
+    TextUtils.setLore(getIcon(), lore, true);
+    //ItemUtils.setItemModel(getIcon(), model);
     this.menu = menu;
     this.slot = slot;
   }

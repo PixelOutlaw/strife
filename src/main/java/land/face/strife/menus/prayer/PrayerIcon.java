@@ -36,7 +36,7 @@ public class PrayerIcon extends MenuItem {
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
     if (plugin.getPrayerManager().getPrayerLevelReq().get(prayer) >
         mob.getChampion().getLifeSkillLevel(LifeSkillType.PRAYER)) {
-      ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase(), "locked"));
+      ItemUtils.setCustomData(stack, List.of("prayer_locked"));
       ItemStackExtensionsKt.setDisplayName(stack, plugin.getPrayerManager().getPrayerNames().get(prayer));
       List<String> lore = new ArrayList<>();
       lore.addAll(plugin.getPrayerManager().getPrayerLore().get(prayer));
@@ -52,15 +52,17 @@ public class PrayerIcon extends MenuItem {
     lore.add(FaceColor.WHITE + "Faith: " + (int) mob.getPrayer() + " / " + (int) mob.getMaxPrayer());
     boolean isActive = plugin.getPrayerManager().isPrayerActive(player, prayer);
     if (isActive) {
-      ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase(), "active"));
+      ItemUtils.setCustomData(stack, List.of(plugin.getPrayerManager()
+          .getRawPrayerNames().get(prayer).toLowerCase() + "_active"));
       lore.add("");
       lore.add(FaceColor.YELLOW + "Click To Deactivate!");
     } else if (plugin.getPrayerManager().getPrayerActivationCost().get(prayer) > mob.getPrayer()) {
-      ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase(), "cost"));
+      ItemUtils.setCustomData(stack, List.of("prayer_no_faith"));
       lore.add("");
       lore.add(FaceColor.RED + "You don't have enough Faith!");
     } else {
-      ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase(), "inactive"));
+      ItemUtils.setCustomData(stack, List.of(plugin.getPrayerManager()
+          .getRawPrayerNames().get(prayer).toLowerCase() + "_inactive"));
       lore.add("");
       lore.add(FaceColor.GREEN + "Click To Activate!");
     }

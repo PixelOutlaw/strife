@@ -59,25 +59,22 @@ public class GodPrayerIcon extends MenuItem {
     lore.add("");
     lore.add(FaceColor.WHITE + "Faith: " + (int) mob.getPrayer() + " / " + (int) mob.getMaxPrayer());
     if (mob.getChampion().getSaveData().getGodLevel().getOrDefault(god, 0) < godLevel) {
-      ItemUtils.setCustomData(stack, List.of(prayer.toString().toLowerCase(), "locked"));
+      ItemUtils.setCustomData(stack, List.of("prayer_locked"));
       lore.add("");
       lore.add(FaceColor.ORANGE + "[Not Unlocked]");
     } else {
       boolean isActive = plugin.getPrayerManager().isPrayerActive(player, prayer);
       if (isActive) {
-        ItemUtils.setCustomData(stack,
-            List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "active"));
+        ItemUtils.setCustomData(stack, List.of(god.name().toLowerCase() + "_active"));
         lore.add("");
         lore.add(FaceColor.YELLOW + "Click To Deactivate!");
       } else if (plugin.getPrayerManager().getPrayerActivationCost().get(prayer) > mob.getPrayer()) {
-        ItemUtils.setCustomData(stack,
-            List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "cost"));
+        ItemUtils.setCustomData(stack, List.of("prayer_no_faith"));
         lore.add("");
         lore.add(FaceColor.RED + "You don't have enough Faith!");
       } else {
         // Inactive icon resource pack data: 870-872
-        ItemUtils.setCustomData(stack,
-            List.of(prayer.toString().toLowerCase() + "_" + god.name().toLowerCase(), "inactive"));
+        ItemUtils.setCustomData(stack, List.of(god.name().toLowerCase() + "_inactive"));
         lore.add("");
         lore.add(FaceColor.GREEN + "Click To Activate!");
       }

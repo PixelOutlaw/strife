@@ -16,6 +16,8 @@
  */
 package land.face.strife.tasks;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.noShadow;
+
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUI;
 import com.sentropic.guiapi.gui.GUIComponent;
@@ -46,35 +48,35 @@ public class EveryTickTask extends BukkitRunnable {
   private final Map<Player, Integer> lastAttackProgress = new WeakHashMap<>();
 
   private final List<GUIComponent> attackIndication = List.of(
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("兰")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("共")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("兲")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("关")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("兴")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("兵")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("其")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("具")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("典")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("兹")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("兺")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("养")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("兼")), 49, 0, Alignment.CENTER)
+      new GUIComponent("attack-bar", noShadow(Component.text("兰")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("共")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("兲")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("关")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("兴")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("兵")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("其")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("具")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("典")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("兹")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("兺")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("养")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("兼")), 49, 0, Alignment.CENTER)
   );
   private final List<GUIComponent> overdrawIndicator = List.of(
       // Skip phase1 to show the bar is not empty?
       // new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("夞")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("够")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("峂")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("峃")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("峅")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("峆")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("峇")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("峈")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("峉")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("峊")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("峋")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("峌")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", GuiManager.noShadow(Component.text("峍")), 49, 0, Alignment.CENTER)
+      new GUIComponent("attack-bar", noShadow(Component.text("够")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("峂")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("峃")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("峅")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("峆")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("峇")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("峈")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("峉")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("峊")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("峋")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("峌")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("峍")), 49, 0, Alignment.CENTER)
   );
   private final int arrLen = attackIndication.size();
   private final int arrLen2 = overdrawIndicator.size();

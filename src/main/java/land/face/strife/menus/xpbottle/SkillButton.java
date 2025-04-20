@@ -59,8 +59,7 @@ public class SkillButton extends MenuItem {
   @Override
   public ItemStack getFinalIcon(Player player) {
     int lvl =  PlayerDataUtil.getSkillLevels(player, lifeSkillType, false).getLevel();
-    ItemStack stack = new ItemStack(Material.PAPER);
-    ItemUtils.setItemModel(stack, modelData);
+    ItemStack stack = ItemUtils.BLANK.clone();
     ItemStackExtensionsKt.setDisplayName(stack, FaceColor.GREEN + "Gain " +
         lifeSkillType.getColor() + lifeSkillType.getPrettyName() + FaceColor.GREEN + " XP!");
     TextUtils.setLore(stack, PaletteUtil.color(List.of(

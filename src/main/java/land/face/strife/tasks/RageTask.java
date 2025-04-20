@@ -16,6 +16,7 @@
  */
 package land.face.strife.tasks;
 
+import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.noShadow;
 import static land.face.strife.util.UberConfig.ENRAGE_ABILITY_COOLDOWN;
 import static land.face.strife.util.UberConfig.ENRAGE_DECAY;
 import static land.face.strife.util.UberConfig.ENRAGE_RAGE_GAIN_MULT;
@@ -60,34 +61,34 @@ public class RageTask extends BukkitRunnable {
   private float decayIncrease = 0;
 
   private static final List<GUIComponent> RAGE_METER = List.of(
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屰")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屲")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屴")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屶")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屸")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屺")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屼")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屾")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("岀")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("岂")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("岄")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("岆")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("岈")), 49, 0, Alignment.CENTER)
+      new GUIComponent("attack-bar2", noShadow(Component.text("屰")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屲")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屴")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屶")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屸")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屺")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屼")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屾")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("岀")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("岂")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("岄")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("岆")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("岈")), 49, 0, Alignment.CENTER)
   );
   private static final List<GUIComponent> ENRAGE_METER = List.of(
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("山")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屳")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屵")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屷")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屹")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屻")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屽")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("屿")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("岁")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("岃")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("岅")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("岇")), 49, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar2", GuiManager.noShadow(Component.text("岉")), 49, 0, Alignment.CENTER));
+      new GUIComponent("attack-bar2", noShadow(Component.text("山")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屳")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屵")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屷")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屹")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屻")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屽")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("屿")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("岁")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("岃")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("岅")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("岇")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar2", noShadow(Component.text("岉")), 49, 0, Alignment.CENTER));
 
   public static final GUIComponent EMPTY_ATTACK2 = new GUIComponent("attack-bar2",
       GuiManager.EMPTY, 0, 0, Alignment.CENTER);
