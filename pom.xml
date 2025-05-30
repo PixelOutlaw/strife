@@ -97,7 +97,6 @@
     </repository>
     <repository>
       <id>fancyplugins-releases</id>
-      <name>FancyPlugins Repository</name>
       <url>https://repo.fancyplugins.de/releases</url>
     </repository>
   </repositories>
@@ -128,7 +127,7 @@
     <dependency>
       <groupId>io.pixeloutlaw</groupId>
       <artifactId>LearninBooks</artifactId>
-      <version>1.21.4.0</version>
+      <version>1.21.4.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

@@ -146,15 +146,15 @@ public class AbilityIconManager {
     }
   }
 
-  public void triggerAbility(Player player, int slotNumber) {
+  public boolean triggerAbility(Player player, int slotNumber) {
     AbilitySlot slot = AbilitySlot.fromSlot(slotNumber);
     if (slot == AbilitySlot.INVALID) {
-      return;
+      return false;
     }
     if (plugin.isInHome(player)) {
       StrifePlugin.getInstance().getGuiManager().postNotice(player, GuiManager.NOTICE_INVALID_TARGET, 10);
       player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 0.6f);
-      return;
+      return false;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(player);
     Ability ability = mob.getChampion().getAbility(slot);
@@ -162,21 +162,15 @@ public class AbilityIconManager {
       if (isAbilityIcon(player.getInventory().getItem(slotNumber))) {
         player.getInventory().setItem(slotNumber, null);
       }
-      return;
+      return false;
     }
-    // Absolutely stupid fix for clientside armor equip nonsense
-    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-      player.updateInventory();
-      setIconDamage(mob.getChampion(), ability);
-    }, 0L);
-    //Bukkit.getScheduler().runTaskLater(plugin, () -> setIconDamage(mob.getChampion(), ability), 1L);
     boolean toggledOn = false;
     CooldownTracker cooldownTracker = plugin.getAbilityManager().getCooldownTracker(player, ability.getId());
     if (cooldownTracker != null) {
       toggledOn = cooldownTracker.isToggleState();
     }
     if (!toggledOn && player.getCooldown(ability.getCastType().getMaterial()) > 3) {
-      return;
+      return false;
     }
     StrifeMob target = null;
     if (ability.getTargetType() == TargetType.SINGLE_OTHER) {
@@ -192,7 +186,7 @@ public class AbilityIconManager {
     if (!abilitySucceeded) {
       LogUtil.printDebug("Ability " + ability.getId() + " failed execution");
       plugin.getAbilityManager().setGlobalCooldown(player, 5);
-      return;
+      return false;
     }
     int cooldownTicks = player.isSneaking() ? ability.getSneakGlobalCooldownTicks() : ability.getGlobalCooldownTicks();
     if (ability.getCastType() == AbilityType.ATTACK) {
@@ -205,6 +199,7 @@ public class AbilityIconManager {
     plugin.getAbilityManager().setGlobalCooldown(player, cooldownTicks);
     player.playSound(player.getEyeLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1);
     updateIconProgress(player, ability);
+    return true;
   }
 
   public void updateAllIconProgress(Player player) {
