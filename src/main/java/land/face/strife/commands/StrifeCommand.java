@@ -1,20 +1,18 @@
 /**
  * The MIT License Copyright (c) 2015 Teal Cube Games
  * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
- * associated documentation files (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge, publish, distribute,
- * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
  * <p>
- * The above copyright notice and this permission notice shall be included in all copies or
- * substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
  * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
- * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package land.face.strife.commands;
 
@@ -35,6 +33,7 @@ import com.tealcube.minecraft.bukkit.shade.acf.annotation.Subcommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.Syntax;
 import com.tealcube.minecraft.bukkit.shade.acf.bukkit.contexts.OnlinePlayer;
 import com.ticxo.modelengine.api.model.ActiveModel;
+import info.faceland.loot.utils.InventoryUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,6 +66,7 @@ import land.face.strife.util.TargetingUtil;
 import land.face.strife.util.UberConfig;
 import net.kyori.adventure.text.TextComponent;
 import net.md_5.bungee.api.ChatColor;
+import ninja.amp.ampmenus.menus.common.ConfirmationMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -76,6 +76,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.nunnerycode.mint.MintPlugin;
 
 @CommandAlias("strife")
 public class StrifeCommand extends BaseCommand {
@@ -126,7 +127,8 @@ public class StrifeCommand extends BaseCommand {
   @Subcommand("citizen-reload")
   @CommandPermission("strife.admin")
   public void fuckMeg(CommandSender sender) {
-    plugin.getCitizenModelListener().reloadModels(plugin.getConfig().getConfigurationSection("npc-model-data-fuck-model-engine"));
+    plugin.getCitizenModelListener()
+        .reloadModels(plugin.getConfig().getConfigurationSection("npc-model-data-fuck-model-engine"));
   }
 
   @Subcommand("invincible")
@@ -138,8 +140,47 @@ public class StrifeCommand extends BaseCommand {
 
   @Subcommand("gravity")
   @CommandPermission("strife.admin")
-  public void invincible(CommandSender sender, OnlinePlayer target) {
+  public void gravity(CommandSender sender, OnlinePlayer target) {
     target.getPlayer().setGravity(!target.getPlayer().hasGravity());
+  }
+
+  @Subcommand("tribute")
+  @CommandPermission("strife.admin")
+  public void tribute(CommandSender sender, OnlinePlayer target, int bones, int cost, int godXp, int prayerXp) {
+    var inventory = target.getPlayer().getInventory();
+    int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(target.getPlayer().getUniqueId());
+    if (money < cost) {
+      PaletteUtil.sendMessage(target.getPlayer(), "|yellow|You don't have enough |orange|Bits|yellow|!");
+      return;
+    }
+    int totalAmount = 0;
+    for (ItemStack item : inventory.getContents()) {
+      if (item != null && item.getType() == Material.BONE) {
+        totalAmount += item.getAmount();
+      }
+    }
+    if (totalAmount < bones) {
+      PaletteUtil.sendMessage(target.getPlayer(), "|yellow|You don't have enough |teal|Bones Of Tribute|yellow|!");
+      return;
+    }
+    int remaining = bones;
+    for (int i = 0; i < inventory.getSize() && remaining > 0; i++) {
+      ItemStack item = inventory.getItem(i);
+      if (item != null && item.getType() == Material.BONE) {
+        if (item.getAmount() <= remaining) {
+          remaining -= item.getAmount();
+          inventory.setItem(i, null);
+        } else {
+          item.setAmount(item.getAmount() - remaining);
+          remaining = 0;
+        }
+      }
+    }
+    MintPlugin.getInstance().getEconomy().withdrawPlayer(target.getPlayer(), cost);
+    String playerName = target.getPlayer().getName();
+    target.getPlayer().updateInventory();
+    Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "gods addxp " + playerName + " " + godXp);
+    plugin.getSkillExperienceManager().addExperience(target.getPlayer(), LifeSkillType.PRAYER, prayerXp, false, true);
   }
 
   @Subcommand("setGod")
@@ -414,6 +455,46 @@ public class StrifeCommand extends BaseCommand {
     ModernAnnouncerPlugin.sendAnnouncement(Set.of(target.getPlayer()), "rainbow-orb", "unused-points");
     champion.recombineCache(plugin);
     plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
+  }
+
+  @Subcommand("reset-tome")
+  @CommandCompletion("@players")
+  @CommandPermission("strife.admin")
+  public void resetViaTomeCommand(CommandSender sender, OnlinePlayer target) {
+    ConfirmationMenu confirmationMenu = new ConfirmationMenu(
+        FaceColor.BLACK + "Confirm Attribute Reset",
+        FaceColor.PINK + FaceColor.BOLD.s() + "Reset Your Attributes!",
+        List.of(
+            "",
+            PaletteUtil.color("|orange|Price: |cyan|1x |white|Tome Of Time")
+        ),
+        FaceColor.RED + FaceColor.BOLD.s() + "No thanks",
+        List.of(FaceColor.LIGHT_GRAY + "I changed my mind..."),
+        true,
+        true,
+        () -> {
+          if (InventoryUtil.consumeItem(target.getPlayer(), "attributereset")) {
+            Champion champion = plugin.getChampionManager().getChampion(target.getPlayer());
+            for (StrifeAttribute attribute : plugin.getAttributeManager().getAttributes()) {
+              champion.setLevel(attribute, 0);
+            }
+            champion.setHighestReachedLevel(target.getPlayer().getLevel());
+            champion.setUnusedStatPoints(target.getPlayer().getLevel());
+            champion.getSaveData().getPathMap().clear();
+            plugin.getPathManager().buildPathBonus(champion);
+            sendMessage(sender, "You reset %player%",
+                new String[][]{{"%player%", target.getPlayer().getDisplayName()}});
+            sendMessage(target.getPlayer(), "&aYour stats have been reset!");
+            ModernAnnouncerPlugin.sendAnnouncement(Set.of(target.getPlayer()), "rainbow-orb", "unused-points");
+            champion.recombineCache(plugin);
+            plugin.getStatUpdateManager().updateAllAttributes(champion.getPlayer());
+          } else {
+            PaletteUtil.sendMessage(target.getPlayer(), "|yellow| you cannot afford this!");
+          }
+        },
+        null
+    );
+    Bukkit.getScheduler().runTaskLater(plugin, () -> confirmationMenu.open(target.getPlayer()), 1L);
   }
 
   @Subcommand("calcCatchup")

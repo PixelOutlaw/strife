@@ -40,6 +40,7 @@ public class CreateModelAnimation extends LocationEffect {
   private Color color = null;
 
   public static Location TEMP_LOC;
+  public static List<Dummy<?>> TRACKED_MODELS = new ArrayList<>();
 
   public enum AnimationType {
     LOOK_DIRECTION,
@@ -157,7 +158,7 @@ public class CreateModelAnimation extends LocationEffect {
         return;
       }
     }
-
+    loc.setY(loc.getY() + 0.001 * Math.random());
     applyModelStuff(caster, caster, loc, model);
   }
 
@@ -171,6 +172,7 @@ public class CreateModelAnimation extends LocationEffect {
       Bukkit.getLogger().warning("Failed to create modelled entity");
       return;
     } else {
+      modeledEntity.setSaved(false);
       if (color != null) {
         model.setDefaultTint(color);
       }

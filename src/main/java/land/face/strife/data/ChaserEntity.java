@@ -9,8 +9,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.StrifeParticle;
+import land.face.strife.stats.StrifeStat;
+import land.face.strife.util.HitDetectionUtil;
 import land.face.strife.util.ProjectileUtil;
+import land.face.strife.util.TargetingUtil;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -52,85 +56,109 @@ public class ChaserEntity {
   public final static List<ChaserEntity> RUNNING_CHASERS = new ArrayList<>();
 
   public static ChaserEntity create(LoadedChaser template, Location location, Vector direction,
-      StrifeMob caster, LivingEntity target, Location targetLocation, float durationMult, float speedMult) {
+      StrifeMob caster, LivingEntity targetedEntity, Location targetLocation, float durationMult, float speedMult) {
 
-    ChaserEntity ce = new ChaserEntity();
-    ce.template = template;
-    if (target != null) {
-      ce.target = new WeakReference<>(target);
-    } else if (targetLocation != null) {
-      ce.targetLocation = targetLocation;
+    Set<LivingEntity> targets = new HashSet<>();
+    if (template.isAllowMultishot()) {
+      float amount = ProjectileUtil.getTotalProjectiles(1, 1,
+          caster.getStat(StrifeStat.MULTISHOT), caster.getStat(StrifeStat.EXTRA_PROJECTILES));
+      amount = (float) Math.min(4, 1f + Math.random() * (amount - 1f));
+      int maxAmount = (int) Math.floor(amount);
+      if (Math.random() < amount - maxAmount) {
+        maxAmount++;
+      }
+      if (maxAmount <= 1) {
+        targets.add(targetedEntity);
+      } else {
+        targets.addAll(HitDetectionUtil.getEntitiesInArea(targetedEntity.getLocation(), 3 + amount / 2));
+        TargetingUtil.filterFriendlyEntities(targets, caster, false);
+        targets.removeIf(
+            e -> !TargetingUtil.hasLineOfSight(caster.getEntity().getEyeLocation(), e.getEyeLocation(), e));
+        targets.add(targetedEntity);
+        TargetingUtil.filterByTargetPriority(targets, TargetingPriority.CLOSEST, caster, maxAmount);
+      }
     } else {
-      return null;
-    }
-    ce.lifespan = (int) (template.getLifespan() * durationMult);
-    ce.guideTicks = template.getGuideStopTicks() < 0 ?
-        Integer.MAX_VALUE : (int) (template.getGuideStopTicks() * durationMult);
-    ce.caster = caster;
-    ce.location = location.clone();
-
-    ce.speed = template.getSpeed();
-    ce.maxSpeed = template.getMaxSpeed();
-
-    ce.speed *= speedMult;
-    ce.maxSpeed *= speedMult;
-
-    ce.guided = ce.guideTicks > 0;
-
-    float horizontalFling = template.getStartHorizontalMin() +
-        ((float) Math.random() * (template.getStartHorizontalMax() - template.getStartHorizontalMin()));
-    float verticalFling = template.getStartVerticalMin() +
-        ((float) Math.random() * (template.getStartVerticalMax() - template.getStartVerticalMin()));
-
-    Vector startVelocity = direction.clone().multiply(template.getStartSpeed()).multiply(speedMult);
-    startVelocity.setY(startVelocity.getY() + verticalFling);
-    if (Math.random() > 0.5) {
-      startVelocity.rotateAroundY(horizontalFling);
-    } else {
-      startVelocity.rotateAroundY(-horizontalFling);
-    }
-    ce.velocity = startVelocity;
-    ce.velocity.multiply(speedMult);
-
-    if (template.isPhysical()) {
-      Arrow arrow = ce.location.getWorld().spawn(ce.location, Arrow.class, e -> {
-        e.setInvisible(true);
-        e.setGravity(false);
-        e.setSilent(true);
-        e.getLocation().setDirection(ce.velocity);
-        e.setVelocity(ce.velocity);
-        e.setPickupStatus(PickupStatus.CREATIVE_ONLY);
-        ChunkUtil.setDespawnOnUnload(e);
-      });
-      arrow.setShooter(caster.getEntity());
-      arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
-
-      ProjectileUtil.setShotId(arrow);
-      if (!template.getEffectList().isEmpty()) {
-        ProjectileUtil.setHitEffects(arrow, template.getEffectList());
-      }
-
-      for (Player p : Bukkit.getOnlinePlayers()) {
-        p.hideEntity(StrifePlugin.getInstance(), arrow);
-      }
-      ce.hitBox = arrow;
-      if (StringUtils.isNotBlank(template.getModelId())) {
-        var c = template.getModelColors().isEmpty() ? null :
-            template.getModelColors().get(StrifePlugin.RNG.nextInt(template.getModelColors().size()));
-        var s = template.getModelSizes().isEmpty() ? 1 :
-            template.getModelSizes().get(StrifePlugin.RNG.nextInt(template.getModelSizes().size()));
-        ProjectileUtil.setupModelledProjectile(template.getModelId(), caster, arrow, ce.location, ce.velocity, c, s,
-            false);
-      }
-      if (template.isBlockContactEffects()) {
-        ProjectileUtil.setContactTrigger(arrow);
-      }
+      targets.add(targetedEntity);
     }
 
-    ce.task = Bukkit.getScheduler().runTaskTimer(StrifePlugin.getInstance(), ce::tick, 0L, 1L);
+    for (var target : targets) {
+      ChaserEntity ce = new ChaserEntity();
+      ce.template = template;
+      if (target != null) {
+        ce.target = new WeakReference<>(target);
+      } else if (targetLocation != null) {
+        ce.targetLocation = targetLocation;
+      } else {
+        return null;
+      }
+      ce.lifespan = (int) (template.getLifespan() * durationMult);
+      ce.guideTicks = template.getGuideStopTicks() < 0 ?
+          Integer.MAX_VALUE : (int) (template.getGuideStopTicks() * durationMult);
+      ce.caster = caster;
+      ce.location = location.clone();
 
-    RUNNING_CHASERS.add(ce);
-    return ce;
+      ce.speed = template.getSpeed();
+      ce.maxSpeed = template.getMaxSpeed();
+
+      ce.speed *= speedMult;
+      ce.maxSpeed *= speedMult;
+
+      ce.guided = ce.guideTicks > 0;
+
+      float horizontalFling = template.getStartHorizontalMin() +
+          ((float) Math.random() * (template.getStartHorizontalMax() - template.getStartHorizontalMin()));
+      float verticalFling = template.getStartVerticalMin() +
+          ((float) Math.random() * (template.getStartVerticalMax() - template.getStartVerticalMin()));
+
+      Vector startVelocity = direction.clone().multiply(template.getStartSpeed()).multiply(speedMult);
+      startVelocity.setY(startVelocity.getY() + verticalFling);
+      if (Math.random() > 0.5) {
+        startVelocity.rotateAroundY(horizontalFling);
+      } else {
+        startVelocity.rotateAroundY(-horizontalFling);
+      }
+      ce.velocity = startVelocity;
+      ce.velocity.multiply(speedMult);
+
+      if (template.isPhysical()) {
+        Arrow arrow = ce.location.getWorld().spawn(ce.location, Arrow.class, e -> {
+          e.setInvisible(true);
+          e.setGravity(false);
+          e.setSilent(true);
+          e.getLocation().setDirection(ce.velocity);
+          e.setVelocity(ce.velocity);
+          e.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+          ChunkUtil.setDespawnOnUnload(e);
+        });
+        arrow.setShooter(caster.getEntity());
+        arrow.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+
+        ProjectileUtil.setShotId(arrow);
+        if (!template.getEffectList().isEmpty()) {
+          ProjectileUtil.setHitEffects(arrow, template.getEffectList());
+        }
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+          p.hideEntity(StrifePlugin.getInstance(), arrow);
+        }
+        ce.hitBox = arrow;
+        if (StringUtils.isNotBlank(template.getModelId())) {
+          var c = template.getModelColors().isEmpty() ? null :
+              template.getModelColors().get(StrifePlugin.RNG.nextInt(template.getModelColors().size()));
+          var s = template.getModelSizes().isEmpty() ? 1 :
+              template.getModelSizes().get(StrifePlugin.RNG.nextInt(template.getModelSizes().size()));
+          ProjectileUtil.setupModelledProjectile(template.getModelId(), caster, arrow, ce.location, ce.velocity, c, s,
+              false);
+        }
+        if (template.isBlockContactEffects()) {
+          ProjectileUtil.setContactTrigger(arrow);
+        }
+      }
+      ce.task = Bukkit.getScheduler().runTaskTimer(StrifePlugin.getInstance(), ce::tick, 0L, 1L);
+      RUNNING_CHASERS.add(ce);
+    }
+    ProjectileUtil.bumpShotId();
+    return null;
   }
 
   private void tick() {

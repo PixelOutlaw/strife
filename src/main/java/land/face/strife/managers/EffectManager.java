@@ -89,7 +89,7 @@ public class EffectManager {
 
   public void processEffectList(StrifeMob caster, TargetResponse response,
       List<Effect> effectList, int projectileId) {
-    if (caster == null || caster.getEntity() == null ||
+    if (effectList.isEmpty() || caster == null || caster.getEntity() == null ||
         (!caster.getEntity().isValid() && response.isCancelOnCasterDeath())) {
       return;
     }
@@ -124,7 +124,7 @@ public class EffectManager {
 
   public void executeEffectList(StrifeMob caster, TargetResponse response, List<Effect> effectList) {
     LogUtil.printDebug("Effect task started - " + effectList.toString());
-    if (caster == null || caster.getEntity() == null) {
+    if (caster == null || caster.getEntity() == null || effectList.isEmpty()) {
       LogUtil.printDebug("- Task cancelled, caster is missing");
       return;
     }
@@ -500,6 +500,7 @@ public class EffectManager {
       case ENDLESS_EFFECT -> {
         effect = new EndlessEffect();
         List<String> cancelConditions = cs.getStringList("cancel-conditions");
+        List<String> cancelConditionsAny = cs.getStringList("cancel-conditions-any");
         ((EndlessEffect) effect).setMaxDuration((float) cs.getDouble("max-duration-seconds", 30));
         ((EndlessEffect) effect).setTickRate(cs.getInt("tick-rate", 5));
         ((EndlessEffect) effect).setStrictDuration(cs.getBoolean("strict-duration", true));
@@ -518,6 +519,9 @@ public class EffectManager {
         List<String> expiryEffects = cs.getStringList("expiry-effects");
         for (String s : cancelConditions) {
           ((EndlessEffect) effect).getCancelConditions().add(getConditions().get(s));
+        }
+        for (String s : cancelConditionsAny) {
+          ((EndlessEffect) effect).getCancelConditionsAny().add(getConditions().get(s));
         }
         delayedSetEffects(((EndlessEffect) effect).getRunEffects(), runEffects, key, false);
         delayedSetEffects(((EndlessEffect) effect).getCancelEffects(), cancelEffects, key, false);
@@ -1287,6 +1291,9 @@ public class EffectManager {
         break;
       case WEAPONS:
         condition = new WeaponsCondition(cs.getStringList("valid-tiers"), cs.getBoolean("strict", false));
+        break;
+      case EMPTY_OFFHAND:
+        condition = new EmptyOffhand();
         break;
       case MOVING:
         condition = new MovingCondition(cs.getBoolean("state", true), cs.getInt("ms-leeway"));

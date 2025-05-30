@@ -53,6 +53,13 @@ public class EndlessEffectTimer extends BukkitRunnable {
         return;
       }
     }
+    if (!endlessEffect.getCancelConditionsAny().isEmpty()) {
+      if (PlayerDataUtil.isAnyConditionMet(mob, mob, endlessEffect.getCancelConditionsAny())) {
+        runCancelEffects();
+        cancel();
+        return;
+      }
+    }
 
     Set<LivingEntity> entities = new HashSet<>();
     entities.add(mob.getEntity());

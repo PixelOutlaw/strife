@@ -23,24 +23,19 @@ import static land.face.strife.menus.stats.StatsMenu.breakLine;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
-import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
-import land.face.strife.stats.StrifeTrait;
 import land.face.strife.util.StatUtil;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -90,7 +85,7 @@ public class StatsMiscMenuItem extends MenuItem {
     }
     lore.add(breakLine);
     lore.add(FaceColor.TEAL.getColor() + "Character Size: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
-        3 + mob.getStat(StrifeStat.CHARACTER_SIZE)));
+        3 + mob.getStat(StrifeStat.CHARACTER_SIZE)) + "%");
     lore.add(FaceColor.TEAL.getColor() + "Movement Speed: " + FaceColor.WHITE.getColor() + INT_FORMAT.format(
         mob.getStat(StrifeStat.MOVEMENT_SPEED)));
     lore.add(breakLine);

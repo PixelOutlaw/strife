@@ -30,6 +30,11 @@ public class TargetResponse {
     this.location = location;
   }
 
+  public TargetResponse(Location location, boolean cancelOnCasterDeath) {
+    this.location = location;
+    this.cancelOnCasterDeath = cancelOnCasterDeath;
+  }
+
   public TargetResponse(Set<LivingEntity> entities, boolean cancelOnCasterDeath) {
     this.entities.addAll(entities);
     this.cancelOnCasterDeath = cancelOnCasterDeath;

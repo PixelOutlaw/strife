@@ -33,9 +33,11 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.ProjectileUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.entity.AbstractArrow.PickupStatus;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
@@ -157,6 +159,7 @@ public class ShootListener implements Listener {
     if (ProjectileUtil.HANDLED_PROJECTILE.contains(shooter.getUniqueId())) {
       return;
     }
+
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(shooter);
 
     if (!ProjectileUtil.isAbilityProjectile(event.getEntity())) {
@@ -164,6 +167,13 @@ public class ShootListener implements Listener {
         event.setCancelled(true);
         return;
       }
+    }
+
+    if (event.getEntity() instanceof Trident trident) {
+      trident.setPickupStatus(PickupStatus.CREATIVE_ONLY);
+      ProjectileUtil.setAttackMult(trident, 1.0f);
+      ProjectileUtil.setShotId(trident);
+      return;
     }
 
     if (shooter instanceof Mob && ((Mob) shooter).getTarget() != null) {
@@ -202,50 +212,38 @@ public class ShootListener implements Listener {
       }
     }
 
-    if (plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT)) {
-      event.setCancelled(true);
-      return;
-    }
-
-    ItemStack weapon = entity.getEquipment().getItemInMainHand();
-    attemptProjectileShot(mob, weapon, null, event);
+    plugin.getAbilityManager().abilityCast(mob, TriggerAbilityType.SHOOT);
+    event.setCancelled(true);
   }
 
   private void attemptProjectileShot(StrifeMob mob, ItemStack weapon, Projectile projectile, Cancellable event) {
-    Tier t = ModifyEquipmentUtil.getTier(weapon);
-    if (t == null) {
-      if (projectile instanceof Arrow) {
-        ProjectileUtil.shootArrow(mob, 1f);
-        ProjectileUtil.setShotId(projectile);
-        ProjectileUtil.bumpShotId();
-      }
-      event.setCancelled(true);
-      return;
+    String id = "";
+    if (weapon != null && weapon.hasItemMeta()) {
+      var data = ItemUtils.getCustomData(weapon);
+      id = data.isEmpty() ? "" : data.getFirst();
     }
-    switch (t.getId()) {
+    switch (id) {
       case "wand", "staff" -> {
         ((LivingEntity) projectile.getShooter()).swingMainHand();
         ProjectileUtil.shootWand(mob, 1);
         event.setCancelled(true);
-        return;
       }
       case "flintlock", "rifle" -> {
         ProjectileUtil.shootBullet(mob, 1f);
         flintlockSmoke.apply(mob, mob);
         flintlockFlare.apply(mob, mob);
         event.setCancelled(true);
-        return;
       }
       default -> {
         if (projectile instanceof Arrow) {
           ProjectileUtil.shootArrow(mob, 1f);
           event.setCancelled(true);
-          return;
+        } else {
+          ProjectileUtil.setShotId(projectile);
+          ProjectileUtil.bumpShotId();
         }
       }
     }
-    ProjectileUtil.setShotId(projectile);
-    ProjectileUtil.bumpShotId();
   }
 
   @EventHandler(priority = EventPriority.HIGH)

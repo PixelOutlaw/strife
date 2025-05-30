@@ -49,6 +49,7 @@ public class Union {
     });
     modeledEntity = ModelEngineAPI.createModeledEntity(stand);
     if (modeledEntity != null) {
+      modeledEntity.setSaved(false);
       modeledEntity.getBase().getBodyRotationController().setYBodyRot(stand.getLocation().getYaw());
       // For unions, do not override hitbox or model
       modeledEntity.addModel(activeModel, false);

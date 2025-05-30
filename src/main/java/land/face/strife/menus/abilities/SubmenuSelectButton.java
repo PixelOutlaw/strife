@@ -19,8 +19,8 @@
 package land.face.strife.menus.abilities;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
-import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.List;
 import lombok.Getter;
@@ -36,10 +36,16 @@ public class SubmenuSelectButton extends MenuItem {
 
   @Getter
   private final int slot;
+  private final ItemStack icon;
 
   public SubmenuSelectButton(AbilitySubmenu menu, String model, String name, List<String> lore, int slot) {
-    super(StringExtensionsKt.chatColorize(name), ItemUtils.BLANK.clone());
-    TextUtils.setLore(getIcon(), lore, true);
+    super("", ItemUtils.BLANK.clone());
+    icon = ItemUtils.BLANK.clone();
+    ItemStackExtensionsKt.setDisplayName(icon, PaletteUtil.color(name));
+    TextUtils.setLore(icon, PaletteUtil.color(lore));
+    icon.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+    //ItemStackExtensionsKt.setDisplayName(getIcon(), StringExtensionsKt.chatColorize(name));
+    //TextUtils.setLore(getIcon(), lore, true);
     //ItemUtils.setItemModel(getIcon(), model);
     this.menu = menu;
     this.slot = slot;
@@ -47,10 +53,7 @@ public class SubmenuSelectButton extends MenuItem {
 
   @Override
   public ItemStack getFinalIcon(Player player) {
-    ItemStack stack = getIcon().clone();
-    stack.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-    ItemStackExtensionsKt.setDisplayName(stack, getDisplayName());
-    return stack;
+    return icon;
   }
 
   @Override

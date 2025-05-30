@@ -79,21 +79,35 @@ public class TopBarManager {
       if (world == null) {
         return;
       }
-      long time = (int) ((world.getTime() / 1000 + 8) % 24);
-      String affix = time < 12 ? "am   " : "pm   ";
-      if (time > 12) {
-        time -= 12;
-      } else if (time == 0) {
-        time = 12;
+      var ticks = world.getTime() % 24000;
+      if (ticks < 0) ticks += 24000;
+      double hours = (ticks / 1000.0) + 6;
+      if (hours >= 24) {
+        hours -= 24;
       }
-      var timeDisplay = reShadow(color(Component.text(time + affix), WHITE));
+      String timeString;
+      int finalHours = (int) Math.round(hours);
+      if (finalHours > 12) {
+        if (finalHours == 24) {
+          timeString = "12am   ";
+        } else {
+          timeString = (finalHours - 12) + "pm   ";
+        }
+      } else {
+        if (finalHours == 12) {
+          timeString = "12pm   ";
+        } else {
+          timeString = finalHours + "am   ";
+        }
+      }
+      var timeDisplay = reShadow(color(Component.text(timeString), WHITE));
       var component = clockIcon.append(timeDisplay);
       // HALLOWEEN ONLY
       // String clockString = FaceColor.NO_SHADOW + "冦 " + FaceColor.ORANGE + "Witching Hour  ";
       dataMap.keySet().removeIf(p -> !p.isOnline());
       for (Player p : dataMap.keySet()) {
         try {
-          updateTime(p, component);
+          updateTime(p, component, finalHours);
           int direction = Math.round((p.getLocation().getYaw() + 180) / 45f);
           var str = compassIcons.get(direction);
           updateCompass(p, str);
@@ -130,8 +144,8 @@ public class TopBarManager {
     }
   }
 
-  public void updateTime(Player player, TextComponent str) {
-    if (player.isOnline() && dataMap.containsKey(player) && dataMap.get(player).setClock(str)) {
+  public void updateTime(Player player, TextComponent str, int clockTime) {
+    if (player.isOnline() && dataMap.containsKey(player) && dataMap.get(player).setClock(str, clockTime)) {
       sendUpdate(player);
     }
   }

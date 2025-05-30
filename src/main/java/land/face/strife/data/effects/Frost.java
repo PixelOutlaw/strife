@@ -1,7 +1,6 @@
 package land.face.strife.data.effects;
 
 import land.face.strife.data.StrifeMob;
-import land.face.strife.stats.StrifeStat;
 import lombok.Setter;
 
 public class Frost extends Effect {
@@ -16,12 +15,15 @@ public class Frost extends Effect {
 
     float trueDuration = (float) duration;
     if (override) {
-      target.setFrost((int) trueDuration);
+      target.setFrost(trueDuration);
     } else {
       if (trueDuration > 0) {
-        target.addFrost((int) trueDuration);
+        target.addFrost(trueDuration);
+        if (target.isInCombat() && caster != target && caster.isPlayer()) {
+          target.getCombatCountdownTask().setPvp();
+        }
       } else {
-        target.removeFrost((int) -trueDuration);
+        target.removeFrost(-trueDuration);
       }
     }
   }

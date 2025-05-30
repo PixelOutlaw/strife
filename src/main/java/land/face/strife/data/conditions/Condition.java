@@ -9,7 +9,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.entity.Player;
 
-@Getter @Setter
+@Getter
+@Setter
 public abstract class Condition {
 
   private CompareTarget compareTarget;
@@ -79,6 +80,7 @@ public abstract class Condition {
   public enum ConditionType {
     ATTRIBUTE,
     WEAPONS,
+    EMPTY_OFFHAND,
     BUFF,
     LORE,
     LESSER,

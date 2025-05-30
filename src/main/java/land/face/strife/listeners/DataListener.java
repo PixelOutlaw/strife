@@ -35,6 +35,8 @@ import land.face.strife.events.CombatChangeEvent;
 import land.face.strife.events.CombatChangeEvent.NewCombatState;
 import land.face.strife.managers.PrayerManager.Prayer;
 import land.face.strife.managers.UniqueEntityManager;
+import land.face.strife.menus.abilities.SlotThreeChoiceMenu;
+import land.face.strife.menus.levelup.LevelupMenu;
 import land.face.strife.menus.levelup.PathMenu;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.util.DamageUtil;
@@ -42,6 +44,7 @@ import land.face.strife.util.ItemUtil;
 import land.face.strife.util.SpecialStatusUtil;
 import land.face.strife.util.StatUtil;
 import land.face.strife.util.TargetingUtil;
+import ninja.amp.ampmenus.menus.MenuHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.GameMode;
@@ -304,7 +307,7 @@ public record DataListener(StrifePlugin plugin) implements Listener {
       return;
     }
     ItemStack stack = ((ItemFrame) event.getRightClicked()).getItem();
-    if (stack == null || stack.getType() != Material.STONE_BUTTON) {
+    if (stack.getType() != Material.STONE_BUTTON) {
       return;
     }
     if (ItemUtils.checkCustomData(stack, "poop", 0)) {
@@ -366,7 +369,10 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler
   public void onInvyClose(InventoryCloseEvent event) {
-    if (!plugin.getLevelupMenu().getName().equals(event.getView().getTitle())) {
+    if (!(event.getInventory().getHolder() instanceof MenuHolder)) {
+      return;
+    }
+    if (!(((MenuHolder) event.getInventory().getHolder()).getMenu() instanceof LevelupMenu)) {
       return;
     }
     if (!plugin.getChampionManager().hasPendingChanges((Player) event.getPlayer())) {
@@ -382,7 +388,10 @@ public record DataListener(StrifePlugin plugin) implements Listener {
 
   @EventHandler
   public void onPathClose(InventoryCloseEvent event) {
-    if (!PathMenu.MENU_NAME.equals(event.getView().getTitle())) {
+    if (!(event.getInventory().getHolder() instanceof MenuHolder)) {
+      return;
+    }
+    if (!(((MenuHolder) event.getInventory().getHolder()).getMenu() instanceof PathMenu)) {
       return;
     }
     Bukkit.getScheduler().runTaskLater(plugin, () ->

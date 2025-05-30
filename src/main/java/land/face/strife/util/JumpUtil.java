@@ -1,10 +1,12 @@
 package land.face.strife.util;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.WeakHashMap;
 import land.face.strife.data.HoverData;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
@@ -47,11 +49,8 @@ public class JumpUtil {
   }
 
   public static boolean isRooted(Player p) {
-    if (p.hasPotionEffect(PotionEffectType.JUMP_BOOST)) {
-      int amp = p.getPotionEffect(PotionEffectType.JUMP_BOOST).getAmplifier();
-      return amp < 0 || amp > 100;
-    }
-    return false;
+    var attr = p.getAttribute(Attribute.JUMP_STRENGTH);
+    return attr != null && attr.getValue() <= 0.05f;
   }
 
 }

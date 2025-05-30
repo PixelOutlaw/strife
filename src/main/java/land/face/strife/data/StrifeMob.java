@@ -177,7 +177,7 @@ public class StrifeMob {
 
   public void addFrost(float added) {
     frostGraceTicks = 4;
-    added *= 1 - getStat(StrifeStat.ICE_RESIST) / 100;
+    added *= 1 - getStat(StrifeStat.ICE_RESIST) / 200;
     setFrost(frost + added);
   }
 

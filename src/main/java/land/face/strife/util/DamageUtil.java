@@ -215,11 +215,9 @@ public class DamageUtil {
 
     if (mods.getAttackType() != AttackType.BONUS) {
       if (mods.isSneakAttack()) {
-        if (!SpecialStatusUtil.isSneakImmune(defMob.getEntity())) {
-          damageMap.put(DamageType.TRUE_DAMAGE,
-              damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) + doSneakAttack(atkMob, defMob, mods));
-          isSneakAttack = true;
-        }
+        damageMap.put(DamageType.TRUE_DAMAGE, damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) +
+            doSneakAttack(atkMob, defMob, mods));
+        isSneakAttack = true;
         plugin.getStealthManager().unstealthPlayer((Player) atkMob.getEntity(), false);
       }
     }
@@ -250,16 +248,11 @@ public class DamageUtil {
     }
     float minionDamageMultiplier = DamageUtil.getMinionMult(atkMob);
 
-    float totalMult = critMult * potionMult * generalDamageMultiplier * minionDamageMultiplier;
-    float trueDamage = damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
+    if (criticalHit && atkMob.hasTrait(StrifeTrait.SHARP_EDGE)) {
+      damageMap.put(DamageType.TRUE_DAMAGE, damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) * critMult);
+    }
 
-    damageMap.remove(DamageType.TRUE_DAMAGE);
-    damageMap.replaceAll((key, value) -> value * totalMult);
-    float sumOfAllDamage = damageMap.values().stream().reduce(0f, Float::sum);
-    damageMap.put(DamageType.TRUE_DAMAGE, trueDamage);
-
-    float damageReduction = defMob.getStat(StrifeStat.DAMAGE_REDUCTION) * mods.getDamageReductionRatio();
-    float rawDamage = (float) Math.max(0D, sumOfAllDamage - damageReduction);
+    float rawDamage = 1.0f;
 
     if (mods.getAttackType() == AttackType.PROJECTILE) {
       rawDamage *= DamageUtil.getProjectileMultiplier(atkMob, defMob);
@@ -305,25 +298,44 @@ public class DamageUtil {
               .playSound(atkMob.getEntity().getLocation(), Sound.ENTITY_IRON_GOLEM_ATTACK, 1f, 1.5f);
         }
       }
-      DamageUtil.applyLifeSteal(atkMob, defMob,
-          Math.min(rawDamage, defMob.getEntity().getHealth()),
-          mods.getHealMultiplier(),
-          mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL, 0f)
-      );
     }
 
-    if (criticalHit && atkMob.hasTrait(StrifeTrait.SHARP_EDGE)) {
-      damageMap.put(DamageType.TRUE_DAMAGE, damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f) * critMult);
+    float totalMult = critMult * potionMult * generalDamageMultiplier * minionDamageMultiplier * rawDamage;
+
+    float trueDamage = damageMap.getOrDefault(DamageType.TRUE_DAMAGE, 0f);
+    damageMap.remove(DamageType.TRUE_DAMAGE);
+    damageMap.replaceAll((key, value) -> value * totalMult);
+
+    if (attackType != AttackType.BONUS && damageMap.containsKey(DamageType.PHYSICAL)) {
+      if (defMob.hasTrait(StrifeTrait.GELATINOUS)) {
+        float physicalDamage = damageMap.get(DamageType.PHYSICAL);
+        damageMap.put(DamageType.PHYSICAL, Math.min(physicalDamage, defMob.getMaxLife() / 5));
+      }
+      if (defMob.hasTrait(StrifeTrait.THICK_HIDE)) {
+        float physicalDamage = damageMap.get(DamageType.PHYSICAL) - 10;
+        if (physicalDamage <= 0) {
+          damageMap.remove(DamageType.PHYSICAL);
+        } else {
+          damageMap.put(DamageType.PHYSICAL, physicalDamage);
+        }
+      }
     }
-    rawDamage += damageMap.get(DamageType.TRUE_DAMAGE);
-    rawDamage += DamageUtil.getKnowledgeMult(atkMob, defMob);
+
+    float sumOfAllDamage = damageMap.values().stream().reduce(0f, Float::sum);
+    damageMap.put(DamageType.TRUE_DAMAGE, trueDamage);
+    float damageReduction = defMob.getStat(StrifeStat.DAMAGE_REDUCTION) * mods.getDamageReductionRatio();
+
+    float totalDamage = (float) Math.max(0D, sumOfAllDamage - damageReduction);
+
+    totalDamage += damageMap.get(DamageType.TRUE_DAMAGE);
+    totalDamage += DamageUtil.getKnowledgeMult(atkMob, defMob);
 
     if (mods.getAbilityMods().containsKey(AbilityMod.MAX_DAMAGE)) {
-      rawDamage = Math.min(mods.getAbilityMods().get(AbilityMod.MAX_DAMAGE), rawDamage);
+      totalDamage = Math.min(mods.getAbilityMods().get(AbilityMod.MAX_DAMAGE), rawDamage);
     }
 
-    if (rawDamage < 1) {
-      rawDamage = 0;
+    if (totalDamage < 1) {
+      totalDamage = 0;
     }
 
     if (defMob.getChampion() == null) {
@@ -331,38 +343,46 @@ public class DamageUtil {
       int defenderLevel = StatUtil.getMobLevel(defMob.getEntity());
       int diffCap = (int) Math.max(9f, (float) attackerLevel / 5);
       if (attackerLevel + diffCap < defenderLevel) {
-        rawDamage *= (float) Math.pow(0.875, defenderLevel - (attackerLevel + diffCap));
+        totalDamage *= (float) Math.pow(0.875, defenderLevel - (attackerLevel + diffCap));
       }
     }
 
     if (plugin.getPrayerManager().isPrayerActive(atkMob.getEntity(), Prayer.TWO)) {
       if (atkMob.hasTrait(StrifeTrait.FAITH_DAMAGE)) {
-        rawDamage *= 1.05f + getMissingArmorItems((Player) atkMob.getEntity()) * 0.05f;
+        totalDamage *= 1.05f + getMissingArmorItems((Player) atkMob.getEntity()) * 0.05f;
       } else {
-        rawDamage *= 1.05F;
+        totalDamage *= 1.05F;
       }
     }
     if (plugin.getPrayerManager().isPrayerActive(defMob.getEntity(), Prayer.ONE)) {
       if (defMob.hasTrait(StrifeTrait.FAITH_DEFENSE)) {
-        rawDamage *= 0.9f - getMissingArmorItems((Player) defMob.getEntity()) * 0.1f;
+        totalDamage *= 0.9f - getMissingArmorItems((Player) defMob.getEntity()) * 0.1f;
       } else {
-        rawDamage *= 0.9F;
+        totalDamage *= 0.9F;
       }
     }
 
+    if (mods.getAttackType() != AttackType.BONUS) {
+      DamageUtil.applyLifeSteal(atkMob, defMob,
+          Math.min(totalDamage, defMob.getEntity().getHealth()),
+          mods.getHealMultiplier(),
+          mods.getAbilityMods().getOrDefault(AbilityMod.LIFE_STEAL, 0f)
+      );
+    }
+
     if (mods.isShowPopoffs()) {
-      displayDamagePopoff(atkMob, defMob, rawDamage, criticalHit, mods);
+      displayDamagePopoff(atkMob, defMob, totalDamage, criticalHit, mods);
     }
 
     if (isSneakAttack) {
-      boolean finishingBlow = rawDamage > defMob.getEntity().getHealth() + defMob.getBarrier();
+      boolean finishingBlow = totalDamage > defMob.getEntity().getHealth() + defMob.getBarrier();
       float gainedXp = plugin.getStealthManager().getSneakAttackExp(defMob.getEntity(),
           atkMob.getChampion().getLifeSkillLevel(LifeSkillType.SNEAK), finishingBlow);
       plugin.getSkillExperienceManager().addExperience((Player) atkMob.getEntity(),
           LifeSkillType.SNEAK, gainedXp, false, false);
     }
 
-    return rawDamage;
+    return totalDamage;
   }
 
   public static void postDamage(StrifeMob attacker, StrifeMob defender, DamageModifiers mods, boolean isBasicAttack) {
@@ -379,7 +399,6 @@ public class DamageUtil {
     if (attacker.getStat(StrifeStat.RAGE_ON_HIT) > 0.1) {
       attacker.changeRage(0.01f * attacker.getMaxRage() * attacker.getStat(StrifeStat.RAGE_ON_HIT) * ratio);
     }
-    doWhenHit(attacker, defender, mods.getAttackType());
     if (plugin.getPrayerManager().isPrayerActive(defender.getEntity(), Prayer.TEN)) {
       float prayerMinus = (float) defender.getChampion().getLifeSkillLevel(LifeSkillType.PRAYER) * 0.05f;
       attacker.setPrayer(Math.max(0, attacker.getPrayer() - prayerMinus));
@@ -405,14 +424,15 @@ public class DamageUtil {
     Player player = (Player) attacker.getEntity();
     SkillLevelData data = PlayerDataUtil.getSkillLevels(player, LifeSkillType.SNEAK, true);
     SkillRank rank = SkillRank.getRank(attacker, LifeSkillType.SNEAK);
-    float hpPercent = switch (rank) {
-      case NOVICE -> 0.1f;
-      case APPRENTICE -> 0.125f;
-      case JOURNEYMAN -> 0.15f;
-      case EXPERT -> 0.175f;
-      case MASTER -> 0.2f;
+    float levelPercent = switch (rank) {
+      case NOVICE -> 0.20f;
+      case APPRENTICE -> 0.25f;
+      case JOURNEYMAN -> 0.30f;
+      case EXPERT -> 0.35f;
+      case MASTER -> 0.40f;
     };
-    float damage = (defender.getMaxLife() * hpPercent) + data.getLevelWithBonus();
+    float enemyLevel = StatUtil.getMobLevel(defender.getEntity());
+    float damage = (enemyLevel * levelPercent) + data.getLevelWithBonus();
     damage *= 1 + attacker.getStat(StrifeStat.SNEAK_ATTACK_BONUS) / 100;
     SneakAttackEvent sneakEvent = DamageUtil.callSneakAttackEvent(attacker, defender, data.getLevel(), damage);
 
@@ -424,9 +444,6 @@ public class DamageUtil {
       defender.getEntity().addPotionEffect(new PotionEffect(PotionEffectType.UNLUCK, 40, 1, false));
     }
 
-    if (!(defender.getEntity() instanceof Player)) {
-      SpecialStatusUtil.setSneakImmune(defender.getEntity());
-    }
     if (mods.isShowPopoffs()) {
       StrifePlugin.getInstance().getIndicatorManager().addIndicator(attacker, defender.getEntity(),
           IndicatorStyle.FLOAT_UP_MEDIUM, 5, "彤", 1.0f, 1.1f, 0.75f, false);
@@ -654,7 +671,7 @@ public class DamageUtil {
     float totalElementalDamage = 0;
     Map<DamageType, Float> elementalDamages = new HashMap<>();
     for (DamageType type : damageMap.keySet()) {
-      if (type != DamageType.TRUE_DAMAGE) {
+      if (type != DamageType.TRUE_DAMAGE && type != DamageType.PHYSICAL) {
         float amount = damageMap.get(type);
         totalElementalDamage += amount;
         elementalDamages.put(type, amount);
@@ -677,12 +694,6 @@ public class DamageUtil {
       return;
     }
     switch (finalElementType) {
-      case PHYSICAL -> {
-        mods.getElementalStatuses().add(ElementalStatus.BASH);
-        //doBash(attacker, defender);
-        //damageMap.put(DamageType.PHYSICAL, damageMap.get(DamageType.PHYSICAL) * 1.1f + attacker.getLevel() / 20);
-        damageMap.put(DamageType.PHYSICAL, damageMap.get(DamageType.PHYSICAL) * 1.1f);
-      }
       case FIRE -> {
         mods.getElementalStatuses().add(ElementalStatus.IGNITE);
         doIgnite(attacker, defender, damageMap.get(DamageType.FIRE));
@@ -898,8 +909,7 @@ public class DamageUtil {
   public static void attemptFreeze(StrifeMob attacker, StrifeMob defender) {
     LivingEntity defendEntity = defender.getEntity();
     defendEntity.getWorld().playSound(defendEntity.getEyeLocation(), Sound.BLOCK_GLASS_BREAK, 1f, 1.3f);
-    float frost = 15;
-    frost *= 1 - defender.getStat(StrifeStat.ICE_RESIST) / 100;
+    float frost = 8;
     DamageUtil.addFrost(attacker, defender, frost);
   }
 
@@ -1165,7 +1175,7 @@ public class DamageUtil {
     if (amount < 0.1) {
       return;
     }
-    defender.addFrost((int) amount);
+    defender.addFrost(amount);
   }
 
   public static void doReflectedDamage(StrifeMob defender, StrifeMob attacker) {
@@ -1294,6 +1304,9 @@ public class DamageUtil {
       return;
     }
     LivingEntity le = mob.getEntity();
+    if (le.getHealth() <= 0) {
+      return;
+    }
     if (damage >= le.getHealth()) {
       damage = DamageUtil.doPreDeath(mob, damage);
     }

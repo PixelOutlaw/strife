@@ -55,6 +55,7 @@ public class ContactSpawner {
     activeDummy = new Dummy<>();
     activeDummy.setLocation(location);
     ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(activeDummy);
+    modeledEntity.setSaved(false);
     activeModel = ModelEngineAPI.createActiveModel(prefab.getActiveModel());
     modeledEntity.addModel(activeModel, true);
     activeDummy.getBodyRotationController().setRotationDuration(0);
@@ -65,6 +66,7 @@ public class ContactSpawner {
       inactiveDummy = new Dummy<>();
       inactiveDummy.setLocation(location);
       ModeledEntity modeledEntity2 = ModelEngineAPI.createModeledEntity(inactiveDummy);
+      modeledEntity2.setSaved(false);
       inactiveModel = ModelEngineAPI.createActiveModel(prefab.getInactiveModel());
       modeledEntity2.addModel(inactiveModel, true);
       inactiveDummy.getBodyRotationController().setRotationDuration(0);
@@ -109,6 +111,7 @@ public class ContactSpawner {
     tempDummy.setLocation(location);
     tempDummy.setDetectingPlayers(false);
     ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(tempDummy);
+    modeledEntity.setSaved(false);
     var tempModel = ModelEngineAPI.createActiveModel(prefab.getActiveModel());
     modeledEntity.addModel(tempModel, true);
     tempDummy.getBodyRotationController().setRotationDuration(0);

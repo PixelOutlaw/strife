@@ -65,7 +65,7 @@ public class SpawnerManager {
   }
 
   public void setupMapIcons() {
-    Bukkit.getLogger().info("[Strife] Attempting to place markers...");
+    //Bukkit.getLogger().info("[Strife] Attempting to place markers...");
     BlueMapAPI.getInstance().flatMap(api -> api.getWorld("quest_world")).ifPresent(world -> {
       for (BlueMapMap map : world.getMaps()) {
         map.getMarkerSets().put("mob-set", mobSet);

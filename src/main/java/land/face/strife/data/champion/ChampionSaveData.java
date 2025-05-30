@@ -12,6 +12,7 @@ import land.face.strife.stats.AbilitySlot;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class ChampionSaveData {
@@ -53,7 +54,10 @@ public class ChampionSaveData {
   private double catchupExpUsed;
 
   @Getter @Setter
-  private boolean onMount, glowEnabled, displayExp, allowInspect, longLegs, showIndicators;
+  private boolean onMount, glowEnabled, displayExp, allowInspect, longLegs, showIndicators, quickPotion, clickCast;
+
+  @Getter @Setter
+  private Location respawnPoint;
 
   public ChampionSaveData(UUID uniqueId) {
     this.uniqueId = uniqueId;

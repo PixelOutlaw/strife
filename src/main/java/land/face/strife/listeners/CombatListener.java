@@ -25,6 +25,7 @@ import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.EntityAbilitySet.TriggerAbilityType;
 import land.face.strife.events.ProjectileDamageEvent;
 import land.face.strife.events.StrifeDamageEvent;
@@ -58,7 +59,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
@@ -120,7 +120,8 @@ public class CombatListener implements Listener {
     }
 
     boolean blocked = false;
-    HitDirection hitDirection = DirectionUtil.getDirection(defender.getEntity(), projectile.getVelocity().clone().normalize());
+    HitDirection hitDirection = DirectionUtil.getDirection(defender.getEntity(),
+        projectile.getVelocity().clone().normalize());
     if (DirectionUtil.isBlocking(defender.getEntity())) {
       if (defender.getEntity() instanceof Shulker) {
         blocked = true;
@@ -129,8 +130,9 @@ public class CombatListener implements Listener {
       }
     }
 
-    boolean isSneakAttack = hitDirection != HitDirection.FRONT && attacker.getEntity() instanceof Player &&
-        plugin.getStealthManager().canSneakAttack((Player) attacker.getEntity());
+    boolean isSneakAttack = hitDirection != HitDirection.FRONT &&
+        plugin.getStealthManager().canSneakAttack(attacker.getEntity(), defender.getEntity());
+
     boolean isFromAbility = ProjectileUtil.isAbilityProjectile(projectile);
 
     DamageModifiers mods = new DamageModifiers();
@@ -174,9 +176,10 @@ public class CombatListener implements Listener {
 
     event.getDefender().trackDamage(event.getAttacker(), (float) strifeDamageEvent.getFinalDamage());
 
-    StrifePlugin.getInstance().getDamageManager().dealDamage(attacker, defender,
+    StrifePlugin.getInstance().getDamageManager().dealDamage(attacker, defender, damage,
         (float) strifeDamageEvent.getFinalDamage(), mods);
 
+    DamageUtil.doWhenHit(attacker, defender, mods.getAttackType());
     if (mods.isApplyOnHitEffects()) {
       DamageUtil.attemptPoison(attacker, defender, mods);
       Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->
@@ -223,17 +226,6 @@ public class CombatListener implements Listener {
       return;
     }
 
-    boolean blocked = false;
-    if (DirectionUtil.isBlocking(defendEntity)) {
-      if (defendEntity instanceof Shulker) {
-        blocked = true;
-      } else {
-        Vector locationDiff = defendEntity.getEyeLocation().clone().subtract(attackEntity.getEyeLocation()).toVector();
-        HitDirection hitDirection = DirectionUtil.getDirection(defendEntity, locationDiff);
-        blocked = hitDirection == HitDirection.FRONT;
-      }
-    }
-
     DamageUtil.removeDamageModifiers(event);
 
     if (attackEntity instanceof Player) {
@@ -261,6 +253,10 @@ public class CombatListener implements Listener {
 
     if (!attacker.canAttack()) {
       event.setCancelled(true);
+      return;
+    }
+
+    if (plugin.getAbilityManager().checkClickCast(attacker)) {
       return;
     }
 
@@ -306,8 +302,18 @@ public class CombatListener implements Listener {
       return;
     }
 
-    boolean isSneakAttack = attackEntity instanceof Player && plugin.getStealthManager()
-        .canSneakAttack((Player) attackEntity);
+    boolean blocked = false;
+    if (DirectionUtil.isBlocking(defendEntity)) {
+      if (defendEntity instanceof Shulker) {
+        blocked = true;
+      } else {
+        Vector locationDiff = defendEntity.getEyeLocation().clone().subtract(attackEntity.getEyeLocation()).toVector();
+        HitDirection hitDirection = DirectionUtil.getDirection(defendEntity, locationDiff);
+        blocked = hitDirection == HitDirection.FRONT;
+      }
+    }
+
+    boolean isSneakAttack = plugin.getStealthManager().canSneakAttack(attackEntity, defendEntity);
 
     if (attackEntity instanceof Player) {
       plugin.getStealthManager().unstealthPlayer((Player) attackEntity, false);
@@ -356,54 +362,23 @@ public class CombatListener implements Listener {
     }
 
     if (attackEntity instanceof Bee) {
-      plugin.getDamageManager().dealDamage(attacker, defender, (float) strifeDamageEvent.getFinalDamage(), mods);
+      plugin.getDamageManager()
+          .dealDamage(attacker, defender, damages, (float) strifeDamageEvent.getFinalDamage(), mods);
       event.setCancelled(true);
       return;
     }
 
-    if (attacker.getEntity() instanceof Player && defender.getEntity() instanceof Player && (attacker != defender)) {
-      attacker.flagPvp();
-      defender.flagPvp();
-    }
-
     defender.trackDamage(attacker, (float) strifeDamageEvent.getFinalDamage());
-    float eventDamage = (float) strifeDamageEvent.getFinalDamage();
-    if (defender.getBarrier() > 0) {
-      float dmgVsBarrier = 1 + attacker.getStat(StrifeStat.DAMAGE_TO_BARRIERS) / 100;
-      eventDamage *= dmgVsBarrier;
-      eventDamage = defender.damageBarrier(attacker, eventDamage);
-      eventDamage /= dmgVsBarrier;
-    } else {
-      defender.damageBarrier(attacker, 0);
-    }
+    plugin.getDamageManager().dealDamage(attacker, defender, damages, (float) strifeDamageEvent.getFinalDamage(), mods);
 
-    if (eventDamage > 0) {
-      eventDamage = plugin.getDamageManager().doEnergyAbsorb(defender, eventDamage);
-      if (damages.containsKey(DamageType.PHYSICAL)) {
-        DamageUtil.attemptBleed(attacker, defender, damages.get(DamageType.PHYSICAL), mods, true, false);
-      }
-    }
-
-    if (defender.hasTrait(StrifeTrait.BLEEDING_EDGE)) {
-      eventDamage *= 0.5F;
-      float bleed = eventDamage;
-      DamageUtil.applyBleed(defender, defender, bleed, true, true, false);
-    }
-
+    DamageUtil.doWhenHit(attacker, defender, mods.getAttackType());
     if (mods.isApplyOnHitEffects()) {
       DamageUtil.attemptPoison(attacker, defender, mods);
       Bukkit.getScheduler().runTaskLater(plugin, () ->
           DamageUtil.postDamage(attacker, defender, mods, true), 0L);
     }
 
-    if (eventDamage >= defendEntity.getHealth()) {
-      eventDamage = DamageUtil.doPreDeath(defender, eventDamage);
-    }
-    if (eventDamage >= defender.getEntity().getHealth() && defender.isPlayer()) {
-      plugin.getDamageManager().getSourceOfDeath().put(
-          defender.getEntity().getUniqueId(), PlayerDataUtil.getName(attacker.getEntity()));
-    }
-    event.setDamage(BASE, Math.max(eventDamage, 0));
+    event.setDamage(BASE, 0);
   }
 
   @EventHandler(priority = EventPriority.HIGHEST)
@@ -419,6 +394,7 @@ public class CombatListener implements Listener {
             true);
       }
     }
+    runOnKillAbilityPassives(killer, event.getEntity());
     if (killer.getStat(StrifeStat.ENERGY_ON_KILL) > 0.1) {
       StatUtil.changeEnergy(killer, killer.getStat(StrifeStat.ENERGY_ON_KILL));
     }
@@ -458,6 +434,22 @@ public class CombatListener implements Listener {
   public static void putMonsterHit(LivingEntity livingEntity) {
     if (!(livingEntity instanceof Player)) {
       MONSTER_HIT_COOLDOWN.put(livingEntity, System.currentTimeMillis() + 500);
+    }
+  }
+
+  private void runOnKillAbilityPassives(StrifeMob killer, LivingEntity victim) {
+    if (!killer.isPlayer()) {
+      return;
+    }
+    try {
+      for (var a : killer.getChampion().getAbilities().values()) {
+        if (a == null || a.getOnKillEffects().isEmpty()) {
+          continue;
+        }
+        plugin.getEffectManager().processEffectList(killer, new TargetResponse(Set.of(victim)), a.getOnKillEffects());
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 }

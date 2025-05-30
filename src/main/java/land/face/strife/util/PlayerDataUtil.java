@@ -40,16 +40,23 @@ public class PlayerDataUtil {
     plugin = refreshedPlugin;
   }
 
-  public static LoadedKnowledge loadMobKnowledge(String key, int weight,
-      ConfigurationSection knowledgeSection) {
+  public static LoadedKnowledge loadMobKnowledge(String key, int weight, ConfigurationSection knowledgeSection) {
+
     String name = PaletteUtil.color(knowledgeSection.getString("name",
         FaceColor.GRAY.getColor() + key + "(WORK IN PROGRESS)"));
-    String lore1 = PaletteUtil.color("|red||b||ul|Mob Info (Offense)\n\n" +
-        knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
-    String lore2 = PaletteUtil.color("|red||b||ul|Mob Info (Defense)\n\n" +
-        knowledgeSection.getString("lore2", "|black|Sadly, there's nothing here!"));
-    String lore3 = PaletteUtil.color("|red||b||ul|Mob Info (Stats)\n\n" +
-        knowledgeSection.getString("lore3", "|black|Sadly, there's nothing here!"));
+
+    var lore1 = knowledgeSection.getStringList("lore1");
+    lore1.addFirst("");
+    lore1.addFirst("|red||b||ul|Mob Info (Offense)");
+
+    var lore2 = knowledgeSection.getStringList("lore2");
+    lore2.addFirst("");
+    lore2.addFirst("|red||b||ul|Mob Info (Defense)");
+
+    var lore3 = knowledgeSection.getStringList("lore3");
+    lore3.addFirst("");
+    lore3.addFirst("|red||b||ul|Mob Info (Stats)");
+
     List<String> desc = new ArrayList<>();
     desc.add("");
     desc.add("|white|Knowledge Type: |red|Combat");
@@ -62,9 +69,8 @@ public class PlayerDataUtil {
     int threshold2 = knowledgeSection.getInt("rank-2", 100);
     int threshold3 = knowledgeSection.getInt("rank-3", 1000);
     String category = knowledgeSection.getString("type", "");
-    LoadedKnowledge mobKnowledge = new LoadedKnowledge(
-        key, name, weight, threshold1, threshold2, threshold3,
-        lore1, lore2, lore3, PaletteUtil.color(desc));
+    LoadedKnowledge mobKnowledge = new LoadedKnowledge(key, name, weight, threshold1, threshold2, threshold3,
+        PaletteUtil.color(lore1), PaletteUtil.color(lore2), PaletteUtil.color(lore3), PaletteUtil.color(desc));
     mobKnowledge.setSource("strife");
     switch (category) {
       case "boss" -> mobKnowledge.setCategory("bosses");
@@ -74,13 +80,12 @@ public class PlayerDataUtil {
     return mobKnowledge;
   }
 
-  public static LoadedKnowledge loadModKnowledge(String key, int weight,
-      ConfigurationSection knowledgeSection) {
+  public static LoadedKnowledge loadModKnowledge(String key, int weight, ConfigurationSection knowledgeSection) {
     String name = PaletteUtil.color(
         knowledgeSection.getString("name", FaceColor.GRAY.getColor() + key + "(WORK IN PROGRESS)"));
-    String lore1 = PaletteUtil.color(knowledgeSection.getString("lore1", "|black|Sadly, there's nothing here!"));
-    String lore2 = PaletteUtil.color(knowledgeSection.getString("lore2", "|black|Sadly, there's nothing here!"));
-    String lore3 = PaletteUtil.color(knowledgeSection.getString("lore3", "|black|Sadly, there's nothing here!"));
+    var lore1 = PaletteUtil.color(knowledgeSection.getStringList("lore1"));
+    var lore2 = PaletteUtil.color(knowledgeSection.getStringList("lore2"));
+    var lore3 = PaletteUtil.color(knowledgeSection.getStringList("lore3"));
     List<String> desc = PaletteUtil.color(knowledgeSection.getStringList("desc"));
     int threshold1 = knowledgeSection.getInt("rank-1", 10);
     int threshold2 = knowledgeSection.getInt("rank-2", 100);
@@ -192,6 +197,29 @@ public class PlayerDataUtil {
       }
     }
     return true;
+  }
+
+  public static boolean isAnyConditionMet(StrifeMob caster, StrifeMob target, Set<Condition> conditions) {
+    for (Condition condition : conditions) {
+      EntityType casterType = caster.getEntity().getType();
+      if (casterType == EntityType.PLAYER && condition.getConditionUser() == ConditionUser.MOB) {
+        continue;
+      }
+      if (casterType != EntityType.PLAYER && condition.getConditionUser() == ConditionUser.PLAYER) {
+        continue;
+      }
+      if (target == null) {
+        if (condition.getCompareTarget() == CompareTarget.OTHER) {
+          LogUtil.printDebug("-- Skipping " + condition + " - null target, OTHER compareTarget");
+          continue;
+        }
+      }
+      if (condition.isMet(caster, target) == condition.isInverted()) {
+        condition.sendMessage(caster);
+        return true;
+      }
+    }
+    return false;
   }
 
   public static void updatePlayerEquipment(Player player) {

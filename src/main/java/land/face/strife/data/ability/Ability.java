@@ -26,13 +26,17 @@ public class Ability {
   private final TargetType targetType;
   private final AbilityType castType;
   private final boolean raycastsTargetEntities, requireTarget, sneakSelfTarget, cancelStealth, passiveStatsOnCooldown,
-      friendly, deathUntoggle, showMessages, healthCost, fullRecharge;
+      friendly, deathUntoggle, showMessages, healthCost, fullRecharge, consumeAllCharges, cancelOnDeath;
   private boolean hidden = true;
   private final float range, cost, sneakCost, cooldown, sneakCooldown, minCooldown, weightScaling;
   private final int maxCharges, globalCooldownTicks, sneakGlobalCooldownTicks, maxTargets;
   private final List<Effect> effects;
+  private final List<Effect> twoChargeEffects;
+  private final List<Effect> threeChargeEffects;
+  private final List<Effect> fourChargeEffects;
   private final List<Effect> sneakEffects;
   private final List<Effect> toggleOffEffects;
+  private final List<Effect> onKillEffects;
   private final Set<String> tags;
   private final Set<Condition> conditions;
   private final Set<Condition> sneakConditions;

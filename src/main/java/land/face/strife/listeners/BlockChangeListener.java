@@ -32,6 +32,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class BlockChangeListener implements Listener {
@@ -86,6 +87,14 @@ public class BlockChangeListener implements Listener {
     }
     if (event.getClickedBlock().getType() == Material.DAYLIGHT_DETECTOR ||
         event.getClickedBlock().getType().name().endsWith("_TRAPDOOR")) {
+      event.setCancelled(true);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  public void onPlayerInteract(final PlayerInteractEvent event) {
+    if (event.getAction() == Action.PHYSICAL && event.getClickedBlock() != null &&
+        event.getClickedBlock().getType() == Material.FARMLAND) {
       event.setCancelled(true);
     }
   }

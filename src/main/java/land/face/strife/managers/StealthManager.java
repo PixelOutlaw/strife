@@ -48,7 +48,6 @@ import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -67,18 +66,18 @@ public class StealthManager {
   private final Map<UUID, StealthData> stealthedPlayers = new HashMap<>();
 
   public static final List<GUIComponent> STEALTH_IND = List.of(
-      new GUIComponent("attack-bar", noShadow(Component.text("岓")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", noShadow(Component.text("岔")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", noShadow(Component.text("岕")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", noShadow(Component.text("岖")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", noShadow(Component.text("岗")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", noShadow(Component.text("岘")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", noShadow(Component.text("岙")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", noShadow(Component.text("岚")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", noShadow(Component.text("岛")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", noShadow(Component.text("岜")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", noShadow(Component.text("岝")), 45, 0, Alignment.CENTER),
-      new GUIComponent("attack-bar", noShadow(Component.text("岞")), 45, 0, Alignment.CENTER)
+      new GUIComponent("attack-bar", noShadow(Component.text("岓")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岔")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岕")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岖")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岗")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岘")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岙")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岚")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岛")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岜")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岝")), 49, 0, Alignment.CENTER),
+      new GUIComponent("attack-bar", noShadow(Component.text("岞")), 49, 0, Alignment.CENTER)
   );
   private static final int STEALTH_LEN = STEALTH_IND.size();
 
@@ -86,41 +85,26 @@ public class StealthManager {
     this.plugin = plugin;
   }
 
-  /*
-  public boolean isSneakAngle(LivingEntity target, Vector direction) {
-    if (TargetingUtil.getMobTarget(target) != null) {
-      return false;
-    }
-    Vector entitySightVector = target.getLocation().getDirection();
-    float angle = entitySightVector.angle(direction);
-    return angle > 0.6;
-  }
-  */
-
   public float getSneakActionExp(float enemyLevel, float stealthLevel) {
-    if (stealthLevel != 99 && enemyLevel - stealthLevel > 20) {
-      return 0;
+    float effectiveLevel = Math.min(stealthLevel + 10, enemyLevel);
+    float amount = BASE_SNEAK_EXP + effectiveLevel * SNEAK_EXP_PER_LEVEL;
+    if (stealthLevel - enemyLevel >= 20) {
+      amount *= 0.185f;
     }
-    float levelPenaltyMult = Math.min(1.0f, (float) Math.pow(enemyLevel / stealthLevel, 1.5));
-    return (BASE_SNEAK_EXP + enemyLevel * SNEAK_EXP_PER_LEVEL) * levelPenaltyMult;
+    return amount;
   }
 
   public float getSneakAttackExp(LivingEntity victim, float sneakLevel, boolean finishingBlow) {
     float victimLevel = StatUtil.getMobLevel(victim);
-    float levelDiff = victimLevel - sneakLevel;
-    float levelPenaltyMult = 1;
-    if (levelDiff < 0) {
-      levelPenaltyMult = Math.max(0f, 1f - (-levelDiff * 0.1f));
-    } else {
-      victimLevel = Math.min(victimLevel, sneakLevel + 8);
+    if (sneakLevel - victimLevel >= 20) {
+      return 1f;
     }
-    float gainedXp = BASE_SNEAK_ATTACK_EXP + victimLevel * SNEAK_ATTACK_EXP_PER_LEVEL;
-    gainedXp *= levelPenaltyMult;
-
+    float effectiveLevel = Math.min(sneakLevel + 10, victimLevel);
+    float gainedXp = BASE_SNEAK_ATTACK_EXP + effectiveLevel * SNEAK_ATTACK_EXP_PER_LEVEL;
     if (finishingBlow) {
-      gainedXp *= 2.5F;
+      gainedXp *= 2.0F;
     }
-    return gainedXp * levelPenaltyMult;
+    return gainedXp;
   }
 
   public boolean isStealthed(Player player) {
@@ -134,21 +118,26 @@ public class StealthManager {
     return false;
   }
 
-  public boolean canSneakAttack(Player player) {
+  public boolean canSneakAttack(LivingEntity player, LivingEntity target) {
+    if (!(player instanceof Player)) {
+      return false;
+    }
+    if (target instanceof Mob m) {
+      if (m.getTarget() == player) {
+        return false;
+      }
+    }
     return stealthedPlayers.containsKey(player.getUniqueId())
         && stealthedPlayers.get(player.getUniqueId()).getReadyTime() < System.currentTimeMillis();
   }
 
   public void stealthPlayer(Player player, float seconds) {
     var mob = plugin.getStrifeMobManager().getStatMob(player);
-    for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), 70, 70, 70)) {
-      if (e instanceof Player) {
-        plugin.getIndicatorManager().addIndicator(mob, (LivingEntity) e, IndicatorStyle.BOUNCE,
-            6, "<bold>???", 1.0f, 1.0f, 1.0f, true);
-      } else if (e instanceof Mob && ((Mob) e).getTarget() == player) {
+    for (Entity e : player.getWorld().getNearbyEntities(player.getLocation(), 50, 50, 50)) {
+      if (e instanceof Mob && ((Mob) e).getTarget() == player) {
         ((Mob) e).setTarget(null);
-        plugin.getIndicatorManager().addIndicator(mob, (Mob) e, IndicatorStyle.BOUNCE,
-            6, "<bold>???", 1.0f, 1.0f, 1.0f, true);
+        plugin.getIndicatorManager().addIndicator(mob, (Mob) e, IndicatorStyle.FLOAT_UP_MEDIUM,
+            8, "<bold>?", 1.0f, 3.0f, 0.8f, true);
       }
     }
     player.spawnParticle(Particle.SMOKE, player.getLocation(), 90, 0.5, 1, 0.5, 0);
@@ -191,7 +180,7 @@ public class StealthManager {
     }
   }
 
-  public void doStealthParticles(Player player) {
+  public void tickStealth(Player player) {
     if (!isStealthed(player)) {
       return;
     }

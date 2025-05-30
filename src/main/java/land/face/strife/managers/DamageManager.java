@@ -24,7 +24,9 @@ import land.face.strife.data.DamageModifiers;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.timers.RecallTimer;
 import land.face.strife.util.DamageUtil;
+import land.face.strife.util.DamageUtil.DamageType;
 import land.face.strife.util.PlayerDataUtil;
 import land.face.strife.util.StatUtil;
 import lombok.Getter;
@@ -55,9 +57,13 @@ public class DamageManager {
     return handledDamages.getOrDefault(entity.getUniqueId(), 0D);
   }
 
-  public double dealDamage(StrifeMob atkMob, StrifeMob defMob, float damage, DamageModifiers modifiers) {
+  public double dealDamage(StrifeMob atkMob, StrifeMob defMob, Map<DamageType, Float> damages,
+      float damage, DamageModifiers modifiers) {
     if (defMob.isInvincible()) {
       return 0;
+    }
+    if (defMob.isPlayer()) {
+      RecallTimer.cancelRecall((Player) defMob.getEntity());
     }
     if (!modifiers.isBypassBarrier() && defMob.getBarrier() > 0) {
       float dmgVsBarrier = 1 + atkMob.getStat(StrifeStat.DAMAGE_TO_BARRIERS) / 100;
@@ -72,6 +78,10 @@ public class DamageManager {
     if (atkMob == defMob) {
       DamageUtil.dealRawDamage(defMob, damage);
       return damage;
+    }
+
+    if (damages.containsKey(DamageType.PHYSICAL)) {
+      DamageUtil.attemptBleed(atkMob, defMob, damages.get(DamageType.PHYSICAL), modifiers, true, false);
     }
 
     if (defMob.hasTrait(StrifeTrait.BLEEDING_EDGE)) {

@@ -95,6 +95,8 @@ public class FlatfileStorage implements DataStorage {
     config.set(champUuid + ".allow-inspect", saveData.isAllowInspect());
     config.set(champUuid + ".long-legs", saveData.isLongLegs());
     config.set(champUuid + ".show-indicators", saveData.isShowIndicators());
+    config.set(champUuid + ".quick-potion", saveData.isQuickPotion());
+    config.set(champUuid + ".click-cast", saveData.isClickCast());
 
     config.set(champUuid + ".unused-stat-points", saveData.getUnusedStatPoints());
     config.set(champUuid + ".highest-reached-level", saveData.getHighestReachedLevel());
@@ -175,6 +177,8 @@ public class FlatfileStorage implements DataStorage {
       saveData.setAllowInspect(section.getBoolean("allow-inspect", false));
       saveData.setLongLegs(section.getBoolean("long-legs", true));
       saveData.setShowIndicators(section.getBoolean("show-indicators", true));
+      saveData.setQuickPotion(section.getBoolean("quick-potion", false));
+      saveData.setClickCast(section.getBoolean("click-cast", true));
 
       saveData.setHighestReachedLevel(section.getInt("highest-reached-level"));
 

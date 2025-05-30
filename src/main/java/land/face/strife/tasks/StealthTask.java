@@ -23,18 +23,18 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class StealthParticleTask extends BukkitRunnable {
+public class StealthTask extends BukkitRunnable {
 
   private final StealthManager stealthManager;
 
-  public StealthParticleTask(StealthManager stealthManager) {
+  public StealthTask(StealthManager stealthManager) {
     this.stealthManager = stealthManager;
   }
 
   @Override
   public void run() {
     for (Player p : Bukkit.getOnlinePlayers()) {
-      stealthManager.doStealthParticles(p);
+      stealthManager.tickStealth(p);
     }
   }
 }

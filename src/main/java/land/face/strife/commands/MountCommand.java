@@ -27,6 +27,7 @@ import com.tealcube.minecraft.bukkit.shade.acf.annotation.Default;
 import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.timers.RecallTimer;
 import land.face.strife.util.JumpUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -39,7 +40,7 @@ public class MountCommand extends BaseCommand {
   private final StrifePlugin plugin;
   private final List<String> bannedWorlds;
 
-  private final String susActions;
+  private final String mountCooldown;
   private final String bannedWorld;
   private final String onlyOnGround;
   private final String invalidLocation;
@@ -54,7 +55,7 @@ public class MountCommand extends BaseCommand {
     this.plugin = plugin;
     bannedWorlds = plugin.getMountsYAML().getStringList("banned-worlds");
 
-    susActions = plugin.getSettings().getString("language.generic.sus-actions");
+    mountCooldown = plugin.getSettings().getString("language.mounts.cooldown");
     bannedWorld = plugin.getSettings().getString("language.mounts.banned-world");
     onlyOnGround = plugin.getSettings().getString("language.mounts.ground-only");
     invalidLocation = plugin.getSettings().getString("language.mounts.invalid-location");
@@ -67,8 +68,12 @@ public class MountCommand extends BaseCommand {
       return;
     }
     Player sender = getCurrentCommandIssuer().getIssuer();
+    if (sender.getCooldown(SADDLE) > 0) {
+      PaletteUtil.sendMessage(sender, mountCooldown);
+      return;
+    }
     if (plugin.getPlayerMountManager().isMounted(sender)) {
-      PaletteUtil.sendMessage(sender, susActions);
+      plugin.getPlayerMountManager().despawn(sender);
       return;
     }
     plugin.getPlayerMountManager().despawn(sender);
@@ -77,7 +82,7 @@ public class MountCommand extends BaseCommand {
       return;
     }
     Material floorMaterial = sender.getLocation().clone().add(-0, -0.1, 0).getBlock().getType();
-    if (!floorMaterial.isSolid()) {
+    if (!floorMaterial.isSolid() || RecallTimer.TASKS.containsKey(sender.getUniqueId())) {
       PaletteUtil.sendMessage(sender, onlyOnGround);
       return;
     }

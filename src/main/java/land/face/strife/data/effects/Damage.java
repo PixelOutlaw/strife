@@ -70,8 +70,7 @@ public class Damage extends Effect {
     mods.setGuardBreak(guardBreak);
     mods.setFromAbility(fromAbility);
     mods.setScaleChancesWithAttack(false);
-    if (canSneakAttack && caster.getEntity() instanceof Player && getPlugin().getStealthManager()
-        .canSneakAttack((Player) caster.getEntity())) {
+    if (canSneakAttack && getPlugin().getStealthManager().canSneakAttack(caster.getEntity(), target.getEntity())) {
       mods.setSneakAttack(true);
     }
     mods.setBlocking(isBlocking);
@@ -119,7 +118,7 @@ public class Damage extends Effect {
 
     target.trackDamage(caster, (float) strifeDamageEvent.getFinalDamage());
 
-    StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target,
+    StrifePlugin.getInstance().getDamageManager().dealDamage(caster, target, damage,
         (float) strifeDamageEvent.getFinalDamage(), mods);
 
     Set<LivingEntity> entities = new HashSet<>();
@@ -132,6 +131,8 @@ public class Damage extends Effect {
     }
 
     StrifeMob finalTarget = target;
+
+    DamageUtil.doWhenHit(caster, finalTarget, mods.getAttackType());
     if (mods.isApplyOnHitEffects()) {
       DamageUtil.attemptPoison(caster, target, mods);
       Bukkit.getScheduler().runTaskLater(StrifePlugin.getInstance(), () ->

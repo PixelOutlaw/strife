@@ -21,6 +21,7 @@ public class EndlessEffect extends Effect {
   private final List<Effect> expiryEffects = new ArrayList<>();
   private final List<Effect> cancelEffects = new ArrayList<>();
   private final Set<Condition> cancelConditions = new HashSet<>();
+  private final Set<Condition> cancelConditionsAny = new HashSet<>();
 
   private StrifeStat reducerStat;
   private float reducerValue;

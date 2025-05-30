@@ -72,6 +72,16 @@ public class SettingsMenu extends ItemMenu {
       m.setDisplayName(PaletteUtil.color(plugin.getSettings().getString("language.settings.leg-name", "")));
       m.setLore(PaletteUtil.color(plugin.getSettings().getStringList("language.settings.leg-lore")));
     });
+    var potionIcon = baseStack.clone();
+    potionIcon.editMeta(m -> {
+      m.setDisplayName(PaletteUtil.color(plugin.getSettings().getString("language.settings.potion-name", "")));
+      m.setLore(PaletteUtil.color(plugin.getSettings().getStringList("language.settings.potion-lore")));
+    });
+    var clickCastIcon = baseStack.clone();
+    clickCastIcon.editMeta(m -> {
+      m.setDisplayName(PaletteUtil.color(plugin.getSettings().getString("language.settings.click-cast-name", "")));
+      m.setLore(PaletteUtil.color(plugin.getSettings().getStringList("language.settings.click-cast-lore")));
+    });
 
     setItem(8, new PermissionCheckbox(plugin, this, excaliburIcon, "forceresourcepacks.pack.excaliburLayer", true));
     setItem(17, new PermissionCheckbox(plugin, this, facelandIcon, "forceresourcepacks.pack.facelandResourceLayer", true));
@@ -84,6 +94,8 @@ public class SettingsMenu extends ItemMenu {
     // setItem(35, new ShowXpCheckbox(plugin, Prayer.THIRTEEN, 2));
     // setItem(44, new ShowXpCheckbox(plugin, Prayer.FOURTEEN, 3));
     setItem(53, new LongLegsCheckbox(plugin, legsIcon));
+    setItem(44, new QuickPotionCheckbox(plugin, potionIcon));
+    setItem(35, new ClickCastCheckbox(plugin, clickCastIcon));
   }
 
 }

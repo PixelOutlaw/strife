@@ -172,12 +172,12 @@ public class BoostManager {
     }
   }
 
-  public Map<StrifeStat, Float> getStats() {
+  public Map<StrifeStat, Float> getStats(int playerLevel) {
     Map<StrifeStat, Float> statMap = new HashMap<>();
     for (Boost boost : boosts) {
       statMap.putAll(StatUpdateManager.combineMaps(statMap, boost.getStats()));
     }
-    if (dailyBoost != null) {
+    if (dailyBoost != null && playerLevel >= dailyBoost.getMinimumLevel()) {
       statMap.putAll(StatUpdateManager.combineMaps(statMap, dailyBoost.getStats()));
     }
     if (!discordBoosters.isEmpty()) {
@@ -232,6 +232,7 @@ public class BoostManager {
       String creator = boost.getString("creator", "SERVER");
       int announceInterval = boost.getInt("announcement-interval", 10);
       int duration = boost.getInt("duration", 60);
+      int minimumLevel = boost.getInt("min-level", 1);
       List<String> announceStart = PaletteUtil.color(
           boost.getStringList("announcement-start"));
       List<String> announceRun = PaletteUtil.color(
@@ -244,7 +245,7 @@ public class BoostManager {
       ConfigurationSection attrSection = boost.getConfigurationSection("stats");
       Map<StrifeStat, Float> attrMap = StatUtil.getStatMapFromSection(attrSection);
 
-      var loadedStatBoost = new LoadedStatBoost(creator, topBarIcon, topBarText, announceInterval, duration);
+      var loadedStatBoost = new LoadedStatBoost(creator, topBarIcon, topBarText, announceInterval, duration, minimumLevel);
       loadedStatBoost.getAnnounceStart().addAll(announceStart);
       loadedStatBoost.getAnnounceRun().addAll(announceRun);
       loadedStatBoost.getAnnounceEnd().addAll(announceEnd);

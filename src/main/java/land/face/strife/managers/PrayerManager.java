@@ -103,7 +103,7 @@ public class PrayerManager {
       try {
         prayerNames.put(p, PaletteUtil.color(
             plugin.getPrayerYAML().getString("prayer." + p.toString().toLowerCase() + ".name", "Changeme")));
-        rawPrayerNames.put(p, ChatColor.stripColor(prayerNames.get(p)));
+        rawPrayerNames.put(p, ChatColor.stripColor(prayerNames.get(p).replaceAll(" ", "_")));
         prayerLore.put(p, PaletteUtil.color(
             plugin.getPrayerYAML().getStringList("prayer." + p.toString().toLowerCase() + ".lore")));
         prayerActivationCost.put(p, (float)
@@ -339,7 +339,13 @@ public class PrayerManager {
       cost *= pietyMult;
       if (cost >= currentPrayer) {
         removed = true;
-        PaletteUtil.sendMessage(p, "|white||i|" + prayerNames.get(prayer) + " deactivated due to low Faith!");
+        String name = switch (prayer) {
+          case THIRTEEN -> getGodPassiveOne().get(selectedGod).getName();
+          case FOURTEEN -> getGodPassiveTwo().get(selectedGod).getName();
+          case FIFTEEN -> getGodPassiveThree().get(selectedGod).getName();
+          default -> prayerNames.get(prayer);
+        };
+        PaletteUtil.sendMessage(p, "|white||i|" + name + " deactivated due to low Faith!");
         it.remove();
       } else {
         switch (prayer) {

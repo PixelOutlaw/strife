@@ -20,13 +20,13 @@ public class ForceTarget extends Effect {
     if (fromTarget instanceof Mob) {
       if (overwrite) {
         TargetingUtil.expandMobRange(toTarget, fromTarget);
-        //((Mob) fromTarget).setTarget(toTarget);
+        ((Mob) fromTarget).setTarget(toTarget);
         return;
       }
       LivingEntity mobTarget = TargetingUtil.getMobTarget(fromTarget);
       if (mobTarget == null) {
         TargetingUtil.expandMobRange(toTarget, fromTarget);
-        //((Mob) fromTarget).setTarget(toTarget);
+        ((Mob) fromTarget).setTarget(toTarget);
       }
     }
     LookAt.forceLook(fromTarget, toTarget);

@@ -1,14 +1,9 @@
 package land.face.strife.listeners;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
-import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
-import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import land.face.announce.ModernAnnouncerPlugin;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.champion.Champion;

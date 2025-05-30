@@ -21,9 +21,10 @@ public class UberConfig {
 
   public static float ROLL_COST_FLAT, ROLL_COST_PERCENT, AIR_JUMP_COST_FLAT, AIR_JUMP_COST_PERCENT, LONG_JUMP_COST_FLAT,
       LONG_JUMP_COST_PERCENT, ROLL_POWER, ROLL_ASCENT, AIR_DASH_ASCENT, AIR_DASH_POWER, AGILITY_PARTICLE_SPEED,
-      LONG_JUMP_PARTICLE_SPEED, WALK_COST, WALK_COST_PERCENT, RUN_COST, RUN_COST_PERCENT;
+      LONG_JUMP_PARTICLE_SPEED, WALK_COST, WALK_COST_PERCENT, RUN_COST, RUN_COST_PERCENT, LONG_JUMP_POWER,
+      LONG_JUMP_FLAT_VELOCITY, LONG_JUMP_MOVE_MULT, LONG_JUMP_VERT_CLAMP;
 
-  public static int SNEAK_DISABLE_MS;
+  public static int SNEAK_DISABLE_MS, LONG_JUMP_TIME_LEEWAY;
   public static float DETECTION_THRESHOLD, BASE_AWARENESS_UNSEEN, BASE_AWARENESS_SEEN, AWARENESS_PER_LV_UNSEEN,
       AWARENESS_PER_LV_SEEN, SEEN_MAX_ANGLE, MAX_EXP_RANGE_SQUARED, BASE_SNEAK_EXP, SNEAK_EXP_PER_LEVEL,
       BASE_SNEAK_ATTACK_EXP, SNEAK_ATTACK_EXP_PER_LEVEL, BASE_STEALTH_PARTICLES, MOVEMENT_PARTICLE_MULT,
@@ -99,9 +100,15 @@ public class UberConfig {
     ROLL_COST_PERCENT = (float) p.getSettings().getDouble("config.mechanics.agility.percent-roll-cost", 0.12f);
     AIR_JUMP_COST_FLAT = (float) p.getSettings().getDouble("config.mechanics.agility.air-jump-cost", 6f);
     AIR_JUMP_COST_PERCENT = (float) p.getSettings().getDouble("config.mechanics.agility.air-jump-percent-cost", 0.12f);
+
     LONG_JUMP_COST_FLAT = (float) p.getSettings().getDouble("config.mechanics.agility.long-jump-cost", 6f);
-    LONG_JUMP_COST_PERCENT = (float) p.getSettings()
-        .getDouble("config.mechanics.agility.long-jump-percent-cost", 0.12f);
+    LONG_JUMP_COST_PERCENT = (float) p.getSettings().getDouble("config.mechanics.agility.long-jump-percent-cost", 0.12f);
+    LONG_JUMP_POWER = (float) p.getSettings().getDouble("config.mechanics.agility.long-jump-base-power", 5f);
+    LONG_JUMP_FLAT_VELOCITY = (float) p.getSettings().getDouble("config.mechanics.agility.long-jump-flat-vertical-bonus", 0.5f);
+    LONG_JUMP_MOVE_MULT = (float) p.getSettings().getDouble("config.mechanics.agility.long-jump-move-speed-mult", 0.25f);
+    LONG_JUMP_VERT_CLAMP = (float) p.getSettings().getDouble("config.mechanics.agility.long-jump-vertical-power-mult", 0.75f);
+    LONG_JUMP_TIME_LEEWAY = p.getSettings().getInt("config.mechanics.agility.long-jump-sneak-time-leeway", 150);
+
     FALL_LEEWAY_MS = p.getSettings().getInt("config.mechanics.agility.fall-damage-crouch-reduction-ms");
     ROLL_POWER = (float) p.getSettings().getDouble("config.mechanics.agility.roll-power", 1f);
     ROLL_ASCENT = (float) p.getSettings().getDouble("config.mechanics.agility.roll-ascent", 0.12f);

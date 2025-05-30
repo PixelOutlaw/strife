@@ -35,12 +35,12 @@ public class LifeTask extends BukkitRunnable {
   @Override
   public void run() {
     StrifeMob mob = parentMob.get();
-    if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
+    if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid() || mob.getLife() <= 0) {
       cancel();
       return;
     }
 
-    float maxLife = (float) mob.getEntity().getAttribute(Attribute.MAX_HEALTH).getBaseValue();
+    float maxLife = (float) mob.getEntity().getAttribute(Attribute.MAX_HEALTH).getValue();
     DamageUtil.restoreHealth(mob.getEntity(), getBonusHealth(), false, false);
     float lifeAmount = StatUtil.getLifeRegen(mob);
 

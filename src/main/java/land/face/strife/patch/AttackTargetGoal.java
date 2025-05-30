@@ -5,8 +5,6 @@ import com.destroystokyo.paper.entity.ai.GoalKey;
 import com.destroystokyo.paper.entity.ai.GoalType;
 import java.lang.ref.WeakReference;
 import java.util.EnumSet;
-import java.util.Random;
-import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import lombok.Getter;
 import org.bukkit.NamespacedKey;
@@ -66,7 +64,7 @@ public class AttackTargetGoal implements Goal<Mob> {
     attackTimestamp = System.currentTimeMillis() + 900;
     mob.lookAt(entity);
     mob.swingMainHand();
-    mob.swingOffHand();
+    //mob.swingOffHand();
     double baseDamage = 8;
     entity.damage(baseDamage, mob);
   }

@@ -57,7 +57,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.jetbrains.annotations.NotNull;
@@ -114,6 +113,8 @@ public class AbilityManager {
       doTargetNotFoundPrompt(caster, ability);
       return false;
     }
+    var cooldownTracker = getCooldownTracker(caster.getEntity(), ability.getId());
+    int chargesRemaining = cooldownTracker == null ? ability.getMaxCharges() : cooldownTracker.getChargesLeft();
     if (ability.getTargetType() == TargetType.TOGGLE) {
       boolean toggledOn = toggleAbility(caster, ability, slot);
       if (!toggledOn) {
@@ -124,7 +125,7 @@ public class AbilityManager {
     }
     if (caster.getChampion() != null && ability.getAbilityIconData() != null) {
       if (MoveUtil.hasMoved((Player) caster.getEntity(), 30000)) {
-        float violationLevel = plugin.getViolationManager().getSafespotViolationMult((Player) caster.getEntity());
+        float violationLevel = plugin.getViolationManager().fetchViolationMult((Player) caster.getEntity());
         caster.getChampion().getDetailsContainer().registerAbilityUse(ability, violationLevel);
       }
     }
@@ -147,6 +148,15 @@ public class AbilityManager {
       plugin.getEffectManager().processEffectList(caster, response, ability.getSneakEffects());
     } else {
       plugin.getEffectManager().processEffectList(caster, response, ability.getEffects());
+      if (chargesRemaining > 1) {
+        plugin.getEffectManager().processEffectList(caster, response, ability.getTwoChargeEffects());
+      }
+      if (chargesRemaining > 2) {
+        plugin.getEffectManager().processEffectList(caster, response, ability.getThreeChargeEffects());
+      }
+      if (chargesRemaining > 3) {
+        plugin.getEffectManager().processEffectList(caster, response, ability.getFourChargeEffects());
+      }
     }
 
     if (caster.getEntity() instanceof Player) {
@@ -344,7 +354,7 @@ public class AbilityManager {
       return false;
     }
 
-    if (type == TriggerAbilityType.PHASE_SHIFT) {
+    if (type == TriggerAbilityType.PHASE_SHIFT || type == TriggerAbilityType.DEATH) {
       for (Ability a : abilities) {
         execute(a, caster, caster, null);
       }
@@ -377,6 +387,19 @@ public class AbilityManager {
     return execute(ability, caster, target, null, true);
   }
 
+  public boolean checkClickCast(StrifeMob mob) {
+    if (plugin.getAttackSpeedManager().getRawMultiplier(mob.getEntity().getUniqueId(), false) < 0.05) {
+      var ability = mob.getChampion().getAbility(AbilitySlot.SLOT_D);
+      if (ability != null) {
+        var tracker = plugin.getAbilityManager().getCooldownTracker(mob.getEntity(), ability.getId());
+        if (tracker == null) {
+          return plugin.getAbilityIconManager().triggerAbility((Player) mob.getEntity(), 3);
+        }
+      }
+    }
+    return false;
+  }
+
   public void setGlobalCooldown(Player player, int ticks) {
     player.setCooldown(Material.GOLDEN_CHESTPLATE, Math.max(player.getCooldown(Material.GOLDEN_CHESTPLATE), ticks));
     player.setCooldown(Material.DIAMOND_CHESTPLATE, Math.max(player.getCooldown(Material.DIAMOND_CHESTPLATE), ticks));
@@ -405,7 +428,11 @@ public class AbilityManager {
         tracker.setToggleState(true);
       }
     }
-    tracker.setChargesLeft(tracker.getChargesLeft() - 1);
+    if (ability.isConsumeAllCharges()) {
+      tracker.setChargesLeft(0);
+    } else {
+      tracker.setChargesLeft(tracker.getChargesLeft() - 1);
+    }
     if (ability.isFullRecharge()) {
       tracker.setStart(cooldownMult);
     }
@@ -468,7 +495,7 @@ public class AbilityManager {
     switch (ability.getTargetType()) {
       case SELF, TOGGLE -> {
         targets.add(caster.getEntity());
-        return new TargetResponse(targets, true);
+        return new TargetResponse(targets, ability.isCancelOnDeath());
       }
       case PARTY -> {
         if (caster.getEntity() instanceof Player) {
@@ -477,32 +504,32 @@ public class AbilityManager {
         } else {
           targets.add(caster.getEntity());
         }
-        return new TargetResponse(targets, true);
+        return new TargetResponse(targets, ability.isCancelOnDeath());
       }
       case NEARBY_ALLIES -> {
         targets = HitDetectionUtil.getEntitiesInArea(caster.getEntity().getLocation(), ability.getRange());
         TargetingUtil.filterFriendlyEntities(targets, caster, true);
         TargetingUtil.filterByTargetPriority(targets, ability.getTargetingPriority(), caster, ability.getMaxTargets());
-        return new TargetResponse(targets, true);
+        return new TargetResponse(targets, ability.isCancelOnDeath());
       }
       case NEARBY_ENEMIES -> {
         float range = ability.getRange() * (1 + caster.getStat(StrifeStat.CAST_RANGE) / 120f);
         targets = HitDetectionUtil.getEntitiesInArea(caster.getEntity().getLocation(), range);
         TargetingUtil.filterFriendlyEntities(targets, caster, false);
         TargetingUtil.filterByTargetPriority(targets, ability.getTargetingPriority(), caster, ability.getMaxTargets());
-        return new TargetResponse(targets, true);
+        return new TargetResponse(targets, ability.isCancelOnDeath());
       }
       case MASTER -> {
         if (caster.getMaster() != null) {
           targets.add(caster.getMaster().getEntity());
         }
-        return new TargetResponse(targets, true);
+        return new TargetResponse(targets, ability.isCancelOnDeath());
       }
       case MINIONS -> {
         for (StrifeMob mob : caster.getMinions()) {
           targets.add(mob.getEntity());
         }
-        return new TargetResponse(targets, true);
+        return new TargetResponse(targets, ability.isCancelOnDeath());
       }
       case SINGLE_OTHER -> {
         if (target != null && target.getEntity() != null) {
@@ -513,7 +540,7 @@ public class AbilityManager {
         if (t != null) {
           targets.add(t.getEntity());
         }
-        return new TargetResponse(targets, true);
+        return new TargetResponse(targets, ability.isCancelOnDeath());
       }
       case TARGET_AREA -> {
         LivingEntity targetEntity = (target == null || target.getEntity() == null)
@@ -521,7 +548,7 @@ public class AbilityManager {
         float range = ability.getRange() * (1 + caster.getStat(StrifeStat.CAST_RANGE) / 120f);
         Location loc = TargetingUtil.getTargetLocation(caster.getEntity(), targetEntity, range,
             ability.isRaycastsTargetEntities(), ability.isFriendly());
-        return new TargetResponse(loc);
+        return new TargetResponse(loc, ability.isCancelOnDeath());
       }
       case TARGET_GROUND -> {
         float range = ability.getRange() * (1 + caster.getStat(StrifeStat.CAST_RANGE) / 120f);
@@ -529,7 +556,7 @@ public class AbilityManager {
         Location loc2 = TargetingUtil.getTargetLocation(caster.getEntity(),
             targetEntity, range, ability.isRaycastsTargetEntities(), ability.isFriendly());
         loc2 = TargetingUtil.modifyLocation(loc2, ability.getRange() + 2);
-        return new TargetResponse(loc2);
+        return new TargetResponse(loc2, ability.isCancelOnDeath());
       }
       case NEAREST_SOUL -> {
         float range = ability.getRange() * (1 + caster.getStat(StrifeStat.CAST_RANGE) / 120f);
@@ -537,12 +564,12 @@ public class AbilityManager {
         if (soul != null) {
           targets.add(soul.getOwner());
         }
-        TargetResponse response = new TargetResponse(targets, true);
+        TargetResponse response = new TargetResponse(targets, ability.isCancelOnDeath());
         response.setForce(true);
         return response;
       }
     }
-    return new TargetResponse(new HashSet<>());
+    return new TargetResponse(new HashSet<>(), ability.isCancelOnDeath());
   }
 
   public StrifeMob getSingleTarget(Ability ability, StrifeMob caster) {
@@ -639,7 +666,15 @@ public class AbilityManager {
       LogUtil.printWarning("Skipping ability " + key + " - No effects.");
       return;
     }
+    List<String> effectStrings2 = cs.getStringList("effects-two-charges");
+    List<String> effectStrings3 = cs.getStringList("effects-three-charges");
+    List<String> effectStrings4 = cs.getStringList("effects-four-charges");
+    List<String> killEffectStrings = cs.getStringList("passive-kill-effects");
     List<Effect> effects = plugin.getEffectManager().getEffects(effectStrings);
+    List<Effect> effects2 = plugin.getEffectManager().getEffects(effectStrings2);
+    List<Effect> effects3 = plugin.getEffectManager().getEffects(effectStrings3);
+    List<Effect> effects4 = plugin.getEffectManager().getEffects(effectStrings4);
+    List<Effect> killEffects = plugin.getEffectManager().getEffects(killEffectStrings);
 
     List<String> sneakEffectStrings = cs.getStringList("sneak-effects");
     List<Effect> sneakEffects = plugin.getEffectManager().getEffects(sneakEffectStrings);
@@ -695,6 +730,10 @@ public class AbilityManager {
         .maxCharges(maxCharges)
         .globalCooldownTicks(globalCooldownTicks)
         .effects(effects)
+        .twoChargeEffects(effects2)
+        .threeChargeEffects(effects3)
+        .fourChargeEffects(effects4)
+        .onKillEffects(killEffects)
         .toggleOffEffects(toggleOffEffects)
         .tags(new HashSet<>(cs.getStringList("tags")))
         .targetType(targetType)
@@ -712,12 +751,14 @@ public class AbilityManager {
         .passiveStatsOnCooldown(cs.getBoolean("passive-stats-on-cooldown", false))
         .abilityIconData(abilityIconData)
         .cancelStealth(cs.getBoolean("cancel-stealth", true))
+        .cancelOnDeath(cs.getBoolean("cancel-on-death", true))
         .deathUntoggle(cs.getBoolean("untoggle-on-death", false))
         .minCooldown(minCooldown)
         .weightScaling(weightScaling)
         .maxTargets(cs.getInt("max-targets", 8))
         .healthCost(cs.getBoolean("health-cost", false))
         .fullRecharge(cs.getBoolean("full-recharge", false))
+        .consumeAllCharges(cs.getBoolean("consume-all-charges", false))
         .build();
 
     ability.getPassiveStats().putAll(StatUtil.getStatMapFromSection(

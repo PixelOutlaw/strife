@@ -18,11 +18,12 @@
  */
 package land.face.strife.menus.stats;
 
+import static land.face.strife.menus.stats.StatsMenu.addStat;
+
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -32,8 +33,6 @@ import land.face.strife.stats.StrifeStat;
 import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -42,6 +41,8 @@ public class StatsBonusMenuItem extends MenuItem {
 
   private final StatsMenu statsMenu;
   private final Map<Player, ItemStack> cachedIcon = new WeakHashMap<>();
+  
+  private final FaceColor c = FaceColor.LIGHT_GREEN;
 
   StatsBonusMenuItem(StatsMenu statsMenu) {
     super(StringExtensionsKt.chatColorize("&a&lDrop Modifiers"), ItemUtils.BLANK.clone());
@@ -66,53 +67,58 @@ public class StatsBonusMenuItem extends MenuItem {
     lore.add(StatsMenu.breakLine);
 
     int totalCombatXp = Math.round(pStats.getStat(StrifeStat.XP_GAIN));
-    lore.add(ChatColor.GREEN + "Combat XP: " + ChatColor.WHITE + "+" + totalCombatXp + "%");
-    int running = Math.round(StrifePlugin.getInstance().getBoostManager().getStats().getOrDefault(StrifeStat.XP_GAIN, 0f));
+    lore.add(addStat(c, "Combat XP: ", totalCombatXp, "%", StatsMenu.INT_FORMAT, true));
+    int running = Math.round(StrifePlugin.getInstance().getBoostManager()
+        .getStats(player.getLevel()).getOrDefault(StrifeStat.XP_GAIN, 0f));
     int contributors = StrifePlugin.getInstance().getBoostManager().getContributorSize();
     int buffs = Math.round(pStats.getBuffStats().getOrDefault(StrifeStat.XP_GAIN, 0f));
     if (buffs > 0 || running > 0 || contributors > 0) {
       int fromItems = totalCombatXp - buffs - running;
       if (fromItems > 0) {
-        lore.add(ChatColor.GRAY + " +" + fromItems + "% From Items");
+        lore.add(FaceColor.GRAY + " +" + fromItems + "% From Items");
       }
       if (buffs > 0) {
-        lore.add(ChatColor.GRAY + " +" + buffs + "% From Buffs");
+        lore.add(FaceColor.GRAY + " +" + buffs + "% From Buffs");
       }
       if (running - contributors > 0) {
-        lore.add(ChatColor.GRAY + " +" + (running - contributors) + "% From Global Boosts");
+        lore.add(FaceColor.GRAY + " +" + (running - contributors) + "% From Global Boosts");
       }
       if (contributors > 0) {
-        lore.add(ChatColor.GRAY + " +" + contributors + "% From Contributors");
+        lore.add(FaceColor.GRAY + " +" + contributors + "% From Contributors");
+      }
+      if (fromItems < 0) {
+        lore.add(FaceColor.RED + " " + fromItems + "% From Items");
       }
     }
 
     int totalSkillXp = Math.round(pStats.getStat(StrifeStat.SKILL_XP_GAIN));
-    lore.add(ChatColor.GREEN + "Skill XP: " + ChatColor.WHITE + "+" + totalSkillXp + "%");
-    int running2 = Math.round(StrifePlugin.getInstance().getBoostManager().getStats().getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
+    lore.add(addStat(c, "Skill XP: ", totalSkillXp, "%", StatsMenu.INT_FORMAT, true));
+    int running2 = Math.round(StrifePlugin.getInstance().getBoostManager()
+        .getStats(player.getLevel()).getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
     int boosters = StrifePlugin.getInstance().getBoostManager().getDiscordBoostSize() * 2;
     int buffs2 = Math.round(pStats.getBuffStats().getOrDefault(StrifeStat.SKILL_XP_GAIN, 0f));
     if (buffs2 > 0 || running2 > 0 || boosters > 0) {
       int skillXpFromItems = totalSkillXp - buffs2 - running2;
       if (skillXpFromItems > 0) {
-        lore.add(ChatColor.GRAY + " +" + skillXpFromItems + "% From Items");
+        lore.add(FaceColor.GRAY + " +" + skillXpFromItems + "% From Items");
       }
       if (buffs2 > 0) {
-        lore.add(ChatColor.GRAY + " +" + buffs2 + "% From Buffs");
+        lore.add(FaceColor.GRAY + " +" + buffs2 + "% From Buffs");
       }
       if (running2 - boosters > 0) {
-        lore.add(ChatColor.GRAY + " +" + (running2 - boosters) + "% From Global Boosts");
+        lore.add(FaceColor.GRAY + " +" + (running2 - boosters) + "% From Global Boosts");
       }
       if (boosters > 0) {
-        lore.add(ChatColor.GRAY + " +" + boosters + "% From Discord Boosters");
+        lore.add(FaceColor.GRAY + " +" + boosters + "% From Discord Boosters");
+      }
+      if (skillXpFromItems < 0) {
+        lore.add(FaceColor.RED + " " + skillXpFromItems + "% From Items");
       }
     }
 
-    lore.add(ChatColor.GREEN + "Loot Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
-        .format(pStats.getStat(StrifeStat.ITEM_DISCOVERY)) + "%");
-    lore.add(ChatColor.GREEN + "Loot Rarity: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
-        .format(pStats.getStat(StrifeStat.ITEM_RARITY)) + "%");
-    lore.add(ChatColor.GREEN + "Gold Bonus: " + ChatColor.WHITE + "+" + StatsMenu.INT_FORMAT
-        .format(pStats.getStat(StrifeStat.GOLD_FIND)) + "%");
+    lore.add(addStat(c, "Loot Bonus: ", pStats.getStat(StrifeStat.ITEM_DISCOVERY), "%", StatsMenu.INT_FORMAT, true));
+    lore.add(addStat(c, "Loot Rarity: ", pStats.getStat(StrifeStat.ITEM_RARITY), "%", StatsMenu.INT_FORMAT, true));
+    lore.add(addStat(c, "Bits Dropped: ", pStats.getStat(StrifeStat.GOLD_FIND), "%", StatsMenu.INT_FORMAT, true));
 
     lore.add(StatsMenu.breakLine);
 

@@ -21,16 +21,14 @@ package land.face.strife.menus.stats;
 import static land.face.strife.menus.stats.StatsMenu.INT_FORMAT;
 import static land.face.strife.menus.stats.StatsMenu.ONE_DECIMAL;
 import static land.face.strife.menus.stats.StatsMenu.TWO_DECIMAL;
+import static land.face.strife.menus.stats.StatsMenu.addStat;
 import static land.face.strife.menus.stats.StatsMenu.breakLine;
 import static land.face.strife.util.UberConfig.BARRIER_RECHARGE_TICKS;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
-import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -44,7 +42,6 @@ import ninja.amp.ampmenus.events.ItemClickEvent;
 import ninja.amp.ampmenus.items.MenuItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -56,6 +53,8 @@ public class StatsDefenseMenuItem extends MenuItem {
   private final StatsMenu statsMenu;
   public static final String PER_TEN = ChatColor.GRAY + "/10s";
   private final Map<Player, ItemStack> cachedIcon = new WeakHashMap<>();
+
+  private final FaceColor c = FaceColor.YELLOW;
 
   StatsDefenseMenuItem(StatsMenu statsMenu) {
     super(StringExtensionsKt.chatColorize("&e&lDefense Stats"), ItemUtils.BLANK.clone());
@@ -80,25 +79,25 @@ public class StatsDefenseMenuItem extends MenuItem {
 
     lore.add(breakLine);
     if (!mob.hasTrait(StrifeTrait.NO_BARRIER_ALLOWED) && mob.getMaxBarrier() > 0) {
-      lore.add(addStat("Maximum Barrier: ", StatUtil.getStat(mob, StrifeStat.BARRIER), INT_FORMAT));
-      lore.add(addStat("Barrier Recharge: ", StatUtil.getBarrierPerSecond(mob) * 10, PER_TEN, INT_FORMAT));
+      lore.add(addStat(c, "Maximum Barrier: ", StatUtil.getStat(mob, StrifeStat.BARRIER), INT_FORMAT, false));
+      lore.add(addStat(c, "Barrier Recharge: ", StatUtil.getBarrierPerSecond(mob) * 10, PER_TEN, INT_FORMAT, false));
       var rechargeSeconds = ((float) BARRIER_RECHARGE_TICKS) / 20f;
       float barrierDelayMultiplier = 1 + mob.getStat(StrifeStat.BARRIER_START_SPEED) / 100;
-      lore.add(addStat("Barrier Delay: ", rechargeSeconds / barrierDelayMultiplier, "s", TWO_DECIMAL));
+      lore.add(addStat(c, "Barrier Delay: ", rechargeSeconds / barrierDelayMultiplier, "s", TWO_DECIMAL, false));
       if (mob.getStat(StrifeStat.BARRIER_REGEN) > 0) {
-        lore.add(addStat("Barrier Regeneration: ", StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN), PER_TEN, INT_FORMAT));
+        lore.add(addStat(c, "Barrier Regeneration: ", StatUtil.getStat(mob, StrifeStat.BARRIER_REGEN), PER_TEN, INT_FORMAT, false));
       }
       lore.add(breakLine);
     }
 
-    lore.add(addStat("Maximum Life: ", mob.getMaxLife(), INT_FORMAT));
+    lore.add(addStat(c, "Maximum Life: ", mob.getMaxLife(), INT_FORMAT, false));
     if (StatUtil.getStat(mob, StrifeStat.REGENERATION) > 0.5) {
-      lore.add(addStat("Life Regeneration: ", StatUtil.getStat(mob, StrifeStat.REGENERATION), PER_TEN, INT_FORMAT));
+      lore.add(addStat(c, "Life Regeneration: ", StatUtil.getStat(mob, StrifeStat.REGENERATION), PER_TEN, INT_FORMAT, false));
     }
     if (mob.getStat(StrifeStat.RAGE_WHEN_HIT) > 0) {
       lore.add(breakLine);
-      lore.add(addStat("Maximum Rage: ", mob.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT));
-      lore.add(addStat("Rage When Hit: ", mob.getStat(StrifeStat.RAGE_WHEN_HIT), ONE_DECIMAL));
+      lore.add(addStat(c, "Maximum Rage: ", mob.getStat(StrifeStat.MAXIMUM_RAGE), INT_FORMAT, false));
+      lore.add(addStat(c, "Rage When Hit: ", mob.getStat(StrifeStat.RAGE_WHEN_HIT), ONE_DECIMAL, false));
     }
     lore.add(breakLine);
 
@@ -109,12 +108,12 @@ public class StatsDefenseMenuItem extends MenuItem {
       physReduction = " " + FaceColor.GRAY + "(-" + INT_FORMAT.format(armorMultNumber) + "%" +
           FaceColor.TRUE_WHITE + "儀" + FaceColor.GRAY + ")";
     }
-    lore.add(addStat("Armor Rating: ", armor, INT_FORMAT) + physReduction);
+    lore.add(addStat(c, "Armor Rating: ", armor, INT_FORMAT, false) + physReduction);
 
     float tenacity = StatUtil.getStat(mob, StrifeStat.TENACITY);
     tenacity = Math.min(tenacity, 60);
     if (tenacity > 0.1) {
-      lore.add(addStat("Tenacity: ", tenacity, INT_FORMAT) + (tenacity == 60 ? (FaceColor.ORANGE + "(MAX)") : ""));
+      lore.add(addStat(c, "Tenacity: ", tenacity, INT_FORMAT, false) + (tenacity == 60 ? (FaceColor.ORANGE + "(MAX)") : ""));
       float amount = 100f * (1 - DamageUtil.getTenacityMult(mob, true));
       lore.add(FaceColor.GRAY.s() + " 0% ~ " + INT_FORMAT.format(amount) + "% Damage Reduction");
     }
@@ -122,7 +121,7 @@ public class StatsDefenseMenuItem extends MenuItem {
     float evasion = StatUtil.getEvasion(mob);
     float dodgeChance = StatUtil.getStat(mob, StrifeStat.DODGE_CHANCE);
     if (evasion > 0.1) {
-      lore.add(addStat("Evasion Rating: ", evasion, INT_FORMAT));
+      lore.add(addStat(c, "Evasion Rating: ", evasion, INT_FORMAT, false));
     }
     if (evasion > 10 || dodgeChance > 0.5) {
       Map<StrifeStat, Float> normalMobStats = StrifePlugin.getInstance()
@@ -134,7 +133,7 @@ public class StatsDefenseMenuItem extends MenuItem {
       if (dodgeFromEvasion > 0) {
         evasionRate = (100 - dodgeChance) * dodgeFromEvasion;
       }
-      lore.add(addStat("Chance To Avoid Hits: ", evasionRate + dodgeChance, INT_FORMAT) + "%");
+      lore.add(addStat(c, "Chance To Avoid Hits: ", evasionRate + dodgeChance, "%", INT_FORMAT, false));
       if (dodgeChance > 0.5) {
         lore.add(FaceColor.GRAY + " +" + INT_FORMAT.format(dodgeChance) + "% From Dodge Chance");
       }
@@ -143,15 +142,15 @@ public class StatsDefenseMenuItem extends MenuItem {
       }
     }
     if (mob.getStat(StrifeStat.BLOCK) > 0) {
-      lore.add(addStat("Block Rating: ", mob.getStat(StrifeStat.BLOCK), INT_FORMAT));
+      lore.add(addStat(c, "Block Rating: ", mob.getStat(StrifeStat.BLOCK), INT_FORMAT, false));
       float blockRecovery = mob.getStat(StrifeStat.BLOCK_RECOVERY);
       if (blockRecovery != 0) {
         String plus = blockRecovery >= 0 ? FaceColor.WHITE + "+" : "";
-        lore.add(addStat("Block Recovery: " + plus, mob.getStat(StrifeStat.BLOCK_RECOVERY), INT_FORMAT) + "%");
+        lore.add(addStat(c, "Block Recovery: " + plus, mob.getStat(StrifeStat.BLOCK_RECOVERY), "%", INT_FORMAT, true));
       }
     }
     if (mob.getStat(StrifeStat.DAMAGE_REFLECT) > 0) {
-      lore.add(addStat("Reflected Damage: ", mob.getStat(StrifeStat.DAMAGE_REFLECT), INT_FORMAT));
+      lore.add(addStat(c, "Reflected Damage: ", mob.getStat(StrifeStat.DAMAGE_REFLECT), INT_FORMAT, false));
     }
     lore.add(breakLine);
     lore.add(FaceColor.YELLOW + "Elemental Resistances:");
@@ -196,11 +195,4 @@ public class StatsDefenseMenuItem extends MenuItem {
     super.onItemClick(event);
   }
 
-  private String addStat(String name, double value, DecimalFormat format) {
-    return FaceColor.YELLOW + name + FaceColor.WHITE + format.format(value);
-  }
-
-  private String addStat(String name, double value, String extra, DecimalFormat format) {
-    return FaceColor.YELLOW + name + FaceColor.WHITE + format.format(value) + extra;
-  }
 }

@@ -60,6 +60,7 @@ public class WorldSpaceEffect {
         stand.setYHeadRot(nextLocation.getYaw());
         modeledEntity = ModelEngineAPI.createModeledEntity(stand);
         if (modeledEntity != null) {
+          modeledEntity.setSaved(false);
           if (modelColor != null) {
             model.setDefaultTint(modelColor);
           }

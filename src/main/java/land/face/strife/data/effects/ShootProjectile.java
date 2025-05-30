@@ -151,14 +151,19 @@ public class ShootProjectile extends Effect {
       if (maxDuration != -1) {
         int tick = (int) (((float) maxDuration) * (1 + caster.getStat(StrifeStat.CAST_RANGE) / 100));
         Bukkit.getScheduler().runTaskLater(getPlugin(), () -> {
-          if (projectile.isValid()) {
-            for (Effect effect : hitEffects) {
-              if (effect instanceof LocationEffect) {
-                ((LocationEffect) effect).applyAtLocation(caster, projectile.getLocation());
-              }
-            }
-            projectile.remove();
+          if (!projectile.isValid()) {
+            return;
           }
+          if (!hitEffects.isEmpty()) {
+            var targetResponse = new TargetResponse(projectile.getLocation().clone());
+            getPlugin().getEffectManager().processEffectList(
+                caster,
+                targetResponse,
+                hitEffects,
+                ProjectileUtil.getShotId(projectile)
+            );
+          }
+          projectile.remove();
         }, tick);
       }
 
@@ -201,7 +206,7 @@ public class ShootProjectile extends Effect {
     if (ignoreMultishot || projectileEntity == EntityType.FIREBALL) {
       return 1;
     }
-    return ProjectileUtil.getTotalProjectiles(quantity, caster.getStat(StrifeStat.MULTISHOT),
+    return ProjectileUtil.getTotalProjectiles(quantity, 1, caster.getStat(StrifeStat.MULTISHOT),
         caster.getStat(StrifeStat.EXTRA_PROJECTILES));
   }
 

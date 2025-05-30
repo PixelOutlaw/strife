@@ -101,11 +101,11 @@ public class StatUpdateManager {
   }
 
   public void updateHealth(StrifeMob mob) {
-    if (!mob.getEntity().isValid()) {
+    if (!mob.getEntity().isValid() || mob.getLife() <= 0) {
       return;
     }
     double health = mob.getEntity().getHealth();
-    double oldMaxHealth = mob.getEntity().getAttribute(Attribute.MAX_HEALTH).getBaseValue();
+    double oldMaxHealth = mob.getEntity().getAttribute(Attribute.MAX_HEALTH).getValue();
     double maxHealth = Math.max(StatUtil.getStat(mob, StrifeStat.HEALTH), 1);
     mob.getEntity().getAttribute(Attribute.MAX_HEALTH).setBaseValue(maxHealth);
     mob.getEntity().setHealth(Math.min(maxHealth, health * (maxHealth / oldMaxHealth)));
@@ -124,12 +124,14 @@ public class StatUpdateManager {
   }
 
   public void updateSize(StrifeMob mob) {
-    float value = mob.getStat(StrifeStat.CHARACTER_SIZE);
-    if (Math.round(value) == 100) {
-      return;
-    }
-    value = mob.getStat(StrifeStat.CHARACTER_SIZE) / 100f;
+    float value = mob.getStat(StrifeStat.CHARACTER_SIZE) / 100f;
     mob.getEntity().getAttribute(Attribute.SCALE).setBaseValue(value);
+  }
+
+  public void updateMoveEfficiency(StrifeMob mob) {
+    var amount = Math.max(0, mob.getStat(StrifeStat.SLIPPERYNESS));
+    float value = 1f - (100f / (100f + amount));
+    mob.getEntity().getAttribute(Attribute.MOVEMENT_EFFICIENCY).setBaseValue(value);
   }
 
   public void updateRange(StrifeMob mob) {
@@ -197,6 +199,7 @@ public class StatUpdateManager {
     updateHealth(strifeMob);
     updateWeight(strifeMob);
     updateSize(strifeMob);
+    updateMoveEfficiency(strifeMob);
     updateJump(strifeMob);
     updateLeg(strifeMob);
 

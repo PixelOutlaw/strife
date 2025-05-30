@@ -27,6 +27,7 @@ import land.face.strife.events.AirJumpEvent;
 import land.face.strife.managers.GuiManager;
 import land.face.strife.stats.StrifeStat;
 import land.face.strife.stats.StrifeTrait;
+import land.face.strife.timers.RecallTimer;
 import land.face.strife.util.DirectionUtil;
 import land.face.strife.util.JumpUtil;
 import land.face.strife.util.StatUtil;
@@ -81,15 +82,32 @@ public class AgilityListener implements Listener {
 
   @EventHandler(priority = EventPriority.LOWEST)
   public void airJump(ToggleJumpEvent event) {
-    if (!event.isState()) {
+    if (!event.isState() || event.getPlayer().getGameMode() != GameMode.ADVENTURE) {
       return;
     }
-    if (event.getPlayer().isOnGround() || event.getPlayer().isFlying() ||
-        event.getPlayer().getGameMode() != GameMode.ADVENTURE) {
+    if (event.getPlayer().isFlying() || event.getPlayer().isOnGround()) {
       return;
     }
+    Long lastJump = LaunchAndLandListener.LAST_JUMP.getOrDefault(event.getPlayer().getUniqueId(), 0L);
+    if (System.currentTimeMillis() - lastJump < 100) {
+      return;
+    }
+    var fallDist = event.getPlayer().getFallDistance();
     var velocity = MoveUtil.getVelocity(event.getPlayer());
-    if (velocity.getY() >= 0 && GroundedCondition.isGroundedOrCloseToGround(event.getPlayer(), 1.5f)) {
+
+    long timeOffGround = MoveUtil.timeOffGround(event.getPlayer());
+    if (timeOffGround < 100) {
+      return;
+    }
+    if (velocity.getY() >= 0 && timeOffGround < 200) {
+      return;
+    }
+    // max normal jump velocity is -0.445943 blocks/tick
+    // half slab land velocity is -0.230126 blocks/tick
+    boolean probableNormalJumpVelocity = velocity.getY() > -0.485 && velocity.getY() < -0.185;
+    boolean probableNormalJumpFallRange = fallDist < 1.26f && fallDist > 0.69f;
+    if (probableNormalJumpFallRange && probableNormalJumpVelocity &&
+        GroundedCondition.isGroundedOrCloseToGround(event.getPlayer(), 0.65f)) {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
@@ -115,6 +133,11 @@ public class AgilityListener implements Listener {
     Bukkit.getPluginManager().callEvent(airJumpEvent);
 
     plugin.getGuiManager().updateAirJumpDisplay(mob);
+  }
+
+  @EventHandler(priority = EventPriority.LOW)
+  public void cancelRecall(PlayerToggleSneakEvent event) {
+    RecallTimer.cancelRecall(event.getPlayer());
   }
 
   @EventHandler(priority = EventPriority.NORMAL)
@@ -181,7 +204,11 @@ public class AgilityListener implements Listener {
     player.addPotionEffect(new PotionEffect(PotionEffectType.WIND_CHARGED, ROLL_LEVI_TICKS, 2, true, false));
     PotionListener.ignoreFx = false;
 
-    player.setVelocity(dodgeVector.multiply(ROLL_POWER).setY(ROLL_ASCENT));
+    var velocity = dodgeVector.multiply(ROLL_POWER).setY(ROLL_ASCENT);
+    player.setVelocity(velocity);
+    Bukkit.getScheduler().runTaskLater(plugin, () -> player.setVelocity(velocity), 1L);
+    Bukkit.getScheduler().runTaskLater(plugin, () -> player.setVelocity(velocity), 2L);
+    Bukkit.getScheduler().runTaskLater(plugin, () -> player.setVelocity(velocity), 3L);
 
     if (plugin.isInHome(player)) {
       player.spawnParticle(AGILITY_PARTICLE, player.getLocation(), 10, 0, 0, 0, LONG_JUMP_PARTICLE_SPEED);

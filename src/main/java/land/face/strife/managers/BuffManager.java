@@ -49,7 +49,7 @@ public class BuffManager {
     Map<StrifeStat, Float> statsMap = StatUtil.getStatMapFromSection(cs.getConfigurationSection("stats"));
     int maxStacks = cs.getInt("max-stacks", 1);
     int uses = cs.getInt("uses", -1);
-    int durationSeconds = cs.getInt("duration-seconds", 10);
+    float durationSeconds = (float) cs.getDouble("duration-seconds", 10);
     TriggerType useType = null;
     try {
       String typeString = cs.getString("use-type");

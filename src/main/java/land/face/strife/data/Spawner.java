@@ -2,6 +2,7 @@ package land.face.strife.data;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ChunkUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
+import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,7 +11,6 @@ import java.util.List;
 import java.util.Set;
 import land.face.strife.StrifePlugin;
 import land.face.strife.events.SpawnerSpawnEvent;
-import land.face.strife.managers.GuiManager;
 import land.face.strife.managers.IndicatorManager.IndicatorStyle;
 import land.face.strife.patch.ReturnHomeGoal;
 import land.face.strife.util.DateTimeUtil;
@@ -19,10 +19,10 @@ import land.face.strife.util.SpecialStatusUtil;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentBuilder;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
-import net.kyori.adventure.text.event.ClickEvent.Action;
-import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -54,6 +54,7 @@ public class Spawner extends BukkitRunnable {
   @Getter @Setter private int endTime;
 
   @Getter @Setter private long snoozeTime = System.currentTimeMillis();
+  @Getter @Setter private long mobModSnooze = System.currentTimeMillis();
 
   private transient float squaredLeashRange;
 
@@ -141,7 +142,7 @@ public class Spawner extends BukkitRunnable {
       }
       StrifeMob mob = StrifePlugin.getInstance().getStrifeMobManager().getStatMob(
           (LivingEntity) StrifePlugin.getInstance().getUniqueEntityManager()
-              .spawnUnique(spawner.getUniqueEntity(), spawner.getLocation()));
+              .spawnUnique(spawner.getUniqueEntity(), spawner.getLocation(), spawner));
       SpawnerSpawnEvent spawnerSpawnEvent = new SpawnerSpawnEvent(mob, spawner);
       Bukkit.getPluginManager().callEvent(spawnerSpawnEvent);
       if (mob == null || mob.getEntity() == null || !mob.getEntity().isValid()) {
@@ -158,6 +159,7 @@ public class Spawner extends BukkitRunnable {
 
       if (mob.getEntity() == null || !mob.getEntity().isValid()) {
         spawner.setSnoozeTime(System.currentTimeMillis() + 10000);
+        spawner.setMobModSnooze(System.currentTimeMillis() + 15000);
         return;
       }
       if (mob.getMods().size() >= 2) {
@@ -192,23 +194,44 @@ public class Spawner extends BukkitRunnable {
   }
 
   private static void announceSpawnToNearbyPlayers(StrifeMob mob, Location location) {
+    List<Player> players = new ArrayList<>();
     for (Player p : Bukkit.getOnlinePlayers()) {
       if (location.getWorld() != p.getWorld()) {
         continue;
       }
       Vector diff = location.toVector().subtract(p.getLocation().toVector());
       if (diff.lengthSquared() < 6400) {
-        p.playSound(location, Sound.BLOCK_BEACON_AMBIENT, 100, 0.8F);
-        var text = Component.text(StringExtensionsKt.chatColorize(
-            "&7&o&lWoah!! &f" + mob.getEntity().getCustomName() + "&f has spawned nearby!\n "));
-        var waypointButton = Component.text("[Click For Waypoint]");
-        waypointButton.color(TextColor.color(FaceColor.CYAN.getRawColor().getRGB()));
-        waypointButton.clickEvent(ClickEvent.clickEvent(Action.RUN_COMMAND,
-            "/waypointer point " + location.getX() + " " + (location.getY() + 2) + " " + location.getZ() + " "
-                + location.getWorld().getName() + " Mob_Spawn"));
-        p.sendMessage(text.append(waypointButton));
+        players.add(p);
       }
     }
+    if (players.isEmpty()) {
+      return;
+    }
+
+    TextComponent message = PaletteUtil.convert(PaletteUtil.color(
+        "|lgray||b|Woah!! |white|[" + mob.getEntity().getCustomName() + "|white|] has spawned nearby"
+    ));
+    message = message.append(Component.newline());
+
+    var command = "/waypointer point " +
+        location.getX() + " " +
+        (location.getY() + 2) + " " +
+        location.getZ() + " " +
+        location.getWorld().getName() + " Mob_Spawn";
+
+    Component link = Component.text("<< Click To Waypoint There! >>")
+        .color(NamedTextColor.GOLD)
+        .clickEvent(ClickEvent.runCommand(command))
+        .hoverEvent(HoverEvent.showText(
+            Component.text("Set Waypoint!", NamedTextColor.GREEN)
+        ));
+    message = message.append(link);
+
+    TextComponent finalMessage = message;
+    players.forEach(p -> {
+      p.playSound(location, Sound.BLOCK_BEACON_AMBIENT, 100, 0.8F);
+      p.sendMessage(finalMessage);
+    });
   }
 
   public void addRespawnTimeIfApplicable(LivingEntity livingEntity) {

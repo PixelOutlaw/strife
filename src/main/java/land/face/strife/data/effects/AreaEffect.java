@@ -146,7 +146,7 @@ public class AreaEffect extends LocationEffect {
       int numTargets = maxTargets;
       if (multishotScaling) {
         float mult = caster.getStat(StrifeStat.MULTISHOT) * (float) Math.pow(StrifePlugin.RNG.nextFloat(), 1.15);
-        numTargets = ProjectileUtil.getTotalProjectiles(numTargets, mult, caster.getStat(StrifeStat.EXTRA_PROJECTILES));
+        numTargets = ProjectileUtil.getTotalProjectiles(numTargets, 1, mult, caster.getStat(StrifeStat.EXTRA_PROJECTILES));
       }
       if (pierceScaling) {
         int bonusTargets = 0;

@@ -319,7 +319,7 @@ public class StatUtil {
 
     float attackTime = BASE_ATTACK_SECONDS;
 
-    attackTime *= (1f + ae.getFrost() / 10000f);
+    attackTime *= (1f + ae.getFrost() / 200f);
 
     float attackBonus = ae.getStat(StrifeStat.ATTACK_SPEED);
 

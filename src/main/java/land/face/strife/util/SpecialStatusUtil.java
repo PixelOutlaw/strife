@@ -14,7 +14,6 @@ public class SpecialStatusUtil {
   private static final Map<Entity, Boolean> IGNORE_TARGET_LEVEL = new WeakHashMap<>();
   private static final Map<Entity, Boolean> WEAK_AGGRO = new WeakHashMap<>();
   private static final Map<Entity, Boolean> FALL_IMMUNE = new WeakHashMap<>();
-  private static final Map<Entity, Boolean> SNEAK_IMMUNE = new WeakHashMap<>();
   private static final Map<Entity, Boolean> SPAWNER_SPAWNED = new WeakHashMap<>();
   private static final Map<Entity, Boolean> GUILD_MOB = new WeakHashMap<>();
 
@@ -71,14 +70,6 @@ public class SpecialStatusUtil {
 
   public static boolean isGuildMob(Entity e) {
     return GUILD_MOB.getOrDefault(e, false);
-  }
-
-  public static void setSneakImmune(Entity e) {
-    SNEAK_IMMUNE.put(e, true);
-  }
-
-  public static boolean isSneakImmune(Entity e) {
-    return SNEAK_IMMUNE.getOrDefault(e, false);
   }
 
   public static void setSpawnerMob(Entity e) {

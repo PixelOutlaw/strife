@@ -75,7 +75,7 @@ public class PathItem extends MenuItem {
     ItemStack stack = plugin.getPathManager().getIcon(path,
         champion.getSaveData().getPathMap().get(path)).clone();
     stack.setType(Material.PAPER);
-    ItemUtils.setCustomData(stack, List.of("path-icon", "chosen"));
+    ItemUtils.setCustomData(stack, List.of("path-chosen"));
     return stack;
   }
 
@@ -109,12 +109,12 @@ public class PathItem extends MenuItem {
 
     lockedIcon = new ItemStack(Material.PAPER);
     ItemStackExtensionsKt.setDisplayName(lockedIcon, StringExtensionsKt.chatColorize("&8&l[ Locked ]"));
-    ItemUtils.setCustomData(lockedIcon, List.of("path-icon", "locked"));
+    ItemUtils.setCustomData(lockedIcon, List.of("path-locked"));
     lockedIcon.editMeta(m -> m.setLore(lore));
 
     unlockedIcon = new ItemStack(Material.PAPER);
     ItemStackExtensionsKt.setDisplayName(unlockedIcon, TextUtils.color("&f&l&nClick to choose your path!"));
-    ItemUtils.setCustomData(lockedIcon, List.of("path-icon", "open"));
+    ItemUtils.setCustomData(unlockedIcon, List.of("path-open"));
 
     unlockedIcon.editMeta(m -> m.setLore(lore));
 /*

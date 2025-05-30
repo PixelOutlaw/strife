@@ -2,96 +2,99 @@ package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.MoveUtil;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.WeakHashMap;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.UniqueEntity;
+import land.face.strife.data.pojo.ViolationData;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class ViolationManager {
 
   private final StrifePlugin plugin;
-
-  private static Map<UUID, Location> lastPlayerLocationOnKill;
-  private static Map<UUID, Long> lastViolationTime;
-  private static Map<UUID, Integer> violationLevel;
-  private static Map<UUID, Float> cachedViolation;
-
+  private static final Map<UUID, ViolationData> VIOLATIONS = new HashMap<>();
   private final List<String> penaltyFreeWorlds;
 
   public ViolationManager(StrifePlugin plugin) {
     this.plugin = plugin;
     penaltyFreeWorlds = plugin.getSettings().getStringList("config.penalty-free-worlds");
-    lastPlayerLocationOnKill = new HashMap<>();
-    lastViolationTime = new HashMap<>();
-    violationLevel = new HashMap<>();
-    cachedViolation = new HashMap<>();
+    Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+      for (var vData : VIOLATIONS.values()) {
+        if (vData.getLevel() > 0) {
+          vData.setLevel(vData.getLevel() - 1);
+        }
+      }
+    }, 99L, 5 * 20L);
   }
 
-  public float getSafespotViolationMult(Player player) {
-    return cachedViolation.getOrDefault(player.getUniqueId(), 1f);
+  public float fetchViolationMult(Player player) {
+    if (VIOLATIONS.containsKey(player.getUniqueId())) {
+      return VIOLATIONS.get(player.getUniqueId()).getMultiplier();
+    }
+    VIOLATIONS.put(player.getUniqueId(), new ViolationData(player));
+    return 1f;
   }
 
-  public float calculateSafespotViolationMult(Player player) {
-    if (lastViolationTime.getOrDefault(player.getUniqueId(), 0L) > System.currentTimeMillis()) {
-      return cachedViolation.getOrDefault(player.getUniqueId(), 1f);
-    }
-    if (lastViolationTime.getOrDefault(player.getUniqueId(), 0L) + 300000 < System.currentTimeMillis()) {
-      wipePlayer(player);
-      return 1f;
-    }
-    if (!lastPlayerLocationOnKill.containsKey(player.getUniqueId())) {
-      wipePlayer(player);
-      return 1f;
+  public float updateViolationLevel(Player player) {
+    var vData = VIOLATIONS.getOrDefault(player.getUniqueId(), new ViolationData(player));
+    if (vData.getViolationSleepTime() > System.currentTimeMillis()) {
+      VIOLATIONS.put(player.getUniqueId(), vData);
+      return vData.getMultiplier();
     }
     float mult = 1.0f;
-    int amount = violationLevel.getOrDefault(player.getUniqueId(), 0);
-    amount += getViolationChange(player);
-    amount = Math.max(Math.min(amount, 200), 0);
-    violationLevel.put(player.getUniqueId(), amount);
-    if (amount >= 100) {
-      mult = (200f - amount) / 100f;
+    int newLevel = vData.getLevel();
+    newLevel += getViolationChange(player, vData);
+    newLevel = Math.clamp(newLevel, 0, 195);
+    vData.setLevel(newLevel);
+    if (newLevel >= 100) {
+      mult = (200f - newLevel) / 100f;
     }
-    cachedViolation.put(player.getUniqueId(), mult);
-    lastViolationTime.put(player.getUniqueId(), System.currentTimeMillis() + 100L);
-    lastPlayerLocationOnKill.put(player.getUniqueId(), player.getLocation());
+    vData.setMultiplier(mult);
+    vData.setLastLocation(player.getLocation());
+    vData.setViolationSleepTime(System.currentTimeMillis() + 200L);
     return mult;
   }
 
-  private int getViolationChange(Player player) {
-    if (lastPlayerLocationOnKill.get(player.getUniqueId()).getWorld() != player.getWorld()) {
+  private int getViolationChange(Player player, ViolationData vData) {
+    if (!vData.getLastLocation().getWorld().getName().equals(player.getWorld().getName())) {
       return -200;
     }
     if (penaltyFreeWorlds.contains(player.getLocation().getWorld().getName())) {
       return -200;
     }
     if (!MoveUtil.hasMoved(player, 60000)) {
-      return 35;
+      return 40;
     }
     if (!MoveUtil.hasMoved(player, 10000)) {
-      return 5;
+      return 10;
     }
-    double distance = lastPlayerLocationOnKill.get(player.getUniqueId()).distanceSquared(player.getLocation());
-    if (distance < 0.35) {
-      return 3;
-    }
-    if (distance < 1.25) {
-      return 2;
-    }
+    double distance = vData.getLastLocation().distanceSquared(player.getLocation());
     if (distance < 2) {
-      return 1;
+      return 10;
+    }
+    if (distance < 4) {
+      return 6;
+    }
+    if (distance < 9) {
+      return 4;
     }
     if (distance < 16) {
-      return -12;
+      return 2;
     }
     if (distance < 25) {
-      return -70;
+      return 0;
+    }
+    if (distance < 36) {
+      return -16;
+    }
+    if (distance < 49) {
+      return -32;
+    }
+    if (distance < 100) {
+      return -50;
     }
     return -200;
   }
@@ -146,12 +149,5 @@ public class ViolationManager {
       return baseXpMult;
     }
     return Math.max(uniqueEntity.getMinLevelClampMult(), baseXpMult);
-  }
-
-  private void wipePlayer(Player player) {
-    lastPlayerLocationOnKill.remove(player.getUniqueId());
-    lastViolationTime.remove(player.getUniqueId());
-    violationLevel.remove(player.getUniqueId());
-    cachedViolation.remove(player.getUniqueId());
   }
 }

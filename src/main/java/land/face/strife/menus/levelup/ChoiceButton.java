@@ -18,7 +18,9 @@
  */
 package land.face.strife.menus.levelup;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
+import java.util.List;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.LevelPath.Choice;
 import land.face.strife.data.LevelPath.Path;
@@ -43,6 +45,7 @@ public class ChoiceButton extends MenuItem {
     this.path = path;
     this.choice = choice;
     icon = plugin.getPathManager().getIcon(path, choice);
+    ItemUtils.setCustomData(icon, List.of("skill-orb"));
   }
 
   @Override

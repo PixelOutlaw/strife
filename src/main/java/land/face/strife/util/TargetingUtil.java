@@ -22,6 +22,7 @@ import land.face.strife.data.effects.AreaEffect.TargetingPriority;
 import land.face.strife.data.effects.TargetingComparators.DistanceComparator;
 import land.face.strife.data.effects.TargetingComparators.FlatHealthComparator;
 import land.face.strife.data.effects.TargetingComparators.PercentHealthComparator;
+import land.face.strife.managers.UniqueEntityManager;
 import land.face.strife.util.DamageUtil.OriginLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.FluidCollisionMode;
@@ -73,6 +74,7 @@ public class TargetingUtil {
     if (areaTargets.isEmpty()) {
       return;
     }
+    maxTargets = Math.min(maxTargets, areaTargets.size());
     List<LivingEntity> targetList = new ArrayList<>(areaTargets);
     switch (priority) {
       case RANDOM -> {
@@ -377,15 +379,19 @@ public class TargetingUtil {
         if (StringUtils.isBlank(extra)) {
           return le.getLocation().clone();
         }
-        ModeledEntity modeledEntity = ModelEngineAPI.getModeledEntity(le);
-        if (modeledEntity == null) {
-          return le.getLocation().clone();
+        ActiveModel activeModel = UniqueEntityManager.MODEL_MAP.get(le);
+        if (activeModel == null) {
+          ModeledEntity modeledEntity = ModelEngineAPI.getModeledEntity(le);
+          if (modeledEntity == null) {
+            return le.getLocation().clone();
+          }
+          Optional<ActiveModel> foundModel = modeledEntity.getModels().values().stream().findFirst();
+          if (foundModel.isEmpty()) {
+            return le.getLocation().clone();
+          }
+          activeModel = foundModel.get();
         }
-        Optional<ActiveModel> activeModel = modeledEntity.getModels().values().stream().findFirst();
-        if (activeModel.isEmpty()) {
-          return le.getLocation().clone();
-        }
-        Optional<ModelBone> bone = activeModel.get().getBone(extra);
+        Optional<ModelBone> bone = activeModel.getBone(extra);
         if (bone.isPresent()) {
           return bone.get().getLocation().clone();
         } else {

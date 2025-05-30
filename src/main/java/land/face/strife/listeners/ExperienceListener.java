@@ -109,7 +109,7 @@ public class ExperienceListener implements Listener {
         .calculateLevelPenalty(expMultiplier, StatUtil.getMobLevel(event.getEntity()), killers, ue);
 
     for (Player player : killers) {
-      float xpPenalty = plugin.getViolationManager().calculateSafespotViolationMult(player);
+      float xpPenalty = plugin.getViolationManager().updateViolationLevel(player);
       //Bukkit.getLogger().info("[xxxxx] safespotpenalty " + xpPenalty);
       float finalXp = (droppedXp * expMultiplier * xpPenalty);
       if (finalXp < 1) {

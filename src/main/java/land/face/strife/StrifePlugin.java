@@ -54,6 +54,7 @@ import land.face.strife.commands.InspectCommand;
 import land.face.strife.commands.LevelUpCommand;
 import land.face.strife.commands.MountCommand;
 import land.face.strife.commands.PrayerCommand;
+import land.face.strife.commands.RecallCommand;
 import land.face.strife.commands.SettingsCommand;
 import land.face.strife.commands.SpawnerCommand;
 import land.face.strife.commands.StrifeCommand;
@@ -68,7 +69,9 @@ import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.champion.LifeSkillType;
+import land.face.strife.data.effects.Bleed;
 import land.face.strife.data.effects.Effect;
+import land.face.strife.data.effects.Frost;
 import land.face.strife.data.effects.TriggerLoreAbility;
 import land.face.strife.data.effects.Wait;
 import land.face.strife.hooks.SnazzyPartiesHook;
@@ -163,16 +166,18 @@ import land.face.strife.stats.AbilitySlot;
 import land.face.strife.storage.DataStorage;
 import land.face.strife.storage.FlatfileStorage;
 import land.face.strife.tasks.BoostTickTask;
+import land.face.strife.tasks.EepyTask;
 import land.face.strife.tasks.EnvironmentalTickTask;
 import land.face.strife.tasks.EveryTickTask;
 import land.face.strife.tasks.IndicatorTask;
 import land.face.strife.tasks.ParticleTask;
 import land.face.strife.tasks.SaveTask;
-import land.face.strife.tasks.StealthParticleTask;
+import land.face.strife.tasks.StealthTask;
 import land.face.strife.tasks.StrifeMobTracker;
 import land.face.strife.tasks.VirtualEntityTask;
 import land.face.strife.util.DOTUtil;
 import land.face.strife.util.DamageUtil;
+import land.face.strife.util.DamageUtil.DamageScale;
 import land.face.strife.util.LogUtil;
 import land.face.strife.util.LogUtil.LogLevel;
 import land.face.strife.util.PlayerDataUtil;
@@ -194,6 +199,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import soujah.dev.honeyImHome2.HoneyImHome2;
@@ -213,7 +219,7 @@ public class StrifePlugin extends FacePlugin {
   @Getter
   private MasterConfiguration settings;
   @Getter
-  private SmartYamlConfiguration configYAML, langYAML, attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML, effectYAML,
+  private SmartYamlConfiguration configYAML, langYAML, attributesYAML, baseStatsYAML, equipmentYAML, conditionYAML,
       pathYAML, loreAbilityYAML, buffsYAML, modsYAML, globalBoostsYAML, mountsYAML, prayerYAML, displaysYaml,
       herdYML, contactPrefabsYml, lorebooksYml, spawnerYAML, contactSpawnersYaml;
   private List<SmartYamlConfiguration> uniques;
@@ -372,7 +378,6 @@ public class StrifePlugin extends FacePlugin {
 
     UberConfig.reload(this);
 
-
     commandManager = new PaperCommandManager(this);
 
     attributeManager = new StrifeAttributeManager(attributesYAML);
@@ -441,21 +446,13 @@ public class StrifePlugin extends FacePlugin {
     prayerManager.setupGodPrayers();
     LoreBooks.buildStuff(lorebooksYml);
 
-    SaveTask saveTask = new SaveTask(this);
-    StrifeMobTracker strifeMobTracker = new StrifeMobTracker(this);
-    StealthParticleTask stealthParticleTask = new StealthParticleTask(stealthManager);
-    BoostTickTask boostTickTask = new BoostTickTask(boostManager);
-    VirtualEntityTask virtualEntityTask = new VirtualEntityTask();
-    Bukkit.getScheduler().runTaskLater(this, () -> new EveryTickTask(this), 200L);
-    new EnvironmentalTickTask(this);
-    IndicatorTask indicatorTask = new IndicatorTask(this);
     particleTask = new ParticleTask();
-    //regenTask = new RegenTask(this);
 
     commandManager.registerCommand(new InspectCommand(this));
     commandManager.registerCommand(new LevelUpCommand(this));
     commandManager.registerCommand(new MountCommand(this));
     commandManager.registerCommand(new PrayerCommand(this));
+    commandManager.registerCommand(new RecallCommand(this));
     commandManager.registerCommand(new GodCommand(this));
     commandManager.registerCommand(new CurseCommand(this));
     commandManager.registerCommand(new StrifeCommand(this));
@@ -501,19 +498,19 @@ public class StrifePlugin extends FacePlugin {
         20L * 10, // Start save after 10s
         9L // Run slightly more often than every 0.5s to catch odd rounding
     ));
-    taskList.add(strifeMobTracker.runTaskTimer(this,
+    taskList.add(new StrifeMobTracker(this).runTaskTimer(this,
         20L * 61, // Start save after 1 minute
         20L * 120 // Run every 2 minutes after that
     ));
-    taskList.add(saveTask.runTaskTimer(this,
+    taskList.add(new SaveTask(this).runTaskTimer(this,
         20L * 680, // Start save after 11 minutes, 20 seconds cuz yolo
         20L * 600 // Run every 10 minutes after that
     ));
-    taskList.add(stealthParticleTask.runTaskTimer(this,
+    taskList.add(new StealthTask(stealthManager).runTaskTimer(this,
         20L * 3, // Start timer after 10s
         3L
     ));
-    taskList.add(boostTickTask.runTaskTimer(this,
+    taskList.add(new BoostTickTask(boostManager).runTaskTimer(this,
         20L,
         20L
     ));
@@ -521,11 +518,11 @@ public class StrifePlugin extends FacePlugin {
         2L,
         1L
     ));
-    taskList.add(virtualEntityTask.runTaskTimer(this,
+    taskList.add(new VirtualEntityTask().runTaskTimer(this,
         20L, // Start timer after 3s
         1L // Run it every tick
     ));
-    taskList.add(indicatorTask.runTaskTimer(this,
+    taskList.add(new IndicatorTask(this).runTaskTimer(this,
         20L,
         1L
     ));
@@ -533,6 +530,18 @@ public class StrifePlugin extends FacePlugin {
         () -> boostManager.checkBoostSchedule(),
         60L,
         20L * 1860
+    ));
+    taskList.add(new EepyTask(this).runTaskTimer(this,
+        39L,
+        29L
+    ));
+    taskList.add(new EveryTickTask(this).runTaskTimer(this,
+        2000L,
+        1L
+    ));
+    taskList.add(new EnvironmentalTickTask(this).runTaskTimer(this,
+        33L,
+        10L
     ));
 
     contactObjectManager.loadPrefabs(contactPrefabsYml);
@@ -692,7 +701,6 @@ public class StrifePlugin extends FacePlugin {
     baseStatsYAML = defaultSettingsLoad("base-entity-stats.yml");
     equipmentYAML = defaultSettingsLoad("equipment.yml");
     conditionYAML = defaultSettingsLoad("conditions.yml");
-    effectYAML = defaultSettingsLoad("effects.yml");
     pathYAML = defaultSettingsLoad("paths.yml");
     herdYML = defaultSettingsLoad("herding-locations.yml");
     loreAbilityYAML = defaultSettingsLoad("lore-abilities.yml");
@@ -763,7 +771,9 @@ public class StrifePlugin extends FacePlugin {
     }
 
     for (BukkitTask task : taskList) {
-      task.cancel();
+      if (!task.isCancelled()) {
+        task.cancel();
+      }
     }
 
     LogUtil.printInfo("Successfully disabled Strife-v" + getDescription().getVersion());
@@ -826,20 +836,50 @@ public class StrifePlugin extends FacePlugin {
   private void buildEffects() {
     LogUtil.printDebug("Starting effect load!");
     Effect.setPlugin(this);
-    for (int i = 0; i <= 100; i++) {
+    for (int i = 0; i <= 200; i++) {
       Wait wait = new Wait();
       wait.setTickDelay(i);
       effectManager.loadEffect("wait-" + i, wait);
     }
-    LogUtil.printDebug("Loaded base 100 waits");
-    for (String key : effectYAML.getKeys(false)) {
-      if (!effectYAML.isConfigurationSection(key)) {
-        continue;
+    for (int i = 0; i <= 200; i++) {
+      Frost frost = new Frost();
+      frost.setFriendly(false);
+      frost.setDuration(i);
+      frost.setOverride(false);
+      effectManager.loadEffect("frost-" + i, frost);
+    }
+    for (int i = 0; i <= 100; i++) {
+      Bleed bleed = new Bleed();
+      bleed.setFriendly(false);
+      bleed.setAmount(i);
+      bleed.setBypassBarrier(false);
+      bleed.setDamageScale(DamageScale.FLAT);
+      bleed.setIgnoreArmor(false);
+      bleed.setIgnoreResist(false);
+      bleed.setBypassBarrier(false);
+      effectManager.loadEffect("bleed-" + i, bleed);
+    }
+
+    List<SmartYamlConfiguration> effectConfigs = new ArrayList<>();
+    File folder = new File(getDataFolder(), "effects");
+    File[] listOfFiles = folder.listFiles();
+    for (File f : Objects.requireNonNull(listOfFiles)) {
+      effectConfigs.add(new SmartYamlConfiguration(f));
+    }
+    for (var effectYAML : effectConfigs) {
+      for (String key : effectYAML.getKeys(false)) {
+        try {
+          if (!effectYAML.isConfigurationSection(key)) {
+            continue;
+          }
+          LogUtil.printDebug("Loading effect: " + key + "...");
+          ConfigurationSection cs = effectYAML.getConfigurationSection(key);
+          assert cs != null;
+          effectManager.loadEffect(key, cs);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
       }
-      LogUtil.printDebug("Loading effect: " + key + "...");
-      ConfigurationSection cs = effectYAML.getConfigurationSection(key);
-      assert cs != null;
-      effectManager.loadEffect(key, cs);
     }
     for (TriggerType type : TriggerType.values()) {
       String id = "TRIGGER_" + type.name();

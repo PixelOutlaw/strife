@@ -21,7 +21,6 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ToastUtils.ToastStyle;
-import com.tealcube.minecraft.bukkit.facecore.utilities.UnicodeUtil;
 import com.tealcube.minecraft.bukkit.shade.acf.BaseCommand;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandAlias;
 import com.tealcube.minecraft.bukkit.shade.acf.annotation.CommandPermission;
@@ -58,6 +57,11 @@ public class PrayerCommand extends BaseCommand {
   @Subcommand("restore")
   @CommandPermission("strife.admin")
   public void creationCommand(CommandSender sender, OnlinePlayer target) {
+    if (!target.getPlayer().hasPermission("QC.3c4cf73b-34a1-4651-9ea9-aab2de08aecb")) {
+      PaletteUtil.sendMessage(target.getPlayer(),
+          FaceColor.YELLOW + "It seems as if the Gods aren't listening right now...");
+      return;
+    }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(target.getPlayer());
     StatUtil.getStat(mob, StrifeStat.MAX_PRAYER_POINTS);
     if (mob.hasTrait(StrifeTrait.DIVINE_BLOOD)) {

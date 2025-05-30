@@ -2,10 +2,7 @@ package land.face.strife.data.conditions;
 
 import static land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot.OFF_HAND;
 
-import com.github.retrooper.packetevents.protocol.packettype.PacketType.Play;
 import java.util.List;
-import java.util.Set;
-import land.face.dinvy.windows.equipment.EquipmentMenu.DeluxeSlot;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.util.ItemUtil;
@@ -37,8 +34,10 @@ public class WeaponsCondition extends Condition {
     EntityEquipment equipment = entity.getEquipment();
     if (entity instanceof Player p) {
       var playerData = StrifePlugin.getInstance().getDeluxeInvyPlugin().getPlayerManager().getPlayerData(p);
-      return strict ? hasAllWeaponsInSet(equipment.getItemInMainHand(), playerData.getEquipmentItem(OFF_HAND)) :
-          hasAtLeastOneWeaponInSet(equipment.getItemInMainHand(), playerData.getEquipmentItem(OFF_HAND));
+      var mainHand = equipment.getItemInMainHand();
+      var offHand = playerData.getEquipmentItem(OFF_HAND);
+      offHand = ItemUtil.isValidOffhand(mainHand, offHand) ? offHand : null;
+      return strict ? hasAllWeaponsInSet(mainHand, offHand) : hasAtLeastOneWeaponInSet(mainHand, offHand);
     } else {
       return strict ? hasAllWeaponsInSet(equipment.getItemInMainHand(), equipment.getItemInOffHand()) :
           hasAtLeastOneWeaponInSet(equipment.getItemInMainHand(), equipment.getItemInOffHand());

@@ -8,6 +8,7 @@ import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.model.ActiveModel;
 import com.ticxo.modelengine.api.model.ModeledEntity;
 import com.ticxo.modelengine.api.model.bone.BoneBehaviorTypes;
+import com.ticxo.modelengine.api.model.bone.type.NameTag;
 import io.pixeloutlaw.minecraft.spigot.config.SmartYamlConfiguration;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
 import java.util.ArrayList;
@@ -16,9 +17,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import land.face.learnin.LearninBooksPlugin;
 import land.face.learnin.objects.LoadedKnowledge;
 import land.face.strife.StrifePlugin;
+import land.face.strife.data.Spawner;
 import land.face.strife.data.StrifeMob;
 import land.face.strife.data.UniqueEntity;
 import land.face.strife.data.ability.EntityAbilitySet;
@@ -82,6 +85,7 @@ public class UniqueEntityManager {
   private final Map<String, Disguise> cachedDisguises;
   private final List<String> globalRemoveGoals;
 
+  public static Map<LivingEntity, ActiveModel> MODEL_MAP = new WeakHashMap<>();
   public static ItemStack DEV_SADDLE;
 
   public UniqueEntityManager(StrifePlugin plugin) {
@@ -110,16 +114,23 @@ public class UniqueEntityManager {
   }
 
   public StrifeMob spawnUnique(String unique, Location location) {
+    return spawnUnique(unique, location, null);
+  }
+
+  public StrifeMob spawnUnique(String unique, Location location, Spawner spawner) {
     UniqueEntity uniqueEntity = loadedUniquesMap.get(unique);
     if (uniqueEntity == null) {
       plugin.getLogger().warning("Attempted to spawn non-existing unique: " + unique);
       return null;
     }
-    return plugin.getStrifeMobManager()
-        .getStatMob((LivingEntity) spawnUnique(uniqueEntity, location));
+    return plugin.getStrifeMobManager().getStatMob((LivingEntity) spawnUnique(uniqueEntity, location, spawner));
   }
 
   public Entity spawnUnique(UniqueEntity uniqueEntity, Location location) {
+    return spawnUnique(uniqueEntity, location, null);
+  }
+
+  public Entity spawnUnique(UniqueEntity uniqueEntity, Location location, Spawner spawner) {
     if (uniqueEntity.getType() == null) {
       LogUtil.printWarning("Null entity type: " + uniqueEntity.getName());
       return null;
@@ -129,7 +140,7 @@ public class UniqueEntityManager {
     assert uniqueEntity.getType().getEntityClass() != null;
 
     Entity entity = location.getWorld().spawn(location, uniqueEntity.getType().getEntityClass(),
-        e -> lambdaSetup(e, uniqueEntity, location));
+        e -> lambdaSetup(e, uniqueEntity, location, spawner));
 
     if (uniqueEntity.getModelId() != null) {
       ActiveModel model = ModelEngineAPI.createActiveModel(uniqueEntity.getModelId());
@@ -140,6 +151,8 @@ public class UniqueEntityManager {
         if (modeledEntity == null) {
           Bukkit.getLogger().warning("Failed to create modelled entity");
         } else {
+          modeledEntity.setSaved(false);
+          MODEL_MAP.put((LivingEntity) entity, model);
           modeledEntity.addModel(model, true);
           modeledEntity.getBase().setRenderRadius(80);
           //modeledEntity.detectPlayers();
@@ -166,7 +179,7 @@ public class UniqueEntityManager {
     return entity;
   }
 
-  private void lambdaSetup(Entity entity, UniqueEntity uniqueEntity, Location location) {
+  private void lambdaSetup(Entity entity, UniqueEntity uniqueEntity, Location location, Spawner spawner) {
     if (cachedDisguises.containsKey(uniqueEntity.getId())) {
       DisguiseAPI.disguiseToAll(entity, cachedDisguises.get(uniqueEntity.getId()).clone());
     }
@@ -328,8 +341,11 @@ public class UniqueEntityManager {
     } else {
       mob.setStats(StatUpdateManager.combineMaps(mob.getBaseStats(), uniqueEntity.getAttributeMap()));
     }
-
-    if (uniqueEntity.getMaxMods() > 0) {
+    int maxMods = uniqueEntity.getMaxMods();
+    if (spawner != null && System.currentTimeMillis() < spawner.getMobModSnooze()) {
+      maxMods = 0;
+    }
+    if (maxMods > 0) {
       plugin.getMobModManager().doModApplication(mob, uniqueEntity.getMaxMods());
     }
 
@@ -347,9 +363,6 @@ public class UniqueEntityManager {
     }
     if (uniqueEntity.isFallImmune()) {
       SpecialStatusUtil.setFallImmune(le);
-    }
-    if (uniqueEntity.isIgnoreSneak()) {
-      SpecialStatusUtil.setSneakImmune(le);
     }
 
     mob.setAbilitySet(new EntityAbilitySet(uniqueEntity.getAbilitySet()));
@@ -414,7 +427,6 @@ public class UniqueEntityManager {
         uniqueEntity.setBurnImmune(cs.getBoolean("burn-immune", false));
         uniqueEntity.setFallImmune(cs.getBoolean("fall-immune", false));
         uniqueEntity.setPushImmune(cs.getBoolean("push-immune", false));
-        uniqueEntity.setIgnoreSneak(cs.getBoolean("ignore-sneak", false));
         uniqueEntity.setSaddled(cs.getBoolean("saddled", false));
         uniqueEntity.setCanTarget(cs.getBoolean("can-target", true));
         uniqueEntity.setBoundingBonus(cs.getDouble("bounding-bonus", -1));

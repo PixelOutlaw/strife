@@ -1,13 +1,13 @@
 package land.face.strife.data.effects;
 
 import com.ticxo.modelengine.api.ModelEngineAPI;
+import io.papermc.paper.entity.TeleportFlag.Relative;
 import land.face.strife.data.StrifeMob;
 import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
-import org.bukkit.util.Vector;
 
 public class LookAt extends Effect {
 
@@ -29,10 +29,8 @@ public class LookAt extends Effect {
       ((Mob) fromTarget).lookAt(toTarget);
     }
     Location newLoc = fromTarget.getLocation().clone();
-    Vector savedVelocity = fromTarget.getVelocity();
     newLoc.setDirection(toTarget.getLocation().subtract(fromTarget.getLocation()).toVector().normalize());
-    fromTarget.teleport(newLoc, TeleportCause.PLUGIN);
-    fromTarget.setVelocity(savedVelocity);
+    fromTarget.teleport(newLoc, TeleportCause.PLUGIN, Relative.VELOCITY_ROTATION);
     var me = ModelEngineAPI.getModeledEntity(fromTarget);
     if (me == null || me.getModels().isEmpty()) {
       return;

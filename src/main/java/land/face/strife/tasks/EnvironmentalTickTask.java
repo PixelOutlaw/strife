@@ -33,7 +33,6 @@ public class EnvironmentalTickTask extends BukkitRunnable {
 
   public EnvironmentalTickTask(StrifePlugin plugin) {
     this.plugin = plugin;
-    runTaskTimer(plugin, 5L, 10L);
   }
 
   @Override

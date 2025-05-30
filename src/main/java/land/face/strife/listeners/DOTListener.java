@@ -20,13 +20,24 @@ package land.face.strife.listeners;
 
 import land.face.strife.StrifePlugin;
 import land.face.strife.util.DamageUtil;
+import net.kyori.adventure.sound.Sound;
+import net.kyori.adventure.sound.Sound.Source;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 
-public record DOTListener(StrifePlugin plugin) implements Listener {
+public class DOTListener implements Listener {
+
+  private final StrifePlugin plugin;
+  private final Sound hurtSound = Sound.sound(
+      NamespacedKey.fromString("minecraft:entity.player.hurt_drown"), Source.PLAYER, 1, 1);
+
+  public DOTListener(StrifePlugin plugin) {
+    this.plugin = plugin;
+  }
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onEntityDOTEvent(EntityDamageEvent event) {
@@ -51,9 +62,11 @@ public record DOTListener(StrifePlugin plugin) implements Listener {
       }
       case FIRE_TICK, POISON, WITHER, CONTACT, SUFFOCATION, STARVATION -> event.setCancelled(true);
       case DROWNING -> {
-        DamageUtil.dealRawDamage(plugin.getStrifeMobManager().getStatMob(le),
-            5 + (float) le.getMaxHealth() * 0.2f);
+        le.playHurtAnimation(0);
+        le.playSound(hurtSound);
+        DamageUtil.dealRawDamage(plugin.getStrifeMobManager().getStatMob(le), 5 + (float) le.getMaxHealth() * 0.2f);
         event.setDamage(0);
+        event.setCancelled(true);
       }
     }
   }

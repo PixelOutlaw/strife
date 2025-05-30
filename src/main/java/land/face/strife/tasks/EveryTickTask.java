@@ -84,7 +84,6 @@ public class EveryTickTask extends BukkitRunnable {
 
   public EveryTickTask(StrifePlugin plugin) {
     this.plugin = plugin;
-    runTaskTimer(plugin, 5L, 1L);
   }
 
   @Override

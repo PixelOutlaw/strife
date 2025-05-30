@@ -50,7 +50,6 @@ public class LevelupPointsMenuItem extends MenuItem {
 
   LevelupPointsMenuItem(StrifePlugin plugin) {
     super(StringExtensionsKt.chatColorize(DISPLAY_NAME), DISPLAY_ICON, DISPLAY_LORE);
-    ItemUtils.setItemModel(getIcon(), "faceland:skill_orb");
     this.plugin = plugin;
   }
 

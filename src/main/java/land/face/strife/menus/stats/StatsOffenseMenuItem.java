@@ -147,10 +147,9 @@ public class StatsOffenseMenuItem extends MenuItem {
     float attackSpeed = mob.getStat(StrifeStat.ATTACK_SPEED);
     String bonus = FaceColor.GRAY + " (" + (attackSpeed >= 0 ? "+" : "") + INT_FORMAT.format(attackSpeed) + "%)";
     lore.add(as + bonus);
-    if (mob.getStat(StrifeStat.BASIC_ATTACK_DAMAGE) > 0) {
-      lore.add(addStat("Basic Attack Damage: ", 100 + mob.getStat(StrifeStat.BASIC_ATTACK_DAMAGE), "%", INT_FORMAT));
-    }
+    lore.add(breakLine);
     lore.add(addStat("Ability Damage: ", 100 + mob.getStat(StrifeStat.ABILITY_DAMAGE), "%", INT_FORMAT));
+    lore.add(addStat("Basic Attack Damage: ", 100 + mob.getStat(StrifeStat.BASIC_ATTACK_DAMAGE), "%", INT_FORMAT));
     List<String> loreSection = new ArrayList<>();
     loreSection.add(breakLine);
     if (mob.getStat(StrifeStat.MULTISHOT) > 0) {
@@ -209,7 +208,7 @@ public class StatsOffenseMenuItem extends MenuItem {
     if (earth > 0) {
       lore.add(addStat("Maximum Earth Runes: ", mob.getStat(StrifeStat.MAX_EARTH_RUNES), INT_FORMAT));
     }
-    lore.add(addStat("Status Chance: ", mob.getStat(StrifeStat.ELEMENTAL_STATUS), "%", INT_FORMAT));
+    lore.add(addStat("Elemental Status Chance: ", mob.getStat(StrifeStat.ELEMENTAL_STATUS), "%", INT_FORMAT));
     lore.add(breakLine);
     lore.add(StringExtensionsKt.chatColorize("&8&oUse &7&o/help &8&ofor more info!"));
     itemMeta.setLore(lore);

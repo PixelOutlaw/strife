@@ -26,6 +26,7 @@ import com.ticxo.modelengine.api.model.ModeledEntity;
 import com.ticxo.modelengine.api.model.bone.manager.MountManager;
 import info.faceland.loot.items.NewCustomItem;
 import info.faceland.loot.utils.PersistHelper;
+import io.papermc.paper.entity.TeleportFlag;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -136,6 +137,7 @@ public class PlayerMountManager {
       } else {
         ModeledEntity modeledEntity = ModelEngineAPI.createModeledEntity(mountEntity);
         if (modeledEntity != null) {
+          modeledEntity.setSaved(false);
           modeledEntity.addModel(model, true);
           modeledEntity.setBaseEntityVisible(false);
           model.getModeledEntity().getBase().setMaxStepHeight(1);
@@ -219,12 +221,16 @@ public class PlayerMountManager {
       //}
       task.getModel().destroy();
     }
+    player.setCooldown(Material.SADDLE, 20);
     task.getMount().get().getEntity().remove();
     ownerMap.remove(task.getPlayer().get().getUniqueId());
     if (!task.isCancelled()) {
       task.cancel();
     }
     player.setSprinting(false);
+    //var loc = task.getMount().get().getEntity().getLocation().clone();
+    //loc.setDirection(player.getEyeLocation().getDirection());
+    //player.teleport(loc, TeleportFlag.Relative);
   }
 
   public void clearAll() {

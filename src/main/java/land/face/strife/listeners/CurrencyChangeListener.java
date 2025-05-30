@@ -19,9 +19,7 @@ package land.face.strife.listeners;
 import com.sentropic.guiapi.gui.Alignment;
 import com.sentropic.guiapi.gui.GUIComponent;
 import com.tealcube.minecraft.bukkit.bullion.MoneyChangeEvent;
-import info.faceland.loot.LootPlugin;
 import land.face.strife.StrifePlugin;
-import land.face.strife.managers.GuiManager;
 import org.black_ixx.playerpoints.event.PlayerPointsChangeEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -38,7 +36,7 @@ public record CurrencyChangeListener(StrifePlugin plugin) implements Listener {
   }
 
   public static void updateAll(StrifePlugin plugin, Player player) {
-    int money = (int) MintPlugin.getInstance().getManager().getPlayerBalance(player.getUniqueId());
+    int money = (int) Math.floor(MintPlugin.getInstance().getManager().getPlayerBalance(player.getUniqueId()));
     plugin.getGuiManager().updateComponent(player, new GUIComponent("money-display",
         plugin.getGuiManager().convertToMoneyFont(money), divideAndConquerLength(money) * 7, 189, Alignment.RIGHT));
 

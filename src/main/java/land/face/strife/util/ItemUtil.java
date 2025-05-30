@@ -279,7 +279,7 @@ public class ItemUtil {
     EquipmentData data = PersistHelper.getEquipmentData(stack);
     if (data != null) {
       if (data.getTier() != null) {
-        int itemLevel = data.getCustomLevel() - data.getUpgradeLevel() / 3;
+        int itemLevel = data.getCustomLevel() - (data.getUpgradeLevel() * data.getTier().getUpgradeScale()) / 3;
         itemLevel += data.getLevelMod();
         itemLevel = Math.max(1, itemLevel);
         if (data.getTier().isSkillRequirement()) {

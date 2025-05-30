@@ -139,7 +139,13 @@ public record ProjectileHitListener(StrifePlugin plugin) implements Listener {
     }
     // not block, no entity at all
     if (event.getHitEntity() == null) {
-      return null;
+      if (ProjectileUtil.isContactTrigger(event.getEntity())) {
+        Location loc = event.getEntity().getLocation().clone();
+        event.getEntity().remove();
+        return new TargetResponse(loc);
+      } else {
+        return null;
+      }
     }
     // not block, living entity
     if (event.getHitEntity() instanceof LivingEntity le) {

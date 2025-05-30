@@ -3,15 +3,10 @@ package land.face.strife.data;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.YELLOW;
 import static com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor.color;
 
-import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
-import java.util.HashMap;
-import java.util.Map;
 import land.face.strife.events.LocationChangeEvent;
-import land.face.strife.managers.BossBarManager;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.Style;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -22,6 +17,7 @@ public class TopBarData {
   private TextComponent compass = Component.empty();
   private TextComponent location = Component.empty();
   private TextComponent clock = Component.empty();
+  private int clockTime = -1;
   private TextComponent skills = Component.empty();
 
   private static final TextComponent buffer = Component.text("\uF808");
@@ -55,10 +51,11 @@ public class TopBarData {
     return true;
   }
 
-  public boolean setClock(TextComponent str) {
-    if (str == null || str.content().equals(clock.content())) {
+  public boolean setClock(TextComponent str, int clockTime) {
+    if (str == null || this.clockTime == clockTime) {
       return false;
     }
+    this.clockTime = clockTime;
     clock = str;
     return true;
   }

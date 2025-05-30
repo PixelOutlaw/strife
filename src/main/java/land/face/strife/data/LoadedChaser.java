@@ -19,7 +19,7 @@ public class LoadedChaser {
 
   private float speed, startSpeed, maxSpeed, startHorizontalMin, startHorizontalMax, startVerticalMin, startVerticalMax, gravity;
   private int lifespan, guideStopTicks;
-  private boolean physical, strictDuration, destroyOnBlockContact, blockContactEffects, expiryEffects;
+  private boolean physical, strictDuration, destroyOnBlockContact, blockContactEffects, expiryEffects, allowMultishot;
   private String modelId;
   private List<Color> modelColors = new ArrayList<>();
   private List<Double> modelSizes = new ArrayList<>();
@@ -65,6 +65,7 @@ public class LoadedChaser {
     data.setDestroyOnBlockContact(cs.getBoolean("destroy-on-block-contact", false));
     data.setBlockContactEffects(cs.getBoolean("execute-on-block-contact", false));
     data.setExpiryEffects(cs.getBoolean("execute-on-expiry", false));
+    data.setAllowMultishot(cs.getBoolean("allow-multishot", false));
     //data.setUseProjectile(cs.getBoolean("remove-on-block-contact", true));
 
     List<String> effects = cs.getStringList("effects");

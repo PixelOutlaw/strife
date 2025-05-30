@@ -17,6 +17,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.world.EntitiesUnloadEvent;
 
 public class CitizenModelListener implements Listener {
 
@@ -35,6 +36,18 @@ public class CitizenModelListener implements Listener {
     NpcModelData npcModelData = npcModelMap.get(event.getNPC().getId());
     if (npcModelData != null) {
       applyModel(event.getNPC(), npcModelData);
+    }
+  }
+
+  @EventHandler(priority = EventPriority.LOWEST)
+  private void onEntityUnload(EntitiesUnloadEvent event) {
+    for (var entity : event.getEntities()) {
+      NPC npc = CitizensAPI.getNPCRegistry().getNPC(entity);
+      if (npc != null) {
+        if (ModelEngineAPI.isModeledEntity(entity.getUniqueId())) {
+          ModelEngineAPI.removeModeledEntity(entity);
+        }
+      }
     }
   }
 
@@ -77,6 +90,7 @@ public class CitizenModelListener implements Listener {
       if (modeledEntity == null) {
         return;
       }
+      modeledEntity.setSaved(false);
       ActiveModel activeModel = ModelEngineAPI.createActiveModel(npcModelData.getModel());
       activeModel.setShadowVisible(true);
       activeModel.setScale(npcModelData.getScale());

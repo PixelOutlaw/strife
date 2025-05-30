@@ -35,6 +35,11 @@ public enum StrifeTrait {
   STONE_SKIN("|orange||ul|Passive Effect - Stone Skin", "|none|丒",
       "|yellow|Take |white|3% Less Damage |yellow|per",
       "|yellow|active |brown|Earth Rune"),
+  THICK_HIDE("|orange||ul|Passive Effect - Thick Hide", "|none|丒",
+      "|yellow|-10 Physical Damage Taken"),
+  GELATINOUS("|orange||ul|Passive Effect - Gelatinous", "|none|丒",
+      "|yellow|Physical Damage taken cannot",
+      "|yellow|exceed 20% Max. Life"),
   BLOOD_BOIL("|orange||ul|Passive Effect - Blood Boil", "|none|丒",
       "|yellow|When |red|Bleeding|yellow|, red|Rage |yellow|gained",
       "|yellow|is increased by |white|30%"),
@@ -170,6 +175,10 @@ public enum StrifeTrait {
       "|yellow|that applies over time is",
       "|yellow|instead applied instantly"
   ),
+
+  FLIGHTY("|orange||ul|Passive Effect - Flighty", "|none|丒",
+      "|lavender|Escape |yellow|time is halved"),
+
   SOUL_FLAME("|orange||ul|Passive Effect - Blue Flame", "|none|丒",
       "|yellow|Ignore half of enemy",
       "|yellow|Fire Resistance"

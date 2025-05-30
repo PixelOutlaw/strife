@@ -20,6 +20,7 @@ public class LoadedStatBoost {
   private final String creator;
   private final int duration;
   private final int announceInterval;
+  private final int minimumLevel;
   private final TextComponent topBarText;
   private final TextComponent topBarIcon;
   private final Map<StrifeStat, Float> stats;
@@ -29,7 +30,8 @@ public class LoadedStatBoost {
   private String modernId = null;
   private String modernLines = null;
 
-  public LoadedStatBoost(String creator, String topBarIcon, String topBarText, int announceInterval, int duration) {
+  public LoadedStatBoost(String creator, String topBarIcon, String topBarText, int announceInterval,
+      int duration, int minimumLevel) {
     this.creator = creator;
     this.duration = duration;
     this.announceInterval = announceInterval;
@@ -39,5 +41,6 @@ public class LoadedStatBoost {
     this.announceStart = new ArrayList<>();
     this.announceRun = new ArrayList<>();
     this.announceEnd = new ArrayList<>();
+    this.minimumLevel = minimumLevel;
   }
 }

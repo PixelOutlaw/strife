@@ -21,6 +21,7 @@ package land.face.strife.listeners;
 import io.papermc.paper.event.player.PlayerArmSwingEvent;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.stats.AbilitySlot;
 import land.face.strife.util.ItemUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -64,6 +65,9 @@ public record SwingListener(StrifePlugin plugin) implements Listener {
       return;
     }
     StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
+    if (plugin.getAbilityManager().checkClickCast(mob)) {
+      return;
+    }
     if (ItemUtil.isMeleeWeapon(event.getPlayer().getEquipment().getItemInMainHand().getType())) {
       plugin.getAttackSpeedManager().resetAttack(mob, 0.5f, false);
       /*

@@ -28,9 +28,7 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.MessageUtils;
 import com.tealcube.minecraft.bukkit.facecore.utilities.PaletteUtil;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.Expression;
 import com.tealcube.minecraft.bukkit.shade.objecthunter.exp4j.ExpressionBuilder;
-import java.text.DecimalFormat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
@@ -54,35 +52,8 @@ import org.bukkit.entity.Player;
 public class SkillExperienceManager {
 
   private final StrifePlugin plugin;
-  private static final DecimalFormat FORMAT = new DecimalFormat("###,###,###");
-  //private static final String XP_AB = "{0}( &f&l{1} {0}/ &f&l{2} XP {0})";
   private final String XP_MSG;
   private final int MAX_SKILL_LEVEL;
-
-  private final List<String> skillBackground = List.of(
-      "𫝀\uF809\uF801",
-      "𫝁\uF809\uF801",
-      "𫝂\uF809\uF801",
-      "𫝃\uF809\uF801",
-      "𫝄\uF809\uF801",
-      "𫝅\uF809\uF801",
-      "𫝆\uF809\uF801",
-      "𫝇\uF809\uF801",
-      "𫝈\uF809\uF801",
-      "𫝉\uF809\uF801",
-      "𫝊\uF809\uF801",
-      "𫝋\uF809\uF801",
-      "𫝌\uF809\uF801",
-      "𫝍\uF809\uF801",
-      "𫝎\uF809\uF801",
-      "𫝏\uF809\uF801",
-      "𫝐\uF809\uF801",
-      "𫝑\uF809\uF801",
-      "𫝒\uF809\uF801",
-      "𫝓\uF809\uF801"
-  );
-  private final Map<Integer, String> skillLevel = buildSkillLevelStrings();
-
   private final Map<LifeSkillType, LevelingRate> levelingRates = new HashMap<>();
 
   public SkillExperienceManager(StrifePlugin plugin) {
@@ -119,25 +90,29 @@ public class SkillExperienceManager {
       float skillXpMult = mob.getStat(StrifeStat.SKILL_XP_GAIN) / 100;
       amount *= 1 + skillXpMult;
     }
+    int finalAmount = (int) Math.floor(amount);
+    if (Math.random() <= (amount - finalAmount)) {
+      finalAmount++;
+    }
+    finalAmount = Math.max(1, finalAmount);
     if (location != null && saveData.isShowIndicators()) {
       String str = MiniMessage.miniMessage().serialize(LegacyComponentSerializer.legacySection().deserialize(
           type.getColor() + FaceColor.BOLD.s() + "+" +
-              FaceColor.WHITE + FaceColor.BOLD.s() + (int) amount +
+              FaceColor.WHITE + FaceColor.BOLD.s() + finalAmount +
               type.getColor() + FaceColor.BOLD.s() + "XP!"
       ));
       plugin.getIndicatorManager().addIndicator(mob.getEntity(), location, IndicatorStyle.FLOAT_UP_SLOW,
           10, str, 0.9f, 1.0f, 0.7f, true);
     }
     if (saveData.isDisplayExp() || forceDisplay) {
-      String xp = FORMAT.format(amount);
       MessageUtils.sendMessage(player, XP_MSG
           .replace("{c}", "" + type.getColor())
           .replace("{n}", type.getPrettyName())
-          .replace("{a}", xp)
+          .replace("{a}", String.valueOf(finalAmount))
       );
     }
 
-    SkillExpGainEvent xpEvent = new SkillExpGainEvent(mob.getChampion(), type, (float) amount);
+    SkillExpGainEvent xpEvent = new SkillExpGainEvent(mob.getChampion(), type, finalAmount);
     StrifePlugin.getInstance().getServer().getPluginManager().callEvent(xpEvent);
 
     double currentExp = saveData.getSkillExp(type) + xpEvent.getAmount();
@@ -242,42 +217,4 @@ public class SkillExperienceManager {
       levelingRates.put(type, skillRate);
     }
   }
-
-  public Map<Integer, String> buildSkillLevelStrings() {
-    Map<Integer, String> lvlStrings = new HashMap<>();
-    for (int i = 0; i < 100; i++) {
-      String s = Integer.toString(i);
-      if (i < 10) {
-        s = s
-            .replaceAll("0", "𝟘")
-            .replaceAll("1", "𝟙")
-            .replaceAll("2", "𝟚")
-            .replaceAll("3", "𝟛")
-            .replaceAll("4", "𝟜")
-            .replaceAll("5", "𝟝")
-            .replaceAll("6", "𝟞")
-            .replaceAll("7", "𝟟")
-            .replaceAll("8", "𝟠")
-            .replaceAll("9", "𝟡");
-        s = "\uF808\uF802" + s + "\uF826";
-        lvlStrings.put(i, s);
-      } else {
-        s = s
-            .replaceAll("0", "𝟘\uF801")
-            .replaceAll("1", "𝟙\uF801")
-            .replaceAll("2", "𝟚\uF801")
-            .replaceAll("3", "𝟛\uF801")
-            .replaceAll("4", "𝟜\uF801")
-            .replaceAll("5", "𝟝\uF801")
-            .replaceAll("6", "𝟞\uF801")
-            .replaceAll("7", "𝟟\uF801")
-            .replaceAll("8", "𝟠\uF801")
-            .replaceAll("9", "𝟡\uF801");
-        s = "\uF819\uF822" + s + "\uF824";
-        lvlStrings.put(i, s);
-      }
-    }
-    return lvlStrings;
-  }
-
 }

@@ -8,6 +8,7 @@ import land.face.dinvy.events.PlayerInputEvent;
 import land.face.dinvy.windows.equipment.EquipmentMenu;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.StrifeMob;
+import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -35,8 +36,7 @@ public class PlayerInputListener implements Listener {
       case DROP_ITEM -> Bukkit.getScheduler().runTaskLater(plugin, () -> {
         StrifeMob mob = plugin.getStrifeMobManager().getStatMob(event.getPlayer());
         if (mob.isInCombat()) {
-          PaletteUtil.sendMessage(event.getPlayer(),
-              FaceColor.ORANGE + "You cannot change your equipment in combat!");
+          PaletteUtil.sendMessage(event.getPlayer(), FaceColor.ORANGE + "You cannot change your equipment in combat!");
           return;
         }
         event.getPlayer().updateInventory();
@@ -46,7 +46,9 @@ public class PlayerInputListener implements Listener {
       case SWAP_HAND -> Bukkit.getScheduler().runTaskLater(plugin, () -> {
         if (plugin.isInHome(event.getPlayer())) {
           event.getPlayer().performCommand("home edit");
-        } else {
+        } else if (event.getPlayer().hasPermission("QC.3c4cf73b-34a1-4651-9ea9-aab2de08aecb")) {
+          // TODO: CONFIGURABLE PERMISSION
+          // TODO: CURRENT IS FOR COMPLETION OF ALTAR OF THE GODS QUEST
           plugin.getPrayerManager().getPrayerMenu().open(event.getPlayer());
         }
       }, 0L);

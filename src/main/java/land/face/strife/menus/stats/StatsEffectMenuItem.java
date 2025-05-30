@@ -18,6 +18,7 @@
  */
 package land.face.strife.menus.stats;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.ListExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
@@ -97,6 +98,8 @@ public class StatsEffectMenuItem extends MenuItem {
 
     if (!abilityLores.isEmpty()) {
       lore.addAll(abilityLores);
+    } else {
+      lore.add(FaceColor.GRAY + "There's nothing here!");
     }
 
     lore.add(StatsMenu.breakLine);

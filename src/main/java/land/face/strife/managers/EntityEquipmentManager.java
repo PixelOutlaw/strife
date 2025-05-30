@@ -1,7 +1,6 @@
 package land.face.strife.managers;
 
 import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
-import com.tealcube.minecraft.bukkit.facecore.utilities.TextUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import io.pixeloutlaw.minecraft.spigot.hilt.ItemStackExtensionsKt;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import land.face.strife.util.ItemUtil;
 import land.face.strife.util.LogUtil;
 import lombok.Setter;
 import me.arcaniax.hdb.api.HeadDatabaseAPI;
@@ -117,15 +115,17 @@ public class EntityEquipmentManager {
       lore.add(StringExtensionsKt.chatColorize(line));
     }
     var modelData = cs.getStringList("custom-model-data");
-    if (modelData.isEmpty()) {
+    if (!modelData.isEmpty()) {
       ItemUtils.setCustomData(stack, modelData);
     }
     var data = cs.getString("model", null);
     if (!StringUtils.isBlank(data)) {
       ItemUtils.setItemModel(stack, data);
     }
-    TextUtils.setLore(stack, lore);
-    ItemStackExtensionsKt.setUnbreakable(stack, true);
+    stack.editMeta(m -> {
+      m.setLore(lore);
+      m.setUnbreakable(true);
+    });
     itemMap.put(key, stack);
   }
 }

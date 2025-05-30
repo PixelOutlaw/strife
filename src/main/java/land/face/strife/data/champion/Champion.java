@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import land.face.strife.StrifePlugin;
 import land.face.strife.data.CombatDetailsContainer;
+import land.face.strife.data.StrifeMob;
+import land.face.strife.data.TargetResponse;
 import land.face.strife.data.ability.Ability;
 import land.face.strife.data.ability.Ability.TargetType;
 import land.face.strife.data.champion.ChampionSaveData.SelectedGod;
@@ -55,6 +57,7 @@ public class Champion {
   @Getter
   private final Set<StrifeTrait> pathTraits;
 
+  @Getter
   private final Map<AbilitySlot, Ability> abilities = new HashMap<>();
 
   private final Map<StrifeStat, Float> combinedStatMap;
@@ -102,7 +105,7 @@ public class Champion {
         getAbilityStats(AbilitySlot.SLOT_B),
         getAbilityStats(AbilitySlot.SLOT_C),
         getAbilityStats(AbilitySlot.SLOT_D),
-        StrifePlugin.getInstance().getBoostManager().getStats()
+        StrifePlugin.getInstance().getBoostManager().getStats(player.getLevel())
     ));
     lastChanged = System.currentTimeMillis();
   }

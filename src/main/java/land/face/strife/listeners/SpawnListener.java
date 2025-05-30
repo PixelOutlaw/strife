@@ -5,7 +5,6 @@ import com.tealcube.minecraft.bukkit.facecore.utilities.ItemUtils;
 import com.tealcube.minecraft.bukkit.shade.apache.commons.lang3.StringUtils;
 import land.face.strife.StrifePlugin;
 import land.face.strife.util.SpecialStatusUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -27,23 +26,13 @@ public class SpawnListener implements Listener {
 
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onJockeySpawn(CreatureSpawnEvent event) {
-    if (event.isCancelled()) {
+    if (event.getSpawnReason() == SpawnReason.COMMAND) {
       return;
     }
-    if (event.getSpawnReason() == SpawnReason.JOCKEY) {
-      event.setCancelled(true);
-      return;
-    }
-    if (event.getSpawnReason() != SpawnReason.CUSTOM) {
-      Bukkit.getScheduler().runTaskLater(plugin, () -> {
-        switch (event.getEntityType()) {
-          case ZOMBIFIED_PIGLIN, SKELETON, ZOMBIE -> {
-            if (event.getEntity().getVehicle() != null) {
-              event.getEntity().getVehicle().remove();
-            }
-          }
-        }
-      }, 1L);
+    if (event.getEntity().getType() == EntityType.CHICKEN || event.getEntity().getType() == EntityType.SPIDER) {
+      if (SpecialStatusUtil.getUniqueId(event.getEntity()).isEmpty()) {
+        event.setCancelled(true);
+      }
     }
   }
 

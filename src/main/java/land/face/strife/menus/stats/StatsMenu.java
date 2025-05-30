@@ -18,6 +18,7 @@
  */
 package land.face.strife.menus.stats;
 
+import com.tealcube.minecraft.bukkit.facecore.utilities.FaceColor;
 import io.pixeloutlaw.minecraft.spigot.garbage.StringExtensionsKt;
 import java.text.DecimalFormat;
 import java.util.Map;
@@ -81,5 +82,18 @@ public class StatsMenu extends ItemMenu {
 
   public Map<Player, Player> getInspectionTargetMap() {
     return inspectionTargetMap;
+  }
+
+  public static String addStat(FaceColor baseColor, String name, double value, DecimalFormat format, boolean showPlus) {
+    return addStat(baseColor, name, value, "", format, showPlus);
+  }
+
+  public static String addStat(FaceColor baseColor, String name, double value, String extra, DecimalFormat format, boolean showPlus) {
+    var statColor = value > -0.1 ? FaceColor.WHITE : FaceColor.RED;
+    if (showPlus && value > 0) {
+      return baseColor + name + statColor + "+" + format.format(value) + extra;
+    } else {
+      return baseColor + name + statColor + format.format(value) + extra;
+    }
   }
 }

@@ -115,7 +115,7 @@ public enum StrifeStat {
   LIGHT_MULT("More Light Damage", "Less Light Damage"),
   DARK_MULT("More Shadow Damage", "Less Shadow Damage"),
 
-  ELEMENTAL_STATUS("Status Chance"),
+  ELEMENTAL_STATUS("Element Status Chance"),
   MAX_EARTH_RUNES("Max Earth Runes"),
 
   MAXIMUM_RAGE("Maximum Rage"),
@@ -149,6 +149,8 @@ public enum StrifeStat {
   CAST_RANGE("Casting Range"),
 
   MOVEMENT_SPEED("Movement Speed"),
+  SLIPPERYNESS("Slipperyness"),
+
   TRUE_DAMAGE("True Damage"),
 
   PVP_ATTACK("PvP Attack"),

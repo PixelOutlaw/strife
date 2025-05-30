@@ -32,7 +32,7 @@ public class UniqueEntity {
   @EqualsAndHashCode.Exclude
   private EntityAbilitySet abilitySet;
   private boolean showName, baby, angry, armsRaised, hasAI, gravity, collidable, ignoreTargetLevel,guildMob, pushImmune,
-      elite, burnImmune, fallImmune, knockbackImmune, ignoreSneak, saddled, canTarget, removeFollowMods, powered,
+      elite, burnImmune, fallImmune, knockbackImmune, saddled, canTarget, removeFollowMods, powered,
       attackDisabledOnGlobalCooldown, alwaysRunTimer, vagabondAllowed, aggressiveAi, customAi, invisible, invulnerable,
       silent;
   private float customAttackRange;

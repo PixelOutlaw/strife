@@ -20,7 +20,6 @@ import land.face.strife.util.StatUtil;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.commons.lang3.text.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -30,7 +29,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class CombatCountdownTask extends BukkitRunnable {
 
   // TICKS EVERY 4 SERVER TICKS, 0.2s
-  private static final int BUMP_TICKS = 60;
+  private static final int BUMP_TICKS = 47;
   private static final int DEATH_TICKS = 8;
   private final StrifeMob parentMob;
   private StrifeMob targetMob;
@@ -140,8 +139,8 @@ public class CombatCountdownTask extends BukkitRunnable {
     }
     if (strifeMob.getEntity().isValid()) {
       manager.updateBar(player, 2, 0, createBarTitle(strifeMob), 9999999);
-      int hpState = (int) (138f * (strifeMob.getEntity().getHealth()) / strifeMob.getMaxLife());
-      int barrierState = (int) (138f * (strifeMob.getBarrier()) / strifeMob.getMaxBarrier());
+      int hpState = (int) Math.ceil(138f * (strifeMob.getEntity().getHealth()) / strifeMob.getMaxLife());
+      int barrierState = (int) Math.floor(138f * (strifeMob.getBarrier()) / strifeMob.getMaxBarrier());
       if (hpState != lastHealthStage || barrierState != lastBarrierStage) {
         lastHealthStage = hpState;
         lastBarrierStage = barrierState;
@@ -203,8 +202,8 @@ public class CombatCountdownTask extends BukkitRunnable {
     }
     name = name + FaceColor.RED + StrifePlugin.INT_FORMAT.format(target.getEntity().getHealth())
         + "♡";
-    if (target.getFrost() > 100) {
-      name += "  " + FaceColor.CYAN + (target.getFrost() / 100) + "❄";
+    if (target.getFrost() > 0) {
+      name += "  " + FaceColor.CYAN + (int) target.getFrost() + "❄";
     }
     if (target.getCorruption() > 0.9) {
       name += "  " + FaceColor.PURPLE + (int) target.getCorruption() + "\uD83D\uDC80";
